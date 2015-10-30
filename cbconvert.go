@@ -534,7 +534,7 @@ func getFiles() []string {
 	return files
 }
 
-// Returns sorted list of found image files for given directory
+// Returns list of found image files for given directory
 func getImages(path string) []string {
 	var images []string
 
