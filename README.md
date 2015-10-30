@@ -71,7 +71,7 @@ Using
       -o, --outdir="."       output directory
       -m, --size=0           process only files larger then size (in MB)
       -r, --recursive        process subdirectories recursively
-      -v, --quiet            hide console output
+      -Q, --quiet            hide console output
 
     Args:
       <args>  filename or directory
