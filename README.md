@@ -20,8 +20,8 @@ Features
 Download
 --------
 
- - [Windows static build](https://github.com/gen2brain/cbconvert/releases/download/0.1.0/bukanir-0.1.0.zip)
- - [Linux 64bit build](https://github.com/gen2brain/cbconvert/releases/download/0.1.0/bukanir-0.1.0.tar.gz)
+ - [Windows static build](https://github.com/gen2brain/cbconvert/releases/download/0.1.0/cbconvert-0.1.0.zip)
+ - [Linux 64bit build](https://github.com/gen2brain/cbconvert/releases/download/0.1.0/cbconvert-0.1.0.tar.gz)
 
 Compile
 -------
