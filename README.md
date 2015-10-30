@@ -27,9 +27,11 @@ Compile
 -------
 
 Install poppler, poppler-glib, cairo, libarchive and imagemagick dev packages:
+
     apt-get install libpoppler-glib-dev libcairo2-dev libarchive-dev libmagickcore-dev libmagickwand-dev
 
 Install go package:
+
     go get github.com/gen2brain/cbconvert
     go install github.com/gen2brain/cbconvert && cbconvert
 
