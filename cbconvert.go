@@ -775,7 +775,7 @@ func parseFlags() {
 	kingpin.Flag("outdir", "output directory").Default(".").Short('o').StringVar(&opts.Outdir)
 	kingpin.Flag("size", "process only files larger then size (in MB)").Short('m').Default(strconv.Itoa(0)).Int64Var(&opts.Size)
 	kingpin.Flag("recursive", "process subdirectories recursively").Short('r').BoolVar(&opts.Recursive)
-	kingpin.Flag("quiet", "hide console output").Short('v').BoolVar(&opts.Quiet)
+	kingpin.Flag("quiet", "hide console output").Short('Q').BoolVar(&opts.Quiet)
 	kingpin.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&arguments)
 	kingpin.Parse()
 }
