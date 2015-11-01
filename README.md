@@ -38,14 +38,14 @@ Install go package:
 Dependencies
 ------------
 
-	go get github.com/cheggaaa/go-poppler
-	go get github.com/cheggaaa/pb
+    go get github.com/cheggaaa/go-poppler
+    go get github.com/cheggaaa/pb
     go get github.com/gen2brain/go-unarr
-	go get github.com/gographics/imagick/imagick
-	go get github.com/hotei/bmp
-	go get github.com/nfnt/resize
-	go get github.com/skarademir/naturalsort
-	go get github.com/ungerik/go-cairo
+    go get github.com/gographics/imagick/imagick
+    go get github.com/hotei/bmp
+    go get github.com/nfnt/resize
+    go get github.com/skarademir/naturalsort
+    go get github.com/ungerik/go-cairo
     go get gopkg.in/alecthomas/kingpin.v2
 
 Using
