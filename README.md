@@ -26,9 +26,9 @@ Download
 Compile
 -------
 
-Install poppler, poppler-glib, cairo, libarchive and imagemagick dev packages:
+Install poppler, poppler-glib, cairo and imagemagick dev packages:
 
-    apt-get install libpoppler-glib-dev libcairo2-dev libarchive-dev libmagickcore-dev libmagickwand-dev
+    apt-get install libpoppler-glib-dev libcairo2-dev libmagickcore-dev libmagickwand-dev
 
 Install go package:
 
@@ -38,9 +38,9 @@ Install go package:
 Dependencies
 ------------
 
-	go get github.com/MStoykov/go-libarchive
 	go get github.com/cheggaaa/go-poppler
 	go get github.com/cheggaaa/pb
+    go get github.com/gen2brain/go-unarr
 	go get github.com/gographics/imagick/imagick
 	go get github.com/hotei/bmp
 	go get github.com/nfnt/resize
@@ -80,14 +80,16 @@ Using
 Examples
 --------
 
+Rescale images to 1200px for all supported files found in directory with size larger then 60MB:
+
     cbconvert --recursive --width 1200 --size 60 /media/comics/Thorgal/
 
-Rescale images to 1200px for all supported files found in directory with size larger then 60MB.
+Convert all images in archive to 4bit BMP image and save result in ~/comics directory:
 
     cbconvert --bmp --outdir ~/comics /media/comics/Garfield/Garfield_01.cbz
 
-Convert all images in archive to 4bit BMP image and save result in ~/comics directory. [BMP](http://en.wikipedia.org/wiki/BMP_file_format) format is uncompressed, for black&white pages very good choice. Archive size can be smaller 2-3x and file will be readable by comic readers.
+[BMP](http://en.wikipedia.org/wiki/BMP_file_format) format is uncompressed, for black&white pages very good choice. Archive size can be smaller 2-3x and file will be readable by comic readers.
+
+Generate thumbnails by freedesktop specification in ~/.thumbnails/normal directory, Lanczos3 algorithm is used for resizing:
 
     cbconvert --interpolation=5 --outdir ~/.thumbnails/normal --thumbnail /media/comics/GrooTheWanderer/
-
-Generate thumbnails by freedesktop specification in ~/.thumbnails/normal directory, Lanczos3 algorithm is used for resizing.

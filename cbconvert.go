@@ -39,9 +39,9 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/MStoykov/go-libarchive"
 	"github.com/cheggaaa/go-poppler"
 	"github.com/cheggaaa/pb"
+	"github.com/gen2brain/go-unarr"
 	"github.com/gographics/imagick/imagick"
 	_ "github.com/hotei/bmp"
 	"github.com/nfnt/resize"
@@ -199,69 +199,63 @@ func convertPDF(file string) {
 func convertArchive(file string) {
 	workdir, _ = ioutil.TempDir(os.TempDir(), "cbc")
 
-	f, err := os.Open(file)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error Open: %v\n", err.Error())
-		return
-	}
-	defer f.Close()
+	ncontents := len(listArchive(file))
 
-	reader, err := archive.NewReader(f)
+	archive, err := unarr.NewArchive(file)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error NewReader: %v\n", err.Error())
 	}
-	defer reader.Free()
-	defer reader.Close()
+	defer archive.Close()
 
 	var bar *pb.ProgressBar
 	if !opts.Quiet {
-		s, _ := f.Stat()
-		bar = pb.New(int(s.Size()))
-		bar.SetUnits(pb.U_BYTES)
+		bar = pb.New(ncontents)
 		bar.ShowTimeLeft = false
 		bar.Prefix(fmt.Sprintf("Converting %d of %d: ", current, nfiles))
 		bar.Start()
 	}
 
 	for {
-		entry, err := reader.Next()
+		err := archive.Entry()
 		if err != nil {
-			if err == archive.ErrArchiveEOF {
+			if err == io.EOF {
 				break
 			} else {
-				fmt.Fprintf(os.Stderr, "Error Next: %v\n", err.Error())
+				fmt.Fprintf(os.Stderr, "Error Entry: %v\n", err.Error())
 				continue
 			}
-		}
-
-		stat := entry.Stat()
-		if stat.Mode()&os.ModeType != 0 || stat.IsDir() {
-			continue
 		}
 
 		if !opts.Quiet {
-			size := reader.Size()
-			bar.Set(size)
+			bar.Increment()
 		}
 
-		pathname := entry.PathName()
+		size := archive.Size()
+		pathname := archive.Name()
+
+		buf := make([]byte, size)
+		for size > 0 {
+			n, err := archive.Read(buf)
+			if err != nil && err != io.EOF {
+				break
+			}
+			size -= n
+		}
+
+		if size > 0 {
+			fmt.Printf("Error Read\n")
+			continue
+		}
 
 		if isImage(pathname) {
-			buf := new(bytes.Buffer)
-			_, err := buf.ReadFrom(reader)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error ReadFrom: %v\n", err.Error())
-				continue
-			}
-
-			img, err := decodeImage(bytes.NewReader(buf.Bytes()), pathname)
+			img, err := decodeImage(bytes.NewReader(buf), pathname)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error Decode: %v\n", err.Error())
 				continue
 			}
 
 			if opts.NoRGB && !isGrayScale(img) {
-				copyFile(bytes.NewReader(buf.Bytes()), filepath.Join(workdir, filepath.Base(pathname)))
+				copyFile(bytes.NewReader(buf), filepath.Join(workdir, filepath.Base(pathname)))
 				continue
 			}
 
@@ -271,7 +265,7 @@ func convertArchive(file string) {
 				go convertImage(img, 0, pathname)
 			}
 		} else {
-			copyFile(reader, filepath.Join(workdir, filepath.Base(pathname)))
+			copyFile(bytes.NewReader(buf), filepath.Join(workdir, filepath.Base(pathname)))
 		}
 	}
 	wg.Wait()
@@ -368,64 +362,72 @@ func saveArchive(file string) {
 	z.Close()
 }
 
-// Unpacks archive to directory
-func unpackArchive(file string, dir string) {
-	f, err := os.Open(file)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error Open: %v\n", err.Error())
-		return
-	}
-	defer f.Close()
-
-	reader, err := archive.NewReader(f)
+// Lists contents of archive
+func listArchive(file string) []string {
+	var contents []string
+	archive, err := unarr.NewArchive(file)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error NewReader: %v\n", err.Error())
-		return
 	}
-	defer reader.Free()
-	defer reader.Close()
+	defer archive.Close()
 
 	for {
-		entry, err := reader.Next()
+		err := archive.Entry()
 		if err != nil {
-			if err == archive.ErrArchiveEOF {
+			if err == io.EOF {
 				break
 			} else {
+				fmt.Fprintf(os.Stderr, "Error Entry: %v\n", err.Error())
 				continue
 			}
 		}
 
-		if entry.Stat().Mode()&os.ModeType == 0 {
-			err = copyFile(reader, filepath.Join(dir, entry.PathName()))
-		}
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err.Error())
-		}
+		pathname := archive.Name()
+		contents = append(contents, pathname)
 	}
+
+	return contents
 }
 
 // Extracts cover from archive
 func coverArchive(file string) (image.Image, error) {
-	tmpdir, _ := ioutil.TempDir(os.TempDir(), "cbc")
-	defer os.RemoveAll(tmpdir)
+	var images []string
 
-	unpackArchive(file, tmpdir)
-
-	images := getImages(tmpdir)
-	if len(images) == 0 {
-		return nil, errors.New("No images")
+	contents := listArchive(file)
+	for _, c := range contents {
+		if isImage(c) {
+			images = append(images, c)
+		}
 	}
 
 	cover := getCover(images)
 
-	p, err := os.Open(cover)
+	archive, err := unarr.NewArchive(file)
 	if err != nil {
 		return nil, err
 	}
-	defer p.Close()
+	defer archive.Close()
 
-	img, err := decodeImage(p, cover)
+	err = archive.EntryFor(cover)
+	if err != nil {
+		return nil, err
+	}
+
+	size := archive.Size()
+	buf := make([]byte, size)
+	for size > 0 {
+		n, err := archive.Read(buf)
+		if err != nil && err != io.EOF {
+			break
+		}
+		size -= n
+	}
+
+	if size > 0 {
+		return nil, errors.New("Error Read")
+	}
+
+	img, err := decodeImage(bytes.NewReader(buf), cover)
 	if err != nil {
 		return nil, err
 	}
@@ -759,7 +761,7 @@ func convertComic(file string, info os.FileInfo) {
 // Parses command line flags
 func parseFlags() {
 	opts = options{}
-	kingpin.Version("CBconvert 0.1.0")
+	kingpin.Version("CBconvert 0.2.0")
 	kingpin.CommandLine.Help = "Comic Book convert tool."
 	kingpin.Flag("png", "encode images to PNG instead of JPEG").Short('p').BoolVar(&opts.ToPNG)
 	kingpin.Flag("bmp", "encode images to 4-Bit BMP instead of JPEG").Short('b').BoolVar(&opts.ToBMP)
