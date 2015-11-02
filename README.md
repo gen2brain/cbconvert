@@ -6,11 +6,10 @@ Introduction
 
 CBconvert is a [Comic Book](http://en.wikipedia.org/wiki/Comic_Book_Archive_file) convert tool.
 
-
 Features
 --------
 
- - reads rar, zip, 7z, gz, bz2, cbr, cbz, cb7, cbt, pdf and plain directory
+ - reads rar, zip, 7z, gz, bz2, cbr, cbz, cb7, cbt, pdf, epub, xps and plain directory
  - always saves processed comic in cbz (zip) format
  - images can be converted to JPEG, PNG or 4-Bit BMP (16 colors) format
  - choose resize algorithm (NearestNeighbor, Bilinear, Bicubic, MitchellNetravali, Lanczos2/3)
@@ -22,31 +21,6 @@ Download
 
  - [Windows static build](https://github.com/gen2brain/cbconvert/releases/download/0.2.0/cbconvert-0.2.0.zip)
  - [Linux 64bit build](https://github.com/gen2brain/cbconvert/releases/download/0.2.0/cbconvert-0.2.0.tar.gz)
-
-Compile
--------
-
-Install poppler, poppler-glib, cairo and imagemagick dev packages:
-
-    apt-get install libpoppler-glib-dev libcairo2-dev libmagickcore-dev libmagickwand-dev
-
-Install go package:
-
-    go get github.com/gen2brain/cbconvert
-    go install github.com/gen2brain/cbconvert && cbconvert
-
-Dependencies
-------------
-
-    go get github.com/cheggaaa/go-poppler
-    go get github.com/cheggaaa/pb
-    go get github.com/gen2brain/go-unarr
-    go get github.com/gographics/imagick/imagick
-    go get github.com/hotei/bmp
-    go get github.com/nfnt/resize
-    go get github.com/skarademir/naturalsort
-    go get github.com/ungerik/go-cairo
-    go get gopkg.in/alecthomas/kingpin.v2
 
 Using
 -----
@@ -93,3 +67,42 @@ Convert all images in archive to 4bit BMP image and save result in ~/comics dire
 Generate thumbnails by freedesktop specification in ~/.thumbnails/normal directory, Lanczos3 algorithm is used for resizing:
 
     cbconvert --interpolation=5 --outdir ~/.thumbnails/normal --thumbnail /media/comics/GrooTheWanderer/
+
+Compile
+-------
+
+Install imagemagick dev packages:
+
+    apt-get install libmagickcore-dev libmagickwand-dev
+
+Compile latest MuPDF:
+
+    git clone git://git.ghostscript.com/mupdf.git && cd mupdf
+    git submodule update --init --recursive
+    HAVE_X11=no HAVE_GLFW=no HAVE_GLUT=no WANT_CURL=no make && make install
+
+Compile unarr library:
+
+    git clone https://github.com/zeniko/unarr && cd unarr
+    mkdir lzma920 && cd lzma920 && curl -L http://www.7-zip.org/a/lzma920.tar.bz2 | tar -xjvp && cd ..
+    curl -L http://zlib.net/zlib-1.2.8.tar.gz | tar -xzvp
+    curl -L http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz | tar -xzvp
+    curl -L https://gist.githubusercontent.com/gen2brain/89fe506863be3fb139e8/raw/8783a7d81e22ad84944d146c5e33beab6dffc641/unarr-makefile.patch | patch -p1
+    CFLAGS="-DHAVE_7Z -DHAVE_ZLIB -DHAVE_BZIP2 -I./lzma920/C -I./zlib-1.2.8 -I./bzip2-1.0.6" make
+    cp build/debug/libunarr.a /usr/lib64/ && cp unarr.h /usr/include
+
+Install dependencies:
+
+    go get github.com/cheggaaa/pb
+	go get github.com/gen2brain/go-fitz
+    go get github.com/gen2brain/go-unarr
+    go get github.com/gographics/imagick/imagick
+    go get github.com/hotei/bmp
+    go get github.com/nfnt/resize
+    go get github.com/skarademir/naturalsort
+    go get gopkg.in/alecthomas/kingpin.v2
+
+Install go package:
+
+    go get github.com/gen2brain/cbconvert
+    go install github.com/gen2brain/cbconvert

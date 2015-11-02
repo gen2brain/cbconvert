@@ -39,8 +39,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/cheggaaa/go-poppler"
 	"github.com/cheggaaa/pb"
+	"github.com/gen2brain/go-fitz"
 	"github.com/gen2brain/go-unarr"
 	"github.com/gographics/imagick/imagick"
 	_ "github.com/hotei/bmp"
@@ -154,17 +154,17 @@ func convertImage(img image.Image, index int, pathName string) {
 	<-throttle
 }
 
-// Converts pdf file to cbz
-func convertPDF(file string) {
+// Converts PDF/EPUB/XPS document to CBZ
+func convertDocument(file string) {
 	workdir, _ = ioutil.TempDir(os.TempDir(), "cbc")
 
-	doc, err := poppler.Open(file)
+	doc, err := fitz.NewDocument(file)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Skipping %s, error: %v", file, err.Error())
 		return
 	}
 
-	npages := doc.GetNPages()
+	npages := doc.Pages()
 
 	var bar *pb.ProgressBar
 	if !opts.Quiet {
@@ -179,23 +179,19 @@ func convertPDF(file string) {
 			bar.Increment()
 		}
 
-		page := doc.GetPage(n)
-		images := page.Images()
+		img, err := doc.Image(n)
 
-		if len(images) == 1 {
+		if err == nil && img != nil {
 			throttle <- 1
 			wg.Add(1)
 
-			surface := images[0].GetSurface()
-			go convertImage(surface.GetImage(), page.Index(), "")
-		} else {
-			// FIXME merge images?
+			go convertImage(img, n, "")
 		}
 	}
 	wg.Wait()
 }
 
-// Converts archive to cbz
+// Converts archive to CBZ
 func convertArchive(file string) {
 	workdir, _ = ioutil.TempDir(os.TempDir(), "cbc")
 
@@ -271,7 +267,7 @@ func convertArchive(file string) {
 	wg.Wait()
 }
 
-// Converts directory to cbz
+// Converts directory to CBZ
 func convertDirectory(path string) {
 	workdir, _ = ioutil.TempDir(os.TempDir(), "cbc")
 
@@ -318,7 +314,7 @@ func convertDirectory(path string) {
 	wg.Wait()
 }
 
-// Saves workdir to cbz archive
+// Saves workdir to CBZ archive
 func saveArchive(file string) {
 	defer os.RemoveAll(workdir)
 
@@ -435,28 +431,23 @@ func coverArchive(file string) (image.Image, error) {
 	return img, nil
 }
 
-// Extracts cover from pdf
-func coverPDF(file string) (image.Image, error) {
-	doc, err := poppler.Open(file)
+// Extracts cover from document
+func coverDocument(file string) (image.Image, error) {
+	doc, err := fitz.NewDocument(file)
 	if err != nil {
 		return nil, err
 	}
 
-	page := doc.GetPage(0)
-	images := page.Images()
-
-	if len(images) == 1 {
-		surface := images[0].GetSurface()
-		img := surface.GetImage()
-
-		if img == nil {
-			return nil, errors.New("Image is nil")
-		}
-
-		return img, nil
+	img, err := doc.Image(0)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, nil
+	if img == nil {
+		return nil, errors.New("Image is nil")
+	}
+
+	return img, nil
 }
 
 // Extracts cover from directory
@@ -489,7 +480,7 @@ func getFiles() []string {
 
 	walkFiles := func(fp string, f os.FileInfo, err error) error {
 		if !f.IsDir() {
-			if isComic(fp) {
+			if isArchive(fp) || isDocument(fp) {
 				if isSize(f.Size()) {
 					files = append(files, fp)
 				}
@@ -507,7 +498,7 @@ func getFiles() []string {
 		}
 
 		if !stat.IsDir() {
-			if isComic(path) {
+			if isArchive(path) || isDocument(path) {
 				if isSize(stat.Size()) {
 					files = append(files, path)
 				}
@@ -518,7 +509,7 @@ func getFiles() []string {
 			} else {
 				fs, _ := ioutil.ReadDir(path)
 				for _, f := range fs {
-					if isComic(f.Name()) {
+					if isArchive(f.Name()) || isArchive(f.Name()) {
 						if isSize(f.Size()) {
 							files = append(files, f.Name())
 						}
@@ -580,9 +571,20 @@ func getCover(images []string) string {
 }
 
 // Checks if file is comic
-func isComic(f string) bool {
-	var types = []string{".rar", ".zip", ".7z", ".gz", ".bz2",
-		".cbr", ".cbz", ".cb7", ".cbt", ".pdf"}
+func isArchive(f string) bool {
+	var types = []string{".rar", ".zip", ".7z", ".gz",
+		".bz2", ".cbr", ".cbz", ".cb7", ".cbt"}
+	for _, t := range types {
+		if strings.ToLower(filepath.Ext(f)) == t {
+			return true
+		}
+	}
+	return false
+}
+
+// Checks if file is document
+func isDocument(f string) bool {
+	var types = []string{".pdf", ".epub", ".xps"}
 	for _, t := range types {
 		if strings.ToLower(filepath.Ext(f)) == t {
 			return true
@@ -665,8 +667,8 @@ func extractCover(file string, info os.FileInfo) {
 	var cover image.Image
 	if info.IsDir() {
 		cover, err = coverDirectory(file)
-	} else if strings.ToLower(filepath.Ext(file)) == ".pdf" {
-		cover, err = coverPDF(file)
+	} else if isDocument(file) {
+		cover, err = coverDocument(file)
 	} else {
 		cover, err = coverArchive(file)
 	}
@@ -698,8 +700,8 @@ func extractThumbnail(file string, info os.FileInfo) {
 	var cover image.Image
 	if info.IsDir() {
 		cover, err = coverDirectory(file)
-	} else if strings.ToLower(filepath.Ext(file)) == ".pdf" {
-		cover, err = coverPDF(file)
+	} else if isDocument(file) {
+		cover, err = coverDocument(file)
 	} else {
 		cover, err = coverArchive(file)
 	}
@@ -749,8 +751,8 @@ func convertComic(file string, info os.FileInfo) {
 	if info.IsDir() {
 		convertDirectory(file)
 		saveArchive(file)
-	} else if strings.ToLower(filepath.Ext(file)) == ".pdf" {
-		convertPDF(file)
+	} else if isDocument(file) {
+		convertDocument(file)
 		saveArchive(file)
 	} else {
 		convertArchive(file)
@@ -761,7 +763,7 @@ func convertComic(file string, info os.FileInfo) {
 // Parses command line flags
 func parseFlags() {
 	opts = options{}
-	kingpin.Version("CBconvert 0.2.0")
+	kingpin.Version("CBconvert 0.3.0")
 	kingpin.CommandLine.Help = "Comic Book convert tool."
 	kingpin.Flag("png", "encode images to PNG instead of JPEG").Short('p').BoolVar(&opts.ToPNG)
 	kingpin.Flag("bmp", "encode images to 4-Bit BMP instead of JPEG").Short('b').BoolVar(&opts.ToBMP)
