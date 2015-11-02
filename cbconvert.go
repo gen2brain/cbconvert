@@ -560,6 +560,10 @@ func getImages(path string) []string {
 
 // Returns the filename that is the most likely to be the cover
 func getCover(images []string) string {
+	if len(images) == 0 {
+		return ""
+	}
+
 	for _, i := range images {
 		if strings.HasPrefix(i, "cover") || strings.HasPrefix(i, "front") {
 			return i

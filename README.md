@@ -20,7 +20,9 @@ Download
 --------
 
  - [Windows static build](https://github.com/gen2brain/cbconvert/releases/download/0.3.0/cbconvert-0.3.0.zip)
+
  - [Linux 64bit build](https://github.com/gen2brain/cbconvert/releases/download/0.3.0/cbconvert-0.3.0.tar.gz)
+ - [Linux 64bit static build](https://github.com/gen2brain/cbconvert/releases/download/0.3.0/cbconvert-0.3.0-static.tar.gz)
 
 Using
 -----

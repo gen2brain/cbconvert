@@ -5,8 +5,8 @@ mkdir -p build
 CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o build/cbconvert
 strip build/cbconvert
 
-#CGO_LDFLAGS="-lm -lz -ldl -lltdl -lfreetype -static-libgcc" CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -x -o build/cbconvert-static --ldflags '-extldflags "-static"'
-#strip build/cbconvert-static
+CGO_LDFLAGS="-ldl -lltdl -lfreetype -lm -lz -static-libgcc" CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o build/cbconvert-static --ldflags '-extldflags "-static"'
+strip build/cbconvert-static
 
 CGO_LDFLAGS="-L/usr/i686-pc-mingw32/usr/lib" \
 CGO_CFLAGS="-I/usr/i686-pc-mingw32/usr/include -Wno-poison-system-directories" \
