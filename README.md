@@ -9,8 +9,8 @@ CBconvert is a [Comic Book](http://en.wikipedia.org/wiki/Comic_Book_Archive_file
 Features
 --------
 
- - reads rar, zip, 7z, gz, bz2, cbr, cbz, cb7, cbt, pdf, epub, xps and plain directory
- - always saves processed comic in cbz (zip) format
+ - reads RAR, ZIP, 7Z, GZ, BZ2, CBR, CBZ, CB7, CBT, PDF, EPUB, XPS and plain directory
+ - always saves processed comic in CBZ (ZIP) format
  - images can be converted to JPEG, PNG or 4-Bit BMP (16 colors) format
  - choose resize algorithm (NearestNeighbor, Bilinear, Bicubic, MitchellNetravali, Lanczos2/3)
  - export covers from comics
