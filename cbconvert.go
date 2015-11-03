@@ -87,7 +87,7 @@ type options struct {
 	ToBMP     bool   // encode images to 4-Bit BMP (16 colors) instead of JPEG
 	ToGIF     bool   // encode images to GIF instead of JPEG
 	Quality   int    // JPEG image quality
-	NoRGB     bool   // do not convert images with RGB colorspace
+	NoRGB     bool   // do not convert images that have RGB colorspace
 	Width     int    // image width
 	Height    int    // image height
 	Filter    int    // 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
@@ -95,6 +95,7 @@ type options struct {
 	Cover     bool   // extract cover
 	Thumbnail bool   // extract cover thumbnail (freedesktop spec.)
 	Outdir    string // output directory
+	Grayscale bool   // convert images to grayscale (monochromatic)
 	Recursive bool   // process subdirectories recursively
 	Size      int64  // process only files larger then size (in MB)
 	Quiet     bool   // hide console output
@@ -127,10 +128,15 @@ func convertImage(img image.Image, index int, pathName string) {
 	}
 
 	var i image.Image
+
 	if opts.Width > 0 || opts.Height > 0 {
 		i = imaging.Resize(img, opts.Width, opts.Height, filters[opts.Filter])
 	} else {
 		i = img
+	}
+
+	if opts.Grayscale {
+		i = imaging.Grayscale(img)
 	}
 
 	if opts.ToPNG {
@@ -160,13 +166,18 @@ func convertImage(img image.Image, index int, pathName string) {
 		w.SetColor("black")
 		defer w.Destroy()
 
+		var cs imagick.ColorspaceType = imagick.COLORSPACE_SRGB
+		if opts.Grayscale {
+			cs = imagick.COLORSPACE_GRAY
+		}
+
 		mw.SetImageFormat("BMP3")
 		mw.SetImageBackgroundColor(w)
 		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_REMOVE)
 		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_DEACTIVATE)
 		mw.SetImageMatte(false)
 		mw.SetImageCompression(imagick.COMPRESSION_NO)
-		mw.QuantizeImage(16, imagick.COLORSPACE_SRGB, 8, true, true)
+		mw.QuantizeImage(16, cs, 8, true, true)
 		mw.WriteImage(filename)
 	} else if opts.ToGIF {
 		// convert image to GIF
@@ -182,12 +193,18 @@ func convertImage(img image.Image, index int, pathName string) {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error ReadImageBlob: %v\n", err.Error())
 		}
+
+		var cs imagick.ColorspaceType = imagick.COLORSPACE_SRGB
+		if opts.Grayscale {
+			cs = imagick.COLORSPACE_GRAY
+		}
+
 		mw.SetImageFormat("GIF")
 		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_REMOVE)
 		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_DEACTIVATE)
 		mw.SetImageMatte(false)
 		mw.SetImageCompression(imagick.COMPRESSION_LZW)
-		mw.QuantizeImage(16, imagick.COLORSPACE_SRGB, 8, true, true)
+		mw.QuantizeImage(256, cs, 8, true, true)
 		mw.WriteImage(filename)
 	} else {
 		// convert image to JPEG (default)
@@ -734,6 +751,10 @@ func extractCover(file string, info os.FileInfo) {
 		cover = imaging.Resize(cover, opts.Width, opts.Height, filters[opts.Filter])
 	}
 
+	if opts.Grayscale {
+		cover = imaging.Grayscale(cover)
+	}
+
 	filename := filepath.Join(opts.Outdir, fmt.Sprintf("%s.jpg", getBasename(file)))
 	f, err := os.Create(filename)
 	if err != nil {
@@ -766,6 +787,10 @@ func extractThumbnail(file string, info os.FileInfo) {
 		cover = imaging.Resize(cover, opts.Width, opts.Height, filters[opts.Filter])
 	} else {
 		cover = imaging.Resize(cover, 256, 0, filters[opts.Filter])
+	}
+
+	if opts.Grayscale {
+		cover = imaging.Grayscale(cover)
 	}
 
 	imagick.Initialize()
@@ -820,14 +845,15 @@ func parseFlags() {
 	kingpin.Flag("width", "image width").Default(strconv.Itoa(0)).Short('w').IntVar(&opts.Width)
 	kingpin.Flag("height", "image height").Default(strconv.Itoa(0)).Short('h').IntVar(&opts.Height)
 	kingpin.Flag("quality", "JPEG image quality").Short('q').Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
-	kingpin.Flag("norgb", "do not convert images with RGB colorspace").Short('n').BoolVar(&opts.NoRGB)
 	kingpin.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Short('f').
 		Default(strconv.Itoa(NearestNeighbor)).IntVar(&opts.Filter)
+	kingpin.Flag("norgb", "do not convert images that have RGB colorspace").Short('n').BoolVar(&opts.NoRGB)
 	kingpin.Flag("suffix", "add suffix to file basename").Short('s').StringVar(&opts.Suffix)
 	kingpin.Flag("cover", "extract cover").Short('c').BoolVar(&opts.Cover)
 	kingpin.Flag("thumbnail", "extract cover thumbnail (freedesktop spec.)").Short('t').BoolVar(&opts.Thumbnail)
 	kingpin.Flag("outdir", "output directory").Default(".").Short('o').StringVar(&opts.Outdir)
 	kingpin.Flag("size", "process only files larger then size (in MB)").Short('m').Default(strconv.Itoa(0)).Int64Var(&opts.Size)
+	kingpin.Flag("grayscale", "convert images to grayscale (monochromatic)").Short('G').BoolVar(&opts.Grayscale)
 	kingpin.Flag("recursive", "process subdirectories recursively").Short('R').BoolVar(&opts.Recursive)
 	kingpin.Flag("quiet", "hide console output").Short('Q').BoolVar(&opts.Quiet)
 	kingpin.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&arguments)

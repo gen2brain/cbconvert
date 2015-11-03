@@ -48,6 +48,7 @@ Using
       -t, --thumbnail      extract cover thumbnail (freedesktop spec.)
       -o, --outdir="."     output directory
       -m, --size=0         process only files larger then size (in MB)
+      -G, --grayscale      convert images to grayscale (monochromatic)
       -R, --recursive      process subdirectories recursively
       -Q, --quiet          hide console output
 
