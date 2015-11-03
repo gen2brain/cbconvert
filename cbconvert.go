@@ -62,7 +62,8 @@ var (
 // Command line options
 type options struct {
 	ToPNG         bool   // encode images to PNG instead of JPEG
-	ToBMP         bool   // encode images to 4-Bit BMP instead of JPEG
+	ToBMP         bool   // encode images to 4-Bit BMP (16 colors) instead of JPEG
+	ToGIF         bool   // encode images to GIF instead of JPEG
 	Quality       int    // JPEG image quality
 	NoRGB         bool   // do not convert images with RGB colorspace
 	Width         uint   // image width
@@ -92,6 +93,8 @@ func convertImage(img image.Image, index int, pathName string) {
 		ext = "png"
 	} else if opts.ToBMP {
 		ext = "bmp"
+	} else if opts.ToGIF {
+		ext = "gif"
 	}
 
 	var filename string
@@ -118,7 +121,7 @@ func convertImage(img image.Image, index int, pathName string) {
 		defer f.Close()
 		png.Encode(f, i)
 	} else if opts.ToBMP {
-		// convert image to 4-Bit - 16 colors BMP
+		// convert image to 4-Bit BMP (16 colors)
 		imagick.Initialize()
 
 		mw := imagick.NewMagickWand()
@@ -143,6 +146,22 @@ func convertImage(img image.Image, index int, pathName string) {
 		mw.SetImageCompression(imagick.COMPRESSION_NO)
 		mw.QuantizeImage(16, imagick.COLORSPACE_SRGB, 8, true, true)
 		mw.WriteImage(fmt.Sprintf("BMP3:%s", filename))
+	} else if opts.ToGIF {
+		// convert image to GIF
+		imagick.Initialize()
+
+		mw := imagick.NewMagickWand()
+		defer mw.Destroy()
+
+		b := new(bytes.Buffer)
+		jpeg.Encode(b, i, &jpeg.Options{jpeg.DefaultQuality})
+
+		err := mw.ReadImageBlob(b.Bytes())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error ReadImageBlob: %v\n", err.Error())
+		}
+		mw.SetImageFormat("gif")
+		mw.WriteImage(filename)
 	} else {
 		// convert image to JPEG (default)
 		f, err := os.Create(filename)
@@ -772,7 +791,8 @@ func parseFlags() {
 	kingpin.Version("CBconvert 0.3.0")
 	kingpin.CommandLine.Help = "Comic Book convert tool."
 	kingpin.Flag("png", "encode images to PNG instead of JPEG").Short('p').BoolVar(&opts.ToPNG)
-	kingpin.Flag("bmp", "encode images to 4-Bit BMP instead of JPEG").Short('b').BoolVar(&opts.ToBMP)
+	kingpin.Flag("bmp", "encode images to 4-Bit BMP (16 colors) instead of JPEG").Short('b').BoolVar(&opts.ToBMP)
+	kingpin.Flag("gif", "encode images to GIF instead of JPEG").Short('g').BoolVar(&opts.ToGIF)
 	kingpin.Flag("width", "image width").Default(strconv.Itoa(0)).Short('w').UintVar(&opts.Width)
 	kingpin.Flag("height", "image height").Default(strconv.Itoa(0)).Short('h').UintVar(&opts.Height)
 	kingpin.Flag("quality", "JPEG image quality").Short('q').Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
@@ -797,6 +817,7 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
 	go func() {
 		for _ = range c {
+			fmt.Fprintf(os.Stderr, "Aborting\n")
 			os.RemoveAll(workdir)
 			os.Exit(1)
 		}

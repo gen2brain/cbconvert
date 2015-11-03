@@ -11,7 +11,7 @@ Features
 
  - reads RAR, ZIP, 7Z, GZ, BZ2, CBR, CBZ, CB7, CBT, PDF, EPUB, XPS and plain directory
  - always saves processed comic in CBZ (ZIP) archive format
- - images can be converted to JPEG, PNG or 4-Bit BMP (16 colors) file format
+ - images can be converted to JPEG, PNG, GIF or 4-Bit BMP (16 colors) file format
  - reads JPEG, PNG, BMP, GIF, TIFF and WEBP file formats
  - choose resize algorithm (NearestNeighbor, Bilinear, Bicubic, MitchellNetravali, Lanczos2/3)
  - export covers from comics
@@ -20,10 +20,10 @@ Features
 Download
 --------
 
- - [Windows static build](https://github.com/gen2brain/cbconvert/releases/download/0.3.0/cbconvert-0.3.0.zip)
+ - [Windows binary](https://github.com/gen2brain/cbconvert/releases/download/0.3.0/cbconvert-0.3.0.zip)
 
- - [Linux 64bit build](https://github.com/gen2brain/cbconvert/releases/download/0.3.0/cbconvert-0.3.0.tar.gz)
- - [Linux 64bit static build](https://github.com/gen2brain/cbconvert/releases/download/0.3.0/cbconvert-0.3.0-static.tar.gz)
+ - [Linux 64bit binary](https://github.com/gen2brain/cbconvert/releases/download/0.3.0/cbconvert-0.3.0.tar.gz)
+ - [Linux 64bit static binary](https://github.com/gen2brain/cbconvert/releases/download/0.3.0/cbconvert-0.3.0-static.tar.gz)
 
 Using
 -----
@@ -37,6 +37,7 @@ Using
           --version          Show application version.
       -p, --png              encode images to PNG instead of JPEG
       -b, --bmp              encode images to 4-Bit BMP instead of JPEG
+      -g, --gif              encode images to GIF instead of JPEG
       -w, --width=0          image width
       -h, --height=0         image height
       -q, --quality=75       JPEG image quality
