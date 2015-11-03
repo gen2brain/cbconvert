@@ -10,8 +10,9 @@ Features
 --------
 
  - reads RAR, ZIP, 7Z, GZ, BZ2, CBR, CBZ, CB7, CBT, PDF, EPUB, XPS and plain directory
- - always saves processed comic in CBZ (ZIP) format
- - images can be converted to JPEG, PNG or 4-Bit BMP (16 colors) format
+ - always saves processed comic in CBZ (ZIP) archive format
+ - images can be converted to JPEG, PNG or 4-Bit BMP (16 colors) file format
+ - reads JPEG, PNG, BMP, GIF, TIFF and WEBP file formats
  - choose resize algorithm (NearestNeighbor, Bilinear, Bicubic, MitchellNetravali, Lanczos2/3)
  - export covers from comics
  - create thumbnails from covers by [freedesktop](http://www.freedesktop.org/wiki/) specification
@@ -98,12 +99,14 @@ Compile unarr library:
 Install dependencies:
 
     go get github.com/cheggaaa/pb
-	go get github.com/gen2brain/go-fitz
+    go get github.com/gen2brain/go-fitz
     go get github.com/gen2brain/go-unarr
     go get github.com/gographics/imagick/imagick
     go get github.com/hotei/bmp
     go get github.com/nfnt/resize
     go get github.com/skarademir/naturalsort
+    go get golang.org/x/image/tiff
+    go get golang.org/x/image/webp    
     go get gopkg.in/alecthomas/kingpin.v2
 
 Install go package:
