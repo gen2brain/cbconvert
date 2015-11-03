@@ -46,6 +46,8 @@ import (
 	_ "github.com/hotei/bmp"
 	"github.com/nfnt/resize"
 	"github.com/skarademir/naturalsort"
+	_ "golang.org/x/image/tiff"
+	_ "golang.org/x/image/webp"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -574,7 +576,7 @@ func getCover(images []string) string {
 	return images[0]
 }
 
-// Checks if file is comic
+// Checks if file is archive
 func isArchive(f string) bool {
 	var types = []string{".rar", ".zip", ".7z", ".gz",
 		".bz2", ".cbr", ".cbz", ".cb7", ".cbt"}
@@ -599,8 +601,8 @@ func isDocument(f string) bool {
 
 // Checks if file is image
 func isImage(f string) bool {
-	var types = []string{".jpg", ".jpeg", ".jpe",
-		".png", ".gif", ".bmp"}
+	var types = []string{".jpg", ".jpeg", ".jpe", ".png",
+		".gif", ".bmp", ".tiff", ".tif", ".webp"}
 	for _, t := range types {
 		if strings.ToLower(filepath.Ext(f)) == t {
 			return true
