@@ -41,8 +41,9 @@ Using
       -w, --width=0        image width
       -h, --height=0       image height
       -q, --quality=75     JPEG image quality
-      -n, --norgb          do not convert images with RGB colorspace
-      -f, --filter=0       0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
+      -f, --filter=2       0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
+      -N, --no_rgb         do not convert images that have RGB colorspace
+      -I, --no_nonimage    remove non image files from archive
       -s, --suffix=SUFFIX  add suffix to file basename
       -c, --cover          extract cover
       -t, --thumbnail      extract cover thumbnail (freedesktop spec.)

@@ -83,22 +83,23 @@ var (
 
 // Command line options
 type options struct {
-	ToPNG     bool   // encode images to PNG instead of JPEG
-	ToBMP     bool   // encode images to 4-Bit BMP (16 colors) instead of JPEG
-	ToGIF     bool   // encode images to GIF instead of JPEG
-	Quality   int    // JPEG image quality
-	NoRGB     bool   // do not convert images that have RGB colorspace
-	Width     int    // image width
-	Height    int    // image height
-	Filter    int    // 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
-	Suffix    string // add suffix to file basename
-	Cover     bool   // extract cover
-	Thumbnail bool   // extract cover thumbnail (freedesktop spec.)
-	Outdir    string // output directory
-	Grayscale bool   // convert images to grayscale (monochromatic)
-	Recursive bool   // process subdirectories recursively
-	Size      int64  // process only files larger then size (in MB)
-	Quiet     bool   // hide console output
+	ToPNG      bool   // encode images to PNG instead of JPEG
+	ToBMP      bool   // encode images to 4-Bit BMP (16 colors) instead of JPEG
+	ToGIF      bool   // encode images to GIF instead of JPEG
+	Quality    int    // JPEG image quality
+	Width      int    // image width
+	Height     int    // image height
+	Filter     int    // 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
+	NoRGB      bool   // do not convert images that have RGB colorspace
+	NoNonImage bool   // remove non image files from archive
+	Suffix     string // add suffix to file basename
+	Cover      bool   // extract cover
+	Thumbnail  bool   // extract cover thumbnail (freedesktop spec.)
+	Outdir     string // output directory
+	Grayscale  bool   // convert images to grayscale (monochromatic)
+	Recursive  bool   // process subdirectories recursively
+	Size       int64  // process only files larger then size (in MB)
+	Quiet      bool   // hide console output
 }
 
 // Command line arguments
@@ -326,7 +327,9 @@ func convertArchive(file string) {
 				go convertImage(img, 0, pathname)
 			}
 		} else {
-			copyFile(bytes.NewReader(buf), filepath.Join(workdir, filepath.Base(pathname)))
+			if !opts.NoNonImage {
+				copyFile(bytes.NewReader(buf), filepath.Join(workdir, filepath.Base(pathname)))
+			}
 		}
 	}
 	wg.Wait()
@@ -846,8 +849,9 @@ func parseFlags() {
 	kingpin.Flag("height", "image height").Default(strconv.Itoa(0)).Short('h').IntVar(&opts.Height)
 	kingpin.Flag("quality", "JPEG image quality").Short('q').Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
 	kingpin.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Short('f').
-		Default(strconv.Itoa(NearestNeighbor)).IntVar(&opts.Filter)
-	kingpin.Flag("norgb", "do not convert images that have RGB colorspace").Short('n').BoolVar(&opts.NoRGB)
+		Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
+	kingpin.Flag("no_rgb", "do not convert images that have RGB colorspace").Short('N').BoolVar(&opts.NoRGB)
+	kingpin.Flag("no_nonimage", "remove non image files from archive").Short('I').BoolVar(&opts.NoNonImage)
 	kingpin.Flag("suffix", "add suffix to file basename").Short('s').StringVar(&opts.Suffix)
 	kingpin.Flag("cover", "extract cover").Short('c').BoolVar(&opts.Cover)
 	kingpin.Flag("thumbnail", "extract cover thumbnail (freedesktop spec.)").Short('t').BoolVar(&opts.Thumbnail)
