@@ -40,17 +40,39 @@ import (
 	"syscall"
 
 	"github.com/cheggaaa/pb"
+	"github.com/disintegration/imaging"
 	"github.com/gen2brain/go-fitz"
 	"github.com/gen2brain/go-unarr"
 	"github.com/gographics/imagick/imagick"
 	_ "github.com/hotei/bmp"
-	"github.com/nfnt/resize"
 	"github.com/skarademir/naturalsort"
 	_ "golang.org/x/image/tiff"
 	_ "golang.org/x/image/webp"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
+// Resample filters
+const (
+	NearestNeighbor   int = iota // Fastest resampling filter, no antialiasing
+	Box                          // Box filter (averaging pixels)
+	Linear                       // Bilinear filter, smooth and reasonably fast
+	MitchellNetravali            // А smooth bicubic filter
+	CatmullRom                   // A sharp bicubic filter
+	Gaussian                     // Blurring filter that uses gaussian function, useful for noise removal
+	Lanczos                      // High-quality resampling filter, it's slower than cubic filters
+)
+
+var filters = map[int]imaging.ResampleFilter{
+	NearestNeighbor:   imaging.NearestNeighbor,
+	Box:               imaging.Box,
+	Linear:            imaging.Linear,
+	MitchellNetravali: imaging.MitchellNetravali,
+	CatmullRom:        imaging.CatmullRom,
+	Gaussian:          imaging.Gaussian,
+	Lanczos:           imaging.Lanczos,
+}
+
+// Globals
 var (
 	opts    options
 	workdir string
@@ -66,9 +88,9 @@ type options struct {
 	ToGIF     bool   // encode images to GIF instead of JPEG
 	Quality   int    // JPEG image quality
 	NoRGB     bool   // do not convert images with RGB colorspace
-	Width     uint   // image width
-	Height    uint   // image height
-	Resize    int    // 0=NearestNeighbor, 1=Bilinear, 2=Bicubic, 3=MitchellNetravali, 4=Lanczos2, 5=Lanczos3
+	Width     int    // image width
+	Height    int    // image height
+	Filter    int    // 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
 	Suffix    string // add suffix to file basename
 	Cover     bool   // extract cover
 	Thumbnail bool   // extract cover thumbnail (freedesktop spec.)
@@ -106,8 +128,7 @@ func convertImage(img image.Image, index int, pathName string) {
 
 	var i image.Image
 	if opts.Width > 0 || opts.Height > 0 {
-		i = resize.Resize(opts.Width, opts.Height, img,
-			resize.InterpolationFunction(opts.Resize))
+		i = imaging.Resize(img, opts.Width, opts.Height, filters[opts.Filter])
 	} else {
 		i = img
 	}
@@ -139,13 +160,14 @@ func convertImage(img image.Image, index int, pathName string) {
 		w.SetColor("black")
 		defer w.Destroy()
 
+		mw.SetImageFormat("BMP3")
 		mw.SetImageBackgroundColor(w)
 		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_REMOVE)
 		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_DEACTIVATE)
 		mw.SetImageMatte(false)
 		mw.SetImageCompression(imagick.COMPRESSION_NO)
 		mw.QuantizeImage(16, imagick.COLORSPACE_SRGB, 8, true, true)
-		mw.WriteImage(fmt.Sprintf("BMP3:%s", filename))
+		mw.WriteImage(filename)
 	} else if opts.ToGIF {
 		// convert image to GIF
 		imagick.Initialize()
@@ -160,7 +182,12 @@ func convertImage(img image.Image, index int, pathName string) {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error ReadImageBlob: %v\n", err.Error())
 		}
-		mw.SetImageFormat("gif")
+		mw.SetImageFormat("GIF")
+		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_REMOVE)
+		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_DEACTIVATE)
+		mw.SetImageMatte(false)
+		mw.SetImageCompression(imagick.COMPRESSION_LZW)
+		mw.QuantizeImage(16, imagick.COLORSPACE_SRGB, 8, true, true)
 		mw.WriteImage(filename)
 	} else {
 		// convert image to JPEG (default)
@@ -704,8 +731,7 @@ func extractCover(file string, info os.FileInfo) {
 	}
 
 	if opts.Width > 0 || opts.Height > 0 {
-		cover = resize.Resize(opts.Width, opts.Height, cover,
-			resize.InterpolationFunction(opts.Resize))
+		cover = imaging.Resize(cover, opts.Width, opts.Height, filters[opts.Filter])
 	}
 
 	filename := filepath.Join(opts.Outdir, fmt.Sprintf("%s.jpg", getBasename(file)))
@@ -737,11 +763,9 @@ func extractThumbnail(file string, info os.FileInfo) {
 	}
 
 	if opts.Width > 0 || opts.Height > 0 {
-		cover = resize.Resize(opts.Width, opts.Height, cover,
-			resize.InterpolationFunction(opts.Resize))
+		cover = imaging.Resize(cover, opts.Width, opts.Height, filters[opts.Filter])
 	} else {
-		cover = resize.Resize(256, 0, cover,
-			resize.InterpolationFunction(opts.Resize))
+		cover = imaging.Resize(cover, 256, 0, filters[opts.Filter])
 	}
 
 	imagick.Initialize()
@@ -760,7 +784,7 @@ func extractThumbnail(file string, info os.FileInfo) {
 	fileuri := "file://" + file
 	filename := filepath.Join(opts.Outdir, fmt.Sprintf("%x.png", md5.Sum([]byte(fileuri))))
 
-	mw.SetImageFormat("png")
+	mw.SetImageFormat("PNG")
 	mw.SetImageProperty("Software", "cbconvert")
 	mw.SetImageProperty("Description", "Thumbnail of "+fileuri)
 	mw.SetImageProperty("Thumb::URI", fileuri)
@@ -793,12 +817,12 @@ func parseFlags() {
 	kingpin.Flag("png", "encode images to PNG instead of JPEG").Short('p').BoolVar(&opts.ToPNG)
 	kingpin.Flag("bmp", "encode images to 4-Bit BMP (16 colors) instead of JPEG").Short('b').BoolVar(&opts.ToBMP)
 	kingpin.Flag("gif", "encode images to GIF instead of JPEG").Short('g').BoolVar(&opts.ToGIF)
-	kingpin.Flag("width", "image width").Default(strconv.Itoa(0)).Short('w').UintVar(&opts.Width)
-	kingpin.Flag("height", "image height").Default(strconv.Itoa(0)).Short('h').UintVar(&opts.Height)
+	kingpin.Flag("width", "image width").Default(strconv.Itoa(0)).Short('w').IntVar(&opts.Width)
+	kingpin.Flag("height", "image height").Default(strconv.Itoa(0)).Short('h').IntVar(&opts.Height)
 	kingpin.Flag("quality", "JPEG image quality").Short('q').Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
 	kingpin.Flag("norgb", "do not convert images with RGB colorspace").Short('n').BoolVar(&opts.NoRGB)
-	kingpin.Flag("resize", "0=NearestNeighbor, 1=Bilinear, 2=Bicubic, 3=MitchellNetravali, 4=Lanczos2, 5=Lanczos3").Short('r').
-		Default(strconv.Itoa(int(resize.Bilinear))).IntVar(&opts.Resize)
+	kingpin.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Short('f').
+		Default(strconv.Itoa(NearestNeighbor)).IntVar(&opts.Filter)
 	kingpin.Flag("suffix", "add suffix to file basename").Short('s').StringVar(&opts.Suffix)
 	kingpin.Flag("cover", "extract cover").Short('c').BoolVar(&opts.Cover)
 	kingpin.Flag("thumbnail", "extract cover thumbnail (freedesktop spec.)").Short('t').BoolVar(&opts.Thumbnail)

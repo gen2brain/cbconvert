@@ -13,7 +13,7 @@ Features
  - always saves processed comic in CBZ (ZIP) archive format
  - images can be converted to JPEG, PNG, GIF or 4-Bit BMP (16 colors) file format
  - reads JPEG, PNG, BMP, GIF, TIFF and WEBP file formats
- - choose resize algorithm (NearestNeighbor, Bilinear, Bicubic, MitchellNetravali, Lanczos2/3)
+ - choose resize algorithm (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
  - export covers from comics
  - create thumbnails from covers by [freedesktop](http://www.freedesktop.org/wiki/) specification
 
@@ -33,27 +33,26 @@ Using
     Comic Book convert tool.
 
     Flags:
-          --help             Show context-sensitive help (also try --help-long and --help-man).
-          --version          Show application version.
-      -p, --png              encode images to PNG instead of JPEG
-      -b, --bmp              encode images to 4-Bit BMP instead of JPEG
-      -g, --gif              encode images to GIF instead of JPEG
-      -w, --width=0          image width
-      -h, --height=0         image height
-      -q, --quality=75       JPEG image quality
-      -n, --norgb            do not convert images with RGB colorspace
-      -r, --resize=1         0=NearestNeighbor, 1=Bilinear, 2=Bicubic, 3=MitchellNetravali, 4=Lanczos2, 5=Lanczos3
-      -s, --suffix=SUFFIX    add suffix to file basename
-      -c, --cover            extract cover
-      -t, --thumbnail        extract cover thumbnail (freedesktop spec.)
-      -o, --outdir="."       output directory
-      -m, --size=0           process only files larger then size (in MB)
-      -R, --recursive        process subdirectories recursively
-      -Q, --quiet            hide console output
+          --help           Show context-sensitive help (also try --help-long and --help-man).
+          --version        Show application version.
+      -p, --png            encode images to PNG instead of JPEG
+      -b, --bmp            encode images to 4-Bit BMP (16 colors) instead of JPEG
+      -g, --gif            encode images to GIF instead of JPEG
+      -w, --width=0        image width
+      -h, --height=0       image height
+      -q, --quality=75     JPEG image quality
+      -n, --norgb          do not convert images with RGB colorspace
+      -f, --filter=0       0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
+      -s, --suffix=SUFFIX  add suffix to file basename
+      -c, --cover          extract cover
+      -t, --thumbnail      extract cover thumbnail (freedesktop spec.)
+      -o, --outdir="."     output directory
+      -m, --size=0         process only files larger then size (in MB)
+      -R, --recursive      process subdirectories recursively
+      -Q, --quiet          hide console output
 
     Args:
       <args>  filename or directory
-
 
 Examples
 --------
@@ -68,9 +67,9 @@ Convert all images in archive to 4bit BMP image and save result in ~/comics dire
 
 [BMP](http://en.wikipedia.org/wiki/BMP_file_format) format is very good choice for black&white pages. Archive size can be smaller 2-3x and file will be readable by comic readers.
 
-Generate thumbnails by freedesktop specification in ~/.thumbnails/normal directory, Lanczos3 algorithm is used for resizing:
+Generate thumbnails by freedesktop specification in ~/.thumbnails/normal directory, Lanczos algorithm is used for resizing:
 
-    cbconvert --resize=5 --outdir ~/.thumbnails/normal --thumbnail /media/comics/GrooTheWanderer/
+    cbconvert --filter=7 --outdir ~/.thumbnails/normal --thumbnail /media/comics/GrooTheWanderer/
 
 Compile
 -------
@@ -100,11 +99,11 @@ Compile unarr library:
 Install dependencies:
 
     go get github.com/cheggaaa/pb
+    go get github.com/disintegration/imaging
     go get github.com/gen2brain/go-fitz
     go get github.com/gen2brain/go-unarr
     go get github.com/gographics/imagick/imagick
     go get github.com/hotei/bmp
-    go get github.com/nfnt/resize
     go get github.com/skarademir/naturalsort
     go get golang.org/x/image/tiff
     go get golang.org/x/image/webp    
