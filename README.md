@@ -42,13 +42,13 @@ Using
       -h, --height=0         image height
       -q, --quality=75       JPEG image quality
       -n, --norgb            do not convert images with RGB colorspace
-      -i, --interpolation=1  0=NearestNeighbor, 1=Bilinear, 2=Bicubic, 3=MitchellNetravali, 4=Lanczos2, 5=Lanczos3
+      -r, --resize=1         0=NearestNeighbor, 1=Bilinear, 2=Bicubic, 3=MitchellNetravali, 4=Lanczos2, 5=Lanczos3
       -s, --suffix=SUFFIX    add suffix to file basename
       -c, --cover            extract cover
       -t, --thumbnail        extract cover thumbnail (freedesktop spec.)
       -o, --outdir="."       output directory
       -m, --size=0           process only files larger then size (in MB)
-      -r, --recursive        process subdirectories recursively
+      -R, --recursive        process subdirectories recursively
       -Q, --quiet            hide console output
 
     Args:
@@ -66,11 +66,11 @@ Convert all images in archive to 4bit BMP image and save result in ~/comics dire
 
     cbconvert --bmp --outdir ~/comics /media/comics/Garfield/Garfield_01.cbz
 
-[BMP](http://en.wikipedia.org/wiki/BMP_file_format) format is uncompressed, for black&white pages very good choice. Archive size can be smaller 2-3x and file will be readable by comic readers.
+[BMP](http://en.wikipedia.org/wiki/BMP_file_format) format is very good choice for black&white pages. Archive size can be smaller 2-3x and file will be readable by comic readers.
 
 Generate thumbnails by freedesktop specification in ~/.thumbnails/normal directory, Lanczos3 algorithm is used for resizing:
 
-    cbconvert --interpolation=5 --outdir ~/.thumbnails/normal --thumbnail /media/comics/GrooTheWanderer/
+    cbconvert --resize=5 --outdir ~/.thumbnails/normal --thumbnail /media/comics/GrooTheWanderer/
 
 Compile
 -------

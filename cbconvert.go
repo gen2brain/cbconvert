@@ -61,21 +61,21 @@ var (
 
 // Command line options
 type options struct {
-	ToPNG         bool   // encode images to PNG instead of JPEG
-	ToBMP         bool   // encode images to 4-Bit BMP (16 colors) instead of JPEG
-	ToGIF         bool   // encode images to GIF instead of JPEG
-	Quality       int    // JPEG image quality
-	NoRGB         bool   // do not convert images with RGB colorspace
-	Width         uint   // image width
-	Height        uint   // image height
-	Interpolation int    // 0=NearestNeighbor, 1=Bilinear, 2=Bicubic, 3=MitchellNetravali, 4=Lanczos2, 5=Lanczos3
-	Suffix        string // add suffix to file basename
-	Cover         bool   // extract cover
-	Thumbnail     bool   // extract cover thumbnail (freedesktop spec.)
-	Outdir        string // output directory
-	Recursive     bool   // process subdirectories recursively
-	Size          int64  // process only files larger then size (in MB)
-	Quiet         bool   // hide console output
+	ToPNG     bool   // encode images to PNG instead of JPEG
+	ToBMP     bool   // encode images to 4-Bit BMP (16 colors) instead of JPEG
+	ToGIF     bool   // encode images to GIF instead of JPEG
+	Quality   int    // JPEG image quality
+	NoRGB     bool   // do not convert images with RGB colorspace
+	Width     uint   // image width
+	Height    uint   // image height
+	Resize    int    // 0=NearestNeighbor, 1=Bilinear, 2=Bicubic, 3=MitchellNetravali, 4=Lanczos2, 5=Lanczos3
+	Suffix    string // add suffix to file basename
+	Cover     bool   // extract cover
+	Thumbnail bool   // extract cover thumbnail (freedesktop spec.)
+	Outdir    string // output directory
+	Recursive bool   // process subdirectories recursively
+	Size      int64  // process only files larger then size (in MB)
+	Quiet     bool   // hide console output
 }
 
 // Command line arguments
@@ -107,7 +107,7 @@ func convertImage(img image.Image, index int, pathName string) {
 	var i image.Image
 	if opts.Width > 0 || opts.Height > 0 {
 		i = resize.Resize(opts.Width, opts.Height, img,
-			resize.InterpolationFunction(opts.Interpolation))
+			resize.InterpolationFunction(opts.Resize))
 	} else {
 		i = img
 	}
@@ -705,7 +705,7 @@ func extractCover(file string, info os.FileInfo) {
 
 	if opts.Width > 0 || opts.Height > 0 {
 		cover = resize.Resize(opts.Width, opts.Height, cover,
-			resize.InterpolationFunction(opts.Interpolation))
+			resize.InterpolationFunction(opts.Resize))
 	}
 
 	filename := filepath.Join(opts.Outdir, fmt.Sprintf("%s.jpg", getBasename(file)))
@@ -738,10 +738,10 @@ func extractThumbnail(file string, info os.FileInfo) {
 
 	if opts.Width > 0 || opts.Height > 0 {
 		cover = resize.Resize(opts.Width, opts.Height, cover,
-			resize.InterpolationFunction(opts.Interpolation))
+			resize.InterpolationFunction(opts.Resize))
 	} else {
 		cover = resize.Resize(256, 0, cover,
-			resize.InterpolationFunction(opts.Interpolation))
+			resize.InterpolationFunction(opts.Resize))
 	}
 
 	imagick.Initialize()
@@ -797,14 +797,14 @@ func parseFlags() {
 	kingpin.Flag("height", "image height").Default(strconv.Itoa(0)).Short('h').UintVar(&opts.Height)
 	kingpin.Flag("quality", "JPEG image quality").Short('q').Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
 	kingpin.Flag("norgb", "do not convert images with RGB colorspace").Short('n').BoolVar(&opts.NoRGB)
-	kingpin.Flag("interpolation", "0=NearestNeighbor, 1=Bilinear, 2=Bicubic, 3=MitchellNetravali, 4=Lanczos2, 5=Lanczos3").Short('i').
-		Default(strconv.Itoa(int(resize.Bilinear))).IntVar(&opts.Interpolation)
+	kingpin.Flag("resize", "0=NearestNeighbor, 1=Bilinear, 2=Bicubic, 3=MitchellNetravali, 4=Lanczos2, 5=Lanczos3").Short('r').
+		Default(strconv.Itoa(int(resize.Bilinear))).IntVar(&opts.Resize)
 	kingpin.Flag("suffix", "add suffix to file basename").Short('s').StringVar(&opts.Suffix)
 	kingpin.Flag("cover", "extract cover").Short('c').BoolVar(&opts.Cover)
 	kingpin.Flag("thumbnail", "extract cover thumbnail (freedesktop spec.)").Short('t').BoolVar(&opts.Thumbnail)
 	kingpin.Flag("outdir", "output directory").Default(".").Short('o').StringVar(&opts.Outdir)
 	kingpin.Flag("size", "process only files larger then size (in MB)").Short('m').Default(strconv.Itoa(0)).Int64Var(&opts.Size)
-	kingpin.Flag("recursive", "process subdirectories recursively").Short('r').BoolVar(&opts.Recursive)
+	kingpin.Flag("recursive", "process subdirectories recursively").Short('R').BoolVar(&opts.Recursive)
 	kingpin.Flag("quiet", "hide console output").Short('Q').BoolVar(&opts.Quiet)
 	kingpin.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&arguments)
 	kingpin.Parse()
