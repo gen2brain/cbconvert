@@ -28,33 +28,54 @@ Download
 Using
 -----
 
-    usage: cbconvert [<flags>] <args>...
+    usage: cbconvert [<flags>] <command> [<args> ...]
 
     Comic Book convert tool.
 
     Flags:
           --help           Show context-sensitive help (also try --help-long and --help-man).
           --version        Show application version.
-      -p, --png            encode images to PNG instead of JPEG
-      -b, --bmp            encode images to 4-Bit BMP (16 colors) instead of JPEG
-      -g, --gif            encode images to GIF instead of JPEG
-      -w, --width=0        image width
-      -h, --height=0       image height
-      -q, --quality=75     JPEG image quality
-      -f, --filter=2       0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
-      -N, --no_rgb         do not convert images that have RGB colorspace
-      -I, --no_nonimage    remove non image files from archive
-      -s, --suffix=SUFFIX  add suffix to file basename
-      -c, --cover          extract cover
-      -t, --thumbnail      extract cover thumbnail (freedesktop spec.)
-      -o, --outdir="."     output directory
-      -m, --size=0         process only files larger then size (in MB)
-      -G, --grayscale      convert images to grayscale (monochromatic)
-      -R, --recursive      process subdirectories recursively
-      -Q, --quiet          hide console output
+      -o, --outdir="."     Output directory
+      -m, --size=0         Process only files larger then size (in MB)
+      -R, --recursive      Process subdirectories recursively
+      -Q, --quiet          Hide console output
 
     Args:
       <args>  filename or directory
+
+    Commands:
+      help [<command>...]
+        Show help.
+
+
+      convert [<flags>] <args>...
+        Convert archive or document (default)
+
+        -w, --width=0        Image width
+        -h, --height=0       Image height
+        -q, --quality=75     JPEG image quality
+        -f, --filter=2       0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
+        -p, --png            Encode images to PNG instead of JPEG
+        -b, --bmp            Encode images to 4-Bit BMP (16 colors) instead of JPEG
+        -g, --gif            Encode images to GIF instead of JPEG
+        -N, --rgb            Convert images that have RGB colorspace (use --no-rgb if you only want to process grayscale images)
+        -I, --nonimage       Leave non image files in archive (use --no-nonimage to remove non image files from archive)
+        -G, --grayscale      Convert images to grayscale (monochromatic)
+        -s, --suffix=SUFFIX  Add suffix to file basename
+
+      cover [<flags>] <args>...
+        Extract cover
+
+        -w, --width=0     Image width
+        -h, --height=0    Image height
+        -q, --quality=75  JPEG image quality
+        -f, --filter=2    0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
+
+      thumbnail [<flags>] <args>...
+        Extract cover thumbnail (freedesktop spec.)
+
+        -w, --width=0   Image width
+        -h, --height=0  Image height
 
 Examples
 --------
@@ -69,9 +90,13 @@ Convert all images in archive to 4bit BMP image and save result in ~/comics dire
 
 [BMP](http://en.wikipedia.org/wiki/BMP_file_format) format is very good choice for black&white pages. Archive size can be smaller 2-3x and file will be readable by comic readers.
 
-Generate thumbnails by freedesktop specification in ~/.thumbnails/normal directory, Lanczos algorithm is used for resizing:
+Generate thumbnails by freedesktop specification in ~/.thumbnails/normal directory with width 512:
 
-    cbconvert --filter=7 --outdir ~/.thumbnails/normal --thumbnail /media/comics/GrooTheWanderer/
+    cbconvert thumbnail --width 512 --outdir ~/.thumbnails/normal /media/comics/GrooTheWanderer/
+
+Extract covers to ~/covers dir for all supported files found in directory, Lanczos algorithm is used for resizing:
+
+    cbconvert cover --outdir ~/covers --filter=7 /media/comics/GrooTheWanderer/
 
 Compile
 -------
