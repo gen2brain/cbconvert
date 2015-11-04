@@ -97,6 +97,8 @@ type options struct {
 	Thumbnail bool   // extract cover thumbnail (freedesktop spec.)
 	Outdir    string // output directory
 	Grayscale bool   // convert images to grayscale (monochromatic)
+	Rotate    int    // Rotate images, valid values are 0, 90, 180, 270
+	Flip      string // Flip images, valid values are none, horizontal, vertical
 	Recursive bool   // process subdirectories recursively
 	Size      int64  // process only files larger then size (in MB)
 	Quiet     bool   // hide console output
@@ -138,6 +140,26 @@ func convertImage(img image.Image, index int, pathName string) {
 
 	if opts.Grayscale {
 		i = imaging.Grayscale(img)
+	}
+
+	if opts.Rotate > 0 {
+		switch opts.Rotate {
+		case 90:
+			i = imaging.Rotate90(img)
+		case 180:
+			i = imaging.Rotate180(img)
+		case 270:
+			i = imaging.Rotate270(img)
+		}
+	}
+
+	if opts.Flip != "none" {
+		switch opts.Flip {
+		case "horizontal":
+			i = imaging.FlipH(img)
+		case "vertical":
+			i = imaging.FlipV(img)
+		}
 	}
 
 	if opts.ToPNG {
@@ -836,36 +858,38 @@ func parseFlags() {
 	kingpin.CommandLine.Help = "Comic Book convert tool."
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate)
 
-	kingpin.Flag("outdir", "Output directory").Default(".").Short('o').StringVar(&opts.Outdir)
-	kingpin.Flag("size", "Process only files larger then size (in MB)").Short('m').Default(strconv.Itoa(0)).Int64Var(&opts.Size)
-	kingpin.Flag("recursive", "Process subdirectories recursively").Short('R').BoolVar(&opts.Recursive)
-	kingpin.Flag("quiet", "Hide console output").Short('Q').BoolVar(&opts.Quiet)
+	kingpin.Flag("outdir", "Output directory").Default(".").StringVar(&opts.Outdir)
+	kingpin.Flag("size", "Process only files larger then size (in MB)").Default(strconv.Itoa(0)).Int64Var(&opts.Size)
+	kingpin.Flag("recursive", "Process subdirectories recursively").BoolVar(&opts.Recursive)
+	kingpin.Flag("quiet", "Hide console output").BoolVar(&opts.Quiet)
 
-	convert := kingpin.Command("convert", "Convert archive or document (default)").Default()
+	convert := kingpin.Command("convert", "Convert archive or document (default command)").Default()
 	convert.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&arguments)
-	convert.Flag("width", "Image width").Default(strconv.Itoa(0)).Short('w').IntVar(&opts.Width)
-	convert.Flag("height", "Image height").Default(strconv.Itoa(0)).Short('h').IntVar(&opts.Height)
-	convert.Flag("quality", "JPEG image quality").Short('q').Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
-	convert.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Short('f').Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
-	convert.Flag("png", "Encode images to PNG instead of JPEG").Short('p').BoolVar(&opts.ToPNG)
-	convert.Flag("bmp", "Encode images to 4-Bit BMP (16 colors) instead of JPEG").Short('b').BoolVar(&opts.ToBMP)
-	convert.Flag("gif", "Encode images to GIF instead of JPEG").Short('g').BoolVar(&opts.ToGIF)
-	convert.Flag("rgb", "Convert images that have RGB colorspace (use --no-rgb if you only want to process grayscale images)").Short('N').Default("true").BoolVar(&opts.RGB)
-	convert.Flag("nonimage", "Leave non image files in archive (use --no-nonimage to remove non image files from archive)").Short('I').Default("true").BoolVar(&opts.NonImage)
-	convert.Flag("grayscale", "Convert images to grayscale (monochromatic)").Short('G').BoolVar(&opts.Grayscale)
-	convert.Flag("suffix", "Add suffix to file basename").Short('s').StringVar(&opts.Suffix)
+	convert.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
+	convert.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
+	convert.Flag("quality", "JPEG image quality").Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
+	convert.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
+	convert.Flag("png", "Encode images to PNG instead of JPEG").BoolVar(&opts.ToPNG)
+	convert.Flag("bmp", "Encode images to 4-Bit BMP (16 colors) instead of JPEG").BoolVar(&opts.ToBMP)
+	convert.Flag("gif", "Encode images to GIF instead of JPEG").BoolVar(&opts.ToGIF)
+	convert.Flag("rgb", "Convert images that have RGB colorspace (use --no-rgb if you only want to process grayscale images)").Default("true").BoolVar(&opts.RGB)
+	convert.Flag("nonimage", "Leave non image files in archive (use --no-nonimage to remove non image files from archive)").Default("true").BoolVar(&opts.NonImage)
+	convert.Flag("grayscale", "Convert images to grayscale (monochromatic)").BoolVar(&opts.Grayscale)
+	convert.Flag("rotate", "Rotate images, valid values are 0, 90, 180, 270").Default(strconv.Itoa(0)).IntVar(&opts.Rotate)
+	convert.Flag("flip", "Flip images, valid values are none, horizontal, vertical").Default("none").StringVar(&opts.Flip)
+	convert.Flag("suffix", "Add suffix to file basename").StringVar(&opts.Suffix)
 
 	cover := kingpin.Command("cover", "Extract cover")
 	cover.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&arguments)
-	cover.Flag("width", "Image width").Default(strconv.Itoa(0)).Short('w').IntVar(&opts.Width)
-	cover.Flag("height", "Image height").Default(strconv.Itoa(0)).Short('h').IntVar(&opts.Height)
-	cover.Flag("quality", "JPEG image quality").Short('q').Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
-	cover.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Short('f').Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
+	cover.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
+	cover.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
+	cover.Flag("quality", "JPEG image quality").Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
+	cover.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
 
 	thumbnail := kingpin.Command("thumbnail", "Extract cover thumbnail (freedesktop spec.)")
 	thumbnail.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&arguments)
-	thumbnail.Flag("width", "Image width").Default(strconv.Itoa(0)).Short('w').IntVar(&opts.Width)
-	thumbnail.Flag("height", "Image height").Default(strconv.Itoa(0)).Short('h').IntVar(&opts.Height)
+	thumbnail.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
+	thumbnail.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
 
 	switch kingpin.Parse() {
 	case "cover":
