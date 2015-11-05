@@ -105,6 +105,7 @@ var (
 	workdir string
 	nfiles  int
 	current int
+	bar     *pb.ProgressBar
 	wg      sync.WaitGroup
 )
 
@@ -219,7 +220,6 @@ func convertDocument(file string) {
 
 	npages := doc.Pages()
 
-	var bar *pb.ProgressBar
 	if !opts.Quiet {
 		bar = pb.New(npages)
 		bar.ShowTimeLeft = false
@@ -260,7 +260,6 @@ func convertArchive(file string) {
 	}
 	defer archive.Close()
 
-	var bar *pb.ProgressBar
 	if !opts.Quiet {
 		bar = pb.New(ncontents)
 		bar.ShowTimeLeft = false
@@ -334,7 +333,6 @@ func convertDirectory(path string) {
 
 	images := getImages(path)
 
-	var bar *pb.ProgressBar
 	if !opts.Quiet {
 		bar = pb.New(nfiles)
 		bar.ShowTimeLeft = false
@@ -392,7 +390,6 @@ func saveArchive(file string) {
 	z := zip.NewWriter(zipfile)
 	files, _ := ioutil.ReadDir(workdir)
 
-	var bar *pb.ProgressBar
 	if !opts.Quiet {
 		bar = pb.New(len(files))
 		bar.ShowTimeLeft = false
@@ -663,7 +660,7 @@ func getFiles() []string {
 				for _, f := range fs {
 					if isArchive(f.Name()) || isArchive(f.Name()) {
 						if isSize(f.Size()) {
-							files = append(files, f.Name())
+							files = append(files, filepath.Join(path, f.Name()))
 						}
 					}
 				}
@@ -983,6 +980,15 @@ func main() {
 
 	files := getFiles()
 	nfiles = len(files)
+
+	if opts.Cover || opts.Thumbnail {
+		if !opts.Quiet {
+			bar = pb.New(nfiles)
+			bar.ShowTimeLeft = false
+			bar.Start()
+		}
+	}
+
 	for n, file := range files {
 		current = n + 1
 
@@ -994,9 +1000,15 @@ func main() {
 
 		if opts.Cover {
 			extractCover(file, stat)
+			if !opts.Quiet {
+				bar.Increment()
+			}
 			continue
 		} else if opts.Thumbnail {
 			extractThumbnail(file, stat)
+			if !opts.Quiet {
+				bar.Increment()
+			}
 			continue
 		}
 
