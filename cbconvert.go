@@ -89,6 +89,7 @@ type options struct {
 	Quality   int    // JPEG image quality
 	Width     int    // image width
 	Height    int    // image height
+	Fit       bool   // Best fit for required width and height
 	Filter    int    // 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
 	RGB       bool   // convert images that have RGB colorspace
 	NonImage  bool   // Leave non image files in archive
@@ -160,7 +161,11 @@ func transformImage(img image.Image) image.Image {
 	var i image.Image = img
 
 	if opts.Width > 0 || opts.Height > 0 {
-		i = imaging.Resize(i, opts.Width, opts.Height, filters[opts.Filter])
+		if opts.Fit {
+			i = imaging.Fit(i, opts.Width, opts.Height, filters[opts.Filter])
+		} else {
+			i = imaging.Resize(i, opts.Width, opts.Height, filters[opts.Filter])
+		}
 	}
 
 	if opts.Rotate > 0 {
@@ -896,6 +901,7 @@ func parseFlags() {
 	convert.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&arguments)
 	convert.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
 	convert.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
+	convert.Flag("fit", "Best fit for required width and height").BoolVar(&opts.Fit)
 	convert.Flag("quality", "JPEG image quality").Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
 	convert.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
 	convert.Flag("png", "Encode images to PNG instead of JPEG").BoolVar(&opts.ToPNG)
