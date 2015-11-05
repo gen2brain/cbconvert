@@ -154,4 +154,4 @@ Install dependencies:
 Install go package:
 
     go get github.com/gen2brain/cbconvert
-    go install github.com/gen2brain/cbconvert
+    go build -o $GOPATH/bin/cbconvert github.com/gen2brain/cbconvert/cmd
