@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package cbconvert
 
 import (
 	"archive/zip"
@@ -30,14 +30,12 @@ import (
 	"io/ioutil"
 	"mime"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 
 	"github.com/cheggaaa/pb"
 	"github.com/disintegration/imaging"
@@ -48,7 +46,6 @@ import (
 	"github.com/skarademir/naturalsort"
 	"golang.org/x/image/tiff"
 	_ "golang.org/x/image/webp"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Resample filters
@@ -916,117 +913,5 @@ func (c *Convertor) ConvertComic(file string, info os.FileInfo) {
 	} else {
 		c.convertArchive(file)
 		c.saveArchive(file)
-	}
-}
-
-// Parses command line flags
-func parseFlags() (Options, []string) {
-	opts := Options{}
-	var args []string
-
-	kingpin.Version("CBconvert 0.4.0")
-	kingpin.CommandLine.Help = "Comic Book convert tool."
-	kingpin.UsageTemplate(kingpin.CompactUsageTemplate)
-
-	kingpin.Flag("outdir", "Output directory").Default(".").StringVar(&opts.Outdir)
-	kingpin.Flag("size", "Process only files larger then size (in MB)").Default(strconv.Itoa(0)).Int64Var(&opts.Size)
-	kingpin.Flag("recursive", "Process subdirectories recursively").BoolVar(&opts.Recursive)
-	kingpin.Flag("quiet", "Hide console output").BoolVar(&opts.Quiet)
-
-	convert := kingpin.Command("convert", "Convert archive or document (default command)").Default()
-	convert.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&args)
-	convert.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
-	convert.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
-	convert.Flag("fit", "Best fit for required width and height").BoolVar(&opts.Fit)
-	convert.Flag("quality", "JPEG image quality").Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
-	convert.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
-	convert.Flag("png", "Encode images to PNG instead of JPEG").BoolVar(&opts.ToPNG)
-	convert.Flag("bmp", "Encode images to 4-Bit BMP (16 colors) instead of JPEG").BoolVar(&opts.ToBMP)
-	convert.Flag("gif", "Encode images to GIF instead of JPEG").BoolVar(&opts.ToGIF)
-	convert.Flag("tiff", "Encode images to TIFF instead of JPEG").BoolVar(&opts.ToTIFF)
-	convert.Flag("rgb", "Convert images that have RGB colorspace (use --no-rgb if you only want to convert grayscale images)").Default("true").BoolVar(&opts.RGB)
-	convert.Flag("nonimage", "Leave non image files in archive (use --no-nonimage to remove non image files from archive)").Default("true").BoolVar(&opts.NonImage)
-	convert.Flag("grayscale", "Convert images to grayscale (monochromatic)").BoolVar(&opts.Grayscale)
-	convert.Flag("rotate", "Rotate images, valid values are 0, 90, 180, 270").Default(strconv.Itoa(0)).IntVar(&opts.Rotate)
-	convert.Flag("flip", "Flip images, valid values are none, horizontal, vertical").Default("none").StringVar(&opts.Flip)
-	convert.Flag("brightness", "Adjust brightness of the images, must be in range (-100, 100)").Default(strconv.Itoa(0)).Float64Var(&opts.Brightness)
-	convert.Flag("contrast", "Adjust contrast of the images, must be in range (-100, 100)").Default(strconv.Itoa(0)).Float64Var(&opts.Contrast)
-	convert.Flag("suffix", "Add suffix to file basename").StringVar(&opts.Suffix)
-
-	cover := kingpin.Command("cover", "Extract cover")
-	cover.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&args)
-	cover.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
-	cover.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
-	cover.Flag("fit", "Best fit for required width and height").BoolVar(&opts.Fit)
-	cover.Flag("quality", "JPEG image quality").Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
-	cover.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
-
-	thumbnail := kingpin.Command("thumbnail", "Extract cover thumbnail (freedesktop spec.)")
-	thumbnail.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&args)
-	thumbnail.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
-	thumbnail.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
-	thumbnail.Flag("fit", "Best fit for required width and height").BoolVar(&opts.Fit)
-	thumbnail.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
-
-	switch kingpin.Parse() {
-	case "cover":
-		opts.Cover = true
-	case "thumbnail":
-		opts.Thumbnail = true
-	}
-
-	return opts, args
-}
-
-func main() {
-	opts, args := parseFlags()
-	conv := NewConvertor(opts)
-
-	c := make(chan os.Signal, 3)
-	signal.Notify(c, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
-	go func() {
-		for _ = range c {
-			fmt.Fprintf(os.Stderr, "Aborting\n")
-			os.RemoveAll(conv.Workdir)
-			os.Exit(1)
-		}
-	}()
-
-	if _, err := os.Stat(opts.Outdir); err != nil {
-		os.MkdirAll(opts.Outdir, 0777)
-	}
-
-	files := conv.GetFiles(args)
-
-	if opts.Cover || opts.Thumbnail {
-		if !opts.Quiet {
-			bar = pb.New(conv.Nfiles)
-			bar.ShowTimeLeft = false
-			bar.Start()
-		}
-	}
-
-	for _, file := range files {
-		stat, err := os.Stat(file)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error Stat: %v\n", err.Error())
-			continue
-		}
-
-		if opts.Cover {
-			conv.ExtractCover(file, stat)
-			if !opts.Quiet {
-				bar.Increment()
-			}
-			continue
-		} else if opts.Thumbnail {
-			conv.ExtractThumbnail(file, stat)
-			if !opts.Quiet {
-				bar.Increment()
-			}
-			continue
-		}
-
-		conv.ConvertComic(file, stat)
 	}
 }
