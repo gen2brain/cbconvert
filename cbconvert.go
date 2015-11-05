@@ -83,27 +83,29 @@ var (
 
 // Command line options
 type options struct {
-	ToPNG     bool   // encode images to PNG instead of JPEG
-	ToBMP     bool   // encode images to 4-Bit BMP (16 colors) instead of JPEG
-	ToGIF     bool   // encode images to GIF instead of JPEG
-	ToTIFF    bool   // encode images to TIFF instead of JPEG
-	Quality   int    // JPEG image quality
-	Width     int    // image width
-	Height    int    // image height
-	Fit       bool   // Best fit for required width and height
-	Filter    int    // 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
-	RGB       bool   // convert images that have RGB colorspace
-	NonImage  bool   // Leave non image files in archive
-	Suffix    string // add suffix to file basename
-	Cover     bool   // extract cover
-	Thumbnail bool   // extract cover thumbnail (freedesktop spec.)
-	Outdir    string // output directory
-	Grayscale bool   // convert images to grayscale (monochromatic)
-	Rotate    int    // Rotate images, valid values are 0, 90, 180, 270
-	Flip      string // Flip images, valid values are none, horizontal, vertical
-	Recursive bool   // process subdirectories recursively
-	Size      int64  // process only files larger then size (in MB)
-	Quiet     bool   // hide console output
+	ToPNG      bool    // encode images to PNG instead of JPEG
+	ToBMP      bool    // encode images to 4-Bit BMP (16 colors) instead of JPEG
+	ToGIF      bool    // encode images to GIF instead of JPEG
+	ToTIFF     bool    // encode images to TIFF instead of JPEG
+	Quality    int     // JPEG image quality
+	Width      int     // image width
+	Height     int     // image height
+	Fit        bool    // Best fit for required width and height
+	Filter     int     // 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
+	RGB        bool    // convert images that have RGB colorspace
+	NonImage   bool    // Leave non image files in archive
+	Suffix     string  // add suffix to file basename
+	Cover      bool    // extract cover
+	Thumbnail  bool    // extract cover thumbnail (freedesktop spec.)
+	Outdir     string  // output directory
+	Grayscale  bool    // convert images to grayscale (monochromatic)
+	Rotate     int     // Rotate images, valid values are 0, 90, 180, 270
+	Flip       string  // Flip images, valid values are none, horizontal, vertical
+	Brightness float64 // Changes the brightness of the images, must be in range (-100, 100)
+	Contrast   float64 // Changes the contrast of the images, must be in range (-100, 100)
+	Recursive  bool    // process subdirectories recursively
+	Size       int64   // process only files larger then size (in MB)
+	Quiet      bool    // hide console output
 }
 
 // Command line arguments
@@ -192,6 +194,14 @@ func transformImage(img image.Image) image.Image {
 		case "vertical":
 			i = imaging.FlipV(i)
 		}
+	}
+
+	if opts.Brightness != 0 {
+		i = imaging.AdjustBrightness(i, opts.Brightness)
+	}
+
+	if opts.Contrast != 0 {
+		i = imaging.AdjustContrast(i, opts.Contrast)
 	}
 
 	return i
@@ -919,6 +929,8 @@ func parseFlags() {
 	convert.Flag("grayscale", "Convert images to grayscale (monochromatic)").BoolVar(&opts.Grayscale)
 	convert.Flag("rotate", "Rotate images, valid values are 0, 90, 180, 270").Default(strconv.Itoa(0)).IntVar(&opts.Rotate)
 	convert.Flag("flip", "Flip images, valid values are none, horizontal, vertical").Default("none").StringVar(&opts.Flip)
+	convert.Flag("brightness", "Changes the brightness of the images, must be in range (-100, 100)").Default(strconv.Itoa(0)).Float64Var(&opts.Brightness)
+	convert.Flag("contrast", "Changes the contrast of the images, must be in range (-100, 100)").Default(strconv.Itoa(0)).Float64Var(&opts.Contrast)
 	convert.Flag("suffix", "Add suffix to file basename").StringVar(&opts.Suffix)
 
 	cover := kingpin.Command("cover", "Extract cover")

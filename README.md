@@ -66,6 +66,8 @@ Using
         --grayscale      Convert images to grayscale (monochromatic)
         --rotate=0       Rotate images, valid values are 0, 90, 180, 270
         --flip="none"    Flip images, valid values are none, horizontal, vertical
+        --brightness=0   Changes the brightness of the images, must be in range (-100, 100)
+        --contrast=0     Changes the contrast of the images, must be in range (-100, 100)
         --suffix=SUFFIX  Add suffix to file basename
 
       cover [<flags>] <args>...
