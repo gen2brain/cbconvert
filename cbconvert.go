@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	_ "image/gif"
+	"image/gif"
 	"image/jpeg"
 	"image/png"
 	"io"
@@ -46,7 +46,7 @@ import (
 	"github.com/gographics/imagick/imagick"
 	_ "github.com/hotei/bmp"
 	"github.com/skarademir/naturalsort"
-	_ "golang.org/x/image/tiff"
+	"golang.org/x/image/tiff"
 	_ "golang.org/x/image/webp"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -130,116 +130,60 @@ func convertImage(img image.Image, index int, pathName string) {
 		filename = filepath.Join(workdir, fmt.Sprintf("%03d.%s", index, ext))
 	}
 
-	var i image.Image
-
-	if opts.Width > 0 || opts.Height > 0 {
-		i = imaging.Resize(img, opts.Width, opts.Height, filters[opts.Filter])
+	if opts.ToPNG {
+		// convert image to PNG
+		if opts.Grayscale {
+			encodeImageMagick(img, filename)
+		} else {
+			encodeImage(img, filename)
+		}
+	} else if opts.ToBMP {
+		// convert image to 4-Bit BMP (16 colors)
+		encodeImageMagick(img, filename)
+	} else if opts.ToGIF {
+		// convert image to GIF
+		encodeImageMagick(img, filename)
 	} else {
-		i = img
+		// convert image to JPEG (default)
+		if opts.Grayscale {
+			encodeImageMagick(img, filename)
+		} else {
+			encodeImage(img, filename)
+		}
 	}
 
-	if opts.Grayscale {
-		i = imaging.Grayscale(img)
+	<-throttle
+}
+
+// Transforms image (resize|rotate|flip)
+func transformImage(img image.Image) image.Image {
+	var i image.Image = img
+
+	if opts.Width > 0 || opts.Height > 0 {
+		i = imaging.Resize(i, opts.Width, opts.Height, filters[opts.Filter])
 	}
 
 	if opts.Rotate > 0 {
 		switch opts.Rotate {
 		case 90:
-			i = imaging.Rotate90(img)
+			i = imaging.Rotate90(i)
 		case 180:
-			i = imaging.Rotate180(img)
+			i = imaging.Rotate180(i)
 		case 270:
-			i = imaging.Rotate270(img)
+			i = imaging.Rotate270(i)
 		}
 	}
 
 	if opts.Flip != "none" {
 		switch opts.Flip {
 		case "horizontal":
-			i = imaging.FlipH(img)
+			i = imaging.FlipH(i)
 		case "vertical":
-			i = imaging.FlipV(img)
+			i = imaging.FlipV(i)
 		}
 	}
 
-	if opts.ToPNG {
-		// convert image to PNG
-		f, err := os.Create(filename)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error Create: %v\n", err.Error())
-		}
-		defer f.Close()
-		png.Encode(f, i)
-	} else if opts.ToBMP {
-		// convert image to 4-Bit BMP (16 colors)
-		imagick.Initialize()
-
-		mw := imagick.NewMagickWand()
-		defer mw.Destroy()
-
-		b := new(bytes.Buffer)
-		jpeg.Encode(b, i, &jpeg.Options{jpeg.DefaultQuality})
-
-		err := mw.ReadImageBlob(b.Bytes())
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error ReadImageBlob: %v\n", err.Error())
-		}
-
-		w := imagick.NewPixelWand()
-		w.SetColor("black")
-		defer w.Destroy()
-
-		var cs imagick.ColorspaceType = imagick.COLORSPACE_SRGB
-		if opts.Grayscale {
-			cs = imagick.COLORSPACE_GRAY
-		}
-
-		mw.SetImageFormat("BMP3")
-		mw.SetImageBackgroundColor(w)
-		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_REMOVE)
-		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_DEACTIVATE)
-		mw.SetImageMatte(false)
-		mw.SetImageCompression(imagick.COMPRESSION_NO)
-		mw.QuantizeImage(16, cs, 8, true, true)
-		mw.WriteImage(filename)
-	} else if opts.ToGIF {
-		// convert image to GIF
-		imagick.Initialize()
-
-		mw := imagick.NewMagickWand()
-		defer mw.Destroy()
-
-		b := new(bytes.Buffer)
-		jpeg.Encode(b, i, &jpeg.Options{jpeg.DefaultQuality})
-
-		err := mw.ReadImageBlob(b.Bytes())
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error ReadImageBlob: %v\n", err.Error())
-		}
-
-		var cs imagick.ColorspaceType = imagick.COLORSPACE_SRGB
-		if opts.Grayscale {
-			cs = imagick.COLORSPACE_GRAY
-		}
-
-		mw.SetImageFormat("GIF")
-		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_REMOVE)
-		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_DEACTIVATE)
-		mw.SetImageMatte(false)
-		mw.SetImageCompression(imagick.COMPRESSION_LZW)
-		mw.QuantizeImage(256, cs, 8, true, true)
-		mw.WriteImage(filename)
-	} else {
-		// convert image to JPEG (default)
-		f, err := os.Create(filename)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error Create: %v\n", err.Error())
-		}
-		defer f.Close()
-		jpeg.Encode(f, i, &jpeg.Options{opts.Quality})
-	}
-
-	<-throttle
+	return i
 }
 
 // Converts PDF/EPUB/XPS document to CBZ
@@ -269,7 +213,11 @@ func convertDocument(file string) {
 
 		img, err := doc.Image(n)
 
-		if err == nil && img != nil {
+		if err == nil {
+			img = transformImage(img)
+		}
+
+		if img != nil {
 			throttle <- 1
 			wg.Add(1)
 
@@ -338,15 +286,17 @@ func convertArchive(file string) {
 				continue
 			}
 
-			if !opts.RGB && !isGrayScale(img) {
-				copyFile(bytes.NewReader(buf), filepath.Join(workdir, filepath.Base(pathname)))
+			i := transformImage(img)
+
+			if !opts.RGB && !isGrayScale(i) {
+				encodeImage(i, filepath.Join(workdir, filepath.Base(pathname)))
 				continue
 			}
 
-			if img != nil {
+			if i != nil {
 				throttle <- 1
 				wg.Add(1)
-				go convertImage(img, 0, pathname)
+				go convertImage(i, 0, pathname)
 			}
 		} else {
 			if opts.NonImage {
@@ -388,8 +338,10 @@ func convertDirectory(path string) {
 			continue
 		}
 
+		i = transformImage(i)
+
 		if !opts.RGB && !isGrayScale(i) {
-			copyFile(f, filepath.Join(workdir, filepath.Base(img)))
+			encodeImage(i, filepath.Join(workdir, filepath.Base(img)))
 			continue
 		}
 
@@ -446,6 +398,95 @@ func saveArchive(file string) {
 		w.Write(r)
 	}
 	z.Close()
+}
+
+// Decodes image from reader
+func decodeImage(reader io.Reader, filename string) (i image.Image, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(os.Stderr, "Recovered in decodeImage %s: %v\n", filename, r)
+		}
+	}()
+
+	i, _, err = image.Decode(reader)
+	return i, err
+}
+
+// Encode image to file
+func encodeImage(i image.Image, filename string) (err error) {
+	f, err := os.Create(filename)
+	if err != nil {
+		return
+	}
+
+	switch filepath.Ext(filename) {
+	case ".png":
+		err = png.Encode(f, i)
+	case ".tif":
+	case ".tiff":
+		err = tiff.Encode(f, i, nil)
+	case ".gif":
+		err = gif.Encode(f, i, nil)
+	default:
+		err = jpeg.Encode(f, i, &jpeg.Options{opts.Quality})
+	}
+
+	f.Close()
+	return
+}
+
+// Encode image to file (ImageMagick)
+func encodeImageMagick(i image.Image, filename string) (err error) {
+	imagick.Initialize()
+
+	mw := imagick.NewMagickWand()
+	defer mw.Destroy()
+
+	b := new(bytes.Buffer)
+	jpeg.Encode(b, i, &jpeg.Options{opts.Quality})
+
+	err = mw.ReadImageBlob(b.Bytes())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error ReadImageBlob: %v\n", err.Error())
+		return
+	}
+
+	if opts.Grayscale {
+		c := mw.GetImageColors()
+		mw.QuantizeImage(c, imagick.COLORSPACE_GRAY, 8, true, true)
+	}
+
+	switch filepath.Ext(filename) {
+	case ".png":
+		mw.SetImageFormat("PNG")
+		mw.WriteImage(filename)
+	case ".gif":
+		mw.SetImageFormat("GIF")
+		mw.WriteImage(filename)
+	case ".bmp":
+		w := imagick.NewPixelWand()
+		w.SetColor("black")
+		defer w.Destroy()
+
+		cs := mw.GetImageColorspace()
+		if opts.Grayscale {
+			cs = imagick.COLORSPACE_GRAY
+		}
+
+		mw.SetImageFormat("BMP3")
+		mw.SetImageBackgroundColor(w)
+		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_REMOVE)
+		mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_DEACTIVATE)
+		mw.SetImageMatte(false)
+		mw.SetImageCompression(imagick.COMPRESSION_NO)
+		mw.QuantizeImage(16, cs, 8, true, true)
+		mw.WriteImage(filename)
+	default:
+		mw.SetImageFormat("JPEG")
+		mw.WriteImage(filename)
+	}
+
+	return
 }
 
 // Lists contents of archive
@@ -718,18 +759,6 @@ func isGrayScale(img image.Image) bool {
 	return false
 }
 
-// Decodes image from reader
-func decodeImage(reader io.Reader, filename string) (i image.Image, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Fprintf(os.Stderr, "Recovered in decodeImage %s: %v\n", filename, r)
-		}
-	}()
-
-	i, _, err = image.Decode(reader)
-	return i, err
-}
-
 // Copies reader to file
 func copyFile(reader io.Reader, filename string) error {
 	os.MkdirAll(filepath.Dir(filename), 0755)
@@ -872,7 +901,7 @@ func parseFlags() {
 	convert.Flag("png", "Encode images to PNG instead of JPEG").BoolVar(&opts.ToPNG)
 	convert.Flag("bmp", "Encode images to 4-Bit BMP (16 colors) instead of JPEG").BoolVar(&opts.ToBMP)
 	convert.Flag("gif", "Encode images to GIF instead of JPEG").BoolVar(&opts.ToGIF)
-	convert.Flag("rgb", "Convert images that have RGB colorspace (use --no-rgb if you only want to process grayscale images)").Default("true").BoolVar(&opts.RGB)
+	convert.Flag("rgb", "Convert images that have RGB colorspace (use --no-rgb if you only want to convert grayscale images)").Default("true").BoolVar(&opts.RGB)
 	convert.Flag("nonimage", "Leave non image files in archive (use --no-nonimage to remove non image files from archive)").Default("true").BoolVar(&opts.NonImage)
 	convert.Flag("grayscale", "Convert images to grayscale (monochromatic)").BoolVar(&opts.Grayscale)
 	convert.Flag("rotate", "Rotate images, valid values are 0, 90, 180, 270").Default(strconv.Itoa(0)).IntVar(&opts.Rotate)
