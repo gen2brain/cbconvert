@@ -60,6 +60,7 @@ Using
         --png            Encode images to PNG instead of JPEG
         --bmp            Encode images to 4-Bit BMP (16 colors) instead of JPEG
         --gif            Encode images to GIF instead of JPEG
+        --tiff           Encode images to TIFF instead of JPEG
         --rgb            Convert images that have RGB colorspace (use --no-rgb if you only want to convert grayscale images)
         --nonimage       Leave non image files in archive (use --no-nonimage to remove non image files from archive)
         --grayscale      Convert images to grayscale (monochromatic)

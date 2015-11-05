@@ -86,6 +86,7 @@ type options struct {
 	ToPNG     bool   // encode images to PNG instead of JPEG
 	ToBMP     bool   // encode images to 4-Bit BMP (16 colors) instead of JPEG
 	ToGIF     bool   // encode images to GIF instead of JPEG
+	ToTIFF    bool   // encode images to TIFF instead of JPEG
 	Quality   int    // JPEG image quality
 	Width     int    // image width
 	Height    int    // image height
@@ -122,6 +123,8 @@ func convertImage(img image.Image, index int, pathName string) {
 		ext = "bmp"
 	} else if opts.ToGIF {
 		ext = "gif"
+	} else if opts.ToTIFF {
+		ext = "tiff"
 	}
 
 	var filename string
@@ -144,6 +147,9 @@ func convertImage(img image.Image, index int, pathName string) {
 	} else if opts.ToGIF {
 		// convert image to GIF
 		encodeImageMagick(img, filename)
+	} else if opts.ToTIFF {
+		// convert image to TIFF
+		encodeImage(img, filename)
 	} else {
 		// convert image to JPEG (default)
 		if opts.Grayscale {
@@ -429,7 +435,7 @@ func encodeImage(i image.Image, filename string) (err error) {
 		err = png.Encode(f, i)
 	case ".tif":
 	case ".tiff":
-		err = tiff.Encode(f, i, nil)
+		err = tiff.Encode(f, i, &tiff.Options{tiff.Uncompressed, false})
 	case ".gif":
 		err = gif.Encode(f, i, nil)
 	default:
@@ -907,6 +913,7 @@ func parseFlags() {
 	convert.Flag("png", "Encode images to PNG instead of JPEG").BoolVar(&opts.ToPNG)
 	convert.Flag("bmp", "Encode images to 4-Bit BMP (16 colors) instead of JPEG").BoolVar(&opts.ToBMP)
 	convert.Flag("gif", "Encode images to GIF instead of JPEG").BoolVar(&opts.ToGIF)
+	convert.Flag("tiff", "Encode images to TIFF instead of JPEG").BoolVar(&opts.ToTIFF)
 	convert.Flag("rgb", "Convert images that have RGB colorspace (use --no-rgb if you only want to convert grayscale images)").Default("true").BoolVar(&opts.RGB)
 	convert.Flag("nonimage", "Leave non image files in archive (use --no-nonimage to remove non image files from archive)").Default("true").BoolVar(&opts.NonImage)
 	convert.Flag("grayscale", "Convert images to grayscale (monochromatic)").BoolVar(&opts.Grayscale)
