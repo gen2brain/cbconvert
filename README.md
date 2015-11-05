@@ -66,8 +66,8 @@ Using
         --grayscale      Convert images to grayscale (monochromatic)
         --rotate=0       Rotate images, valid values are 0, 90, 180, 270
         --flip="none"    Flip images, valid values are none, horizontal, vertical
-        --brightness=0   Changes the brightness of the images, must be in range (-100, 100)
-        --contrast=0     Changes the contrast of the images, must be in range (-100, 100)
+        --brightness=0   Adjust brightness of the images, must be in range (-100, 100)
+        --contrast=0     Adjust contrast of the images, must be in range (-100, 100)
         --suffix=SUFFIX  Add suffix to file basename
 
       cover [<flags>] <args>...
@@ -75,6 +75,7 @@ Using
 
         --width=0     Image width
         --height=0    Image height
+        --fit         Best fit for required width and height
         --quality=75  JPEG image quality
         --filter=2    0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
 
@@ -83,6 +84,8 @@ Using
 
         --width=0   Image width
         --height=0  Image height
+        --fit       Best fit for required width and height
+        --filter=2  0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
 
 Examples
 --------

@@ -72,17 +72,8 @@ var filters = map[int]imaging.ResampleFilter{
 	Lanczos:           imaging.Lanczos,
 }
 
-// Globals
-var (
-	opts    options
-	workdir string
-	nfiles  int
-	current int
-	wg      sync.WaitGroup
-)
-
-// Command line options
-type options struct {
+// Options
+type Options struct {
 	ToPNG      bool    // encode images to PNG instead of JPEG
 	ToBMP      bool    // encode images to 4-Bit BMP (16 colors) instead of JPEG
 	ToGIF      bool    // encode images to GIF instead of JPEG
@@ -101,12 +92,21 @@ type options struct {
 	Grayscale  bool    // convert images to grayscale (monochromatic)
 	Rotate     int     // Rotate images, valid values are 0, 90, 180, 270
 	Flip       string  // Flip images, valid values are none, horizontal, vertical
-	Brightness float64 // Changes the brightness of the images, must be in range (-100, 100)
-	Contrast   float64 // Changes the contrast of the images, must be in range (-100, 100)
+	Brightness float64 // Adjust brightness of the images, must be in range (-100, 100)
+	Contrast   float64 // Adjust contrast of the images, must be in range (-100, 100)
 	Recursive  bool    // process subdirectories recursively
 	Size       int64   // process only files larger then size (in MB)
 	Quiet      bool    // hide console output
 }
+
+// Globals
+var (
+	opts    Options
+	workdir string
+	nfiles  int
+	current int
+	wg      sync.WaitGroup
+)
 
 // Command line arguments
 var arguments []string
@@ -823,7 +823,11 @@ func extractCover(file string, info os.FileInfo) {
 	}
 
 	if opts.Width > 0 || opts.Height > 0 {
-		cover = imaging.Resize(cover, opts.Width, opts.Height, filters[opts.Filter])
+		if opts.Fit {
+			cover = imaging.Fit(cover, opts.Width, opts.Height, filters[opts.Filter])
+		} else {
+			cover = imaging.Resize(cover, opts.Width, opts.Height, filters[opts.Filter])
+		}
 	}
 
 	filename := filepath.Join(opts.Outdir, fmt.Sprintf("%s.jpg", getBasename(file)))
@@ -855,7 +859,11 @@ func extractThumbnail(file string, info os.FileInfo) {
 	}
 
 	if opts.Width > 0 || opts.Height > 0 {
-		cover = imaging.Resize(cover, opts.Width, opts.Height, filters[opts.Filter])
+		if opts.Fit {
+			cover = imaging.Fit(cover, opts.Width, opts.Height, filters[opts.Filter])
+		} else {
+			cover = imaging.Resize(cover, opts.Width, opts.Height, filters[opts.Filter])
+		}
 	} else {
 		cover = imaging.Resize(cover, 256, 0, filters[opts.Filter])
 	}
@@ -903,7 +911,7 @@ func convertComic(file string, info os.FileInfo) {
 
 // Parses command line flags
 func parseFlags() {
-	opts = options{}
+	opts = Options{}
 	kingpin.Version("CBconvert 0.3.0")
 	kingpin.CommandLine.Help = "Comic Book convert tool."
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate)
@@ -929,14 +937,15 @@ func parseFlags() {
 	convert.Flag("grayscale", "Convert images to grayscale (monochromatic)").BoolVar(&opts.Grayscale)
 	convert.Flag("rotate", "Rotate images, valid values are 0, 90, 180, 270").Default(strconv.Itoa(0)).IntVar(&opts.Rotate)
 	convert.Flag("flip", "Flip images, valid values are none, horizontal, vertical").Default("none").StringVar(&opts.Flip)
-	convert.Flag("brightness", "Changes the brightness of the images, must be in range (-100, 100)").Default(strconv.Itoa(0)).Float64Var(&opts.Brightness)
-	convert.Flag("contrast", "Changes the contrast of the images, must be in range (-100, 100)").Default(strconv.Itoa(0)).Float64Var(&opts.Contrast)
+	convert.Flag("brightness", "Adjust brightness of the images, must be in range (-100, 100)").Default(strconv.Itoa(0)).Float64Var(&opts.Brightness)
+	convert.Flag("contrast", "Adjust contrast of the images, must be in range (-100, 100)").Default(strconv.Itoa(0)).Float64Var(&opts.Contrast)
 	convert.Flag("suffix", "Add suffix to file basename").StringVar(&opts.Suffix)
 
 	cover := kingpin.Command("cover", "Extract cover")
 	cover.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&arguments)
 	cover.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
 	cover.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
+	cover.Flag("fit", "Best fit for required width and height").BoolVar(&opts.Fit)
 	cover.Flag("quality", "JPEG image quality").Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
 	cover.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
 
@@ -944,6 +953,8 @@ func parseFlags() {
 	thumbnail.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&arguments)
 	thumbnail.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
 	thumbnail.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
+	thumbnail.Flag("fit", "Best fit for required width and height").BoolVar(&opts.Fit)
+	thumbnail.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Default(strconv.Itoa(Linear)).IntVar(&opts.Filter)
 
 	switch kingpin.Parse() {
 	case "cover":
