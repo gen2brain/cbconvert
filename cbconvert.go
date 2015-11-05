@@ -165,7 +165,7 @@ func convertImage(img image.Image, index int, pathName string) {
 	<-throttle
 }
 
-// Transforms image (resize|rotate|flip)
+// Transforms image (resize, rotate, flip, brightness, contrast)
 func transformImage(img image.Image) image.Image {
 	var i image.Image = img
 
@@ -909,7 +909,7 @@ func convertComic(file string, info os.FileInfo) {
 // Parses command line flags
 func parseFlags() {
 	opts = Options{}
-	kingpin.Version("CBconvert 0.3.0")
+	kingpin.Version("CBconvert 0.4.0")
 	kingpin.CommandLine.Help = "Comic Book convert tool."
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate)
 
