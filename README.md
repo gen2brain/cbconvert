@@ -87,6 +87,10 @@ Using
         --fit       Best fit for required width and height
         --filter=2  0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
 
+[man page](https://en.wikipedia.org/wiki/Man_page) is also available:
+    
+    cbconvert --help-man | man /dev/stdin
+
 Examples
 --------
 
