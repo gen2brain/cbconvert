@@ -4,17 +4,17 @@ CBconvert
 Introduction
 ------------
 
-CBconvert is a [Comic Book](http://en.wikipedia.org/wiki/Comic_Book_Archive_file) convert tool.
+CBconvert is a [Comic Book](http://en.wikipedia.org/wiki/Comic_Book_Archive_file) converter.
+It allows you to convert individual comics or bulk convert comics to different formats to fit your various devices.
 
 Features
 --------
 
  - reads RAR, ZIP, 7Z, GZ, BZ2, CBR, CBZ, CB7, CBT, PDF, EPUB, XPS and plain directory
  - always saves processed comic in CBZ (ZIP) archive format
- - images can be converted to JPEG, PNG, GIF or 4-Bit BMP (16 colors) file format
- - reads JPEG, PNG, BMP, GIF, TIFF and WEBP file formats
+ - images can be converted to JPEG, PNG, GIF, TIFF or 4-Bit BMP (16 colors) file format
  - choose resize algorithm (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
- - rotate, flip or grayscale images
+ - rotate, flip, adjust brightness/contrast or grayscale images
  - export covers from comics
  - create thumbnails from covers by [freedesktop](http://www.freedesktop.org/wiki/) specification
 
