@@ -162,5 +162,6 @@ For command line app:
 
 For GUI app:
 
+    go get gopkg.in/qml.v1
     go get github.com/gen2brain/cbconvert
     go build -o $GOPATH/bin/cbconvert github.com/gen2brain/cbconvert/gui
