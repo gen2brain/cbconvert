@@ -4,7 +4,7 @@ CBconvert
 Introduction
 ------------
 
-CBconvert is a [Comic Book](http://en.wikipedia.org/wiki/Comic_Book_Archive_file) converter.
+CBconvert is a [Comic Book](http://en.wikipedia.org/wiki/Comic_Book_Archive_file) converter written in [Go language](https://golang.org/).
 
 It can convert one comic at a time or bulk convert comics to different formats to fit your various devices.
 
