@@ -14,7 +14,7 @@ Features
  - reads RAR, ZIP, 7Z, GZ, BZ2, CBR, CBZ, CB7, CBT, PDF, EPUB, XPS and plain directory
  - always saves processed comic in CBZ (ZIP) archive format
  - images can be converted to JPEG, PNG, GIF, TIFF or 4-Bit BMP (16 colors) file format
- - rotate, flip, adjust brightness/contrast or grayscale images
+ - rotate, flip, adjust brightness/contrast, adjust levels (Photoshop like) or grayscale images
  - choose resize algorithm (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
  - export covers from comics
  - create thumbnails from covers by [freedesktop](http://www.freedesktop.org/wiki/) specification
@@ -22,25 +22,26 @@ Features
 Download
 --------
 
- - [Windows binary](https://github.com/gen2brain/cbconvert/releases/download/0.4.0/cbconvert-0.4.0.zip)
+ - [Windows GUI](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-0.5.0.zip)
+ - [Windows CMD](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-cmd-0.5.0.zip)
 
- - [Linux 64bit binary](https://github.com/gen2brain/cbconvert/releases/download/0.4.0/cbconvert-0.4.0.tar.gz)
- - [Linux 64bit static binary](https://github.com/gen2brain/cbconvert/releases/download/0.4.0/cbconvert-0.4.0-static.tar.gz)
+ - [Linux 64bit GUI](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-0.5.0.tar.gz)
+ - [Linux 64bit CMD](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-cmd-0.5.0.tar.gz)
 
-Using
------
+Using command line app
+----------------------
 
     usage: cbconvert [<flags>] <command> [<args> ...]
 
     Comic Book convert tool.
 
     Flags:
-      --help           Show context-sensitive help (also try --help-long and --help-man).
-      --version        Show application version.
-      --outdir="."     Output directory
-      --size=0         Process only files larger then size (in MB)
-      --recursive      Process subdirectories recursively
-      --quiet          Hide console output
+      --help               Show context-sensitive help (also try --help-long and --help-man).
+      --version            Show application version.
+      --outdir="."         Output directory
+      --size=0             Process only files larger then size (in MB)
+      --recursive          Process subdirectories recursively
+      --quiet              Hide console output
 
     Args:
       <args>  filename or directory
@@ -53,23 +54,26 @@ Using
       convert [<flags>] <args>...
         Convert archive or document (default command)
 
-        --width=0        Image width
-        --height=0       Image height
-        --fit            Best fit for required width and height
-        --quality=75     JPEG image quality
-        --filter=2       0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
-        --png            Encode images to PNG instead of JPEG
-        --bmp            Encode images to 4-Bit BMP (16 colors) instead of JPEG
-        --gif            Encode images to GIF instead of JPEG
-        --tiff           Encode images to TIFF instead of JPEG
-        --rgb            Convert images that have RGB colorspace (use --no-rgb if you only want to convert grayscale images)
-        --nonimage       Leave non image files in archive (use --no-nonimage to remove non image files from archive)
-        --grayscale      Convert images to grayscale (monochromatic)
-        --rotate=0       Rotate images, valid values are 0, 90, 180, 270
-        --flip="none"    Flip images, valid values are none, horizontal, vertical
-        --brightness=0   Adjust brightness of the images, must be in range (-100, 100)
-        --contrast=0     Adjust contrast of the images, must be in range (-100, 100)
-        --suffix=SUFFIX  Add suffix to file basename
+        --width=0            Image width
+        --height=0           Image height
+        --fit                Best fit for required width and height
+        --format="jpeg"      Image format, valid values are jpeg, png, gif, tiff, bmp
+        --quality=75         JPEG image quality
+        --filter=2           0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
+        --cover              Convert cover image (use --no-cover if you want to exclude cover)
+        --rgb                Convert images that have RGB colorspace (use --no-rgb if you only want to convert grayscaled images)
+        --nonimage           Leave non image files in archive (use --no-nonimage to remove non image files from archive)
+        --grayscale          Convert images to grayscale (monochromatic)
+        --rotate=0           Rotate images, valid values are 0, 90, 180, 270
+        --flip="none"        Flip images, valid values are none, horizontal, vertical
+        --brightness=0       Adjust brightness of the images, must be in range (-100, 100)
+        --contrast=0         Adjust contrast of the images, must be in range (-100, 100)
+        --suffix=SUFFIX      Add suffix to file basename
+        --levels-inmin=0     Shadow input value
+        --levels-inmax=255   Highlight input value
+        --levels-gamma=1     Midpoint/Gamma
+        --levels-outmin=0    Shadow output value
+        --levels-outmax=255  Highlight output value
 
       cover [<flags>] <args>...
         Extract cover
@@ -89,7 +93,7 @@ Using
         --filter=2  0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
 
 [man page](https://en.wikipedia.org/wiki/Man_page) is also available:
-    
+
     cbconvert --help-man | man /dev/stdin
 
 Examples
@@ -105,7 +109,7 @@ Convert all images in pdf to 4bit BMP image and save result in ~/comics director
 
 [BMP](http://en.wikipedia.org/wiki/BMP_file_format) format is very good choice for black&white pages. Archive size can be smaller 2-3x and file will be readable by comic readers.
 
-Generate thumbnails by freedesktop specification in ~/.thumbnails/normal directory with width 512:
+Generate thumbnails by [freedesktop specification](http://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html) in ~/.thumbnails/normal directory with width 512:
 
     cbconvert thumbnail --width 512 --outdir ~/.thumbnails/normal /media/comics/GrooTheWanderer/
 
@@ -148,10 +152,15 @@ Install dependencies:
     go get github.com/hotei/bmp
     go get github.com/skarademir/naturalsort
     go get golang.org/x/image/tiff
-    go get golang.org/x/image/webp    
+    go get golang.org/x/image/webp
     go get gopkg.in/alecthomas/kingpin.v2
 
-Install go package:
+For command line app:
 
     go get github.com/gen2brain/cbconvert
     go build -o $GOPATH/bin/cbconvert github.com/gen2brain/cbconvert/cmd
+
+For GUI app:
+
+    go get github.com/gen2brain/cbconvert
+    go build -o $GOPATH/bin/cbconvert github.com/gen2brain/cbconvert/gui

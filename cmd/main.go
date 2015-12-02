@@ -15,6 +15,8 @@
 
 package main
 
+//go:generate goversioninfo
+
 import (
 	"fmt"
 	"image/jpeg"
@@ -33,7 +35,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	opts := cbconvert.Options{}
 	var args []string
 
-	kingpin.Version("CBconvert 0.4.0")
+	kingpin.Version("CBconvert 0.5.0")
 	kingpin.CommandLine.Help = "Comic Book convert tool."
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate)
 
@@ -47,13 +49,11 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
 	convert.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
 	convert.Flag("fit", "Best fit for required width and height").BoolVar(&opts.Fit)
+	convert.Flag("format", "Image format, valid values are jpeg, png, gif, tiff, bmp").Default("jpeg").StringVar(&opts.Format)
 	convert.Flag("quality", "JPEG image quality").Default(strconv.Itoa(jpeg.DefaultQuality)).IntVar(&opts.Quality)
 	convert.Flag("filter", "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos").Default(strconv.Itoa(cbconvert.Linear)).IntVar(&opts.Filter)
-	convert.Flag("png", "Encode images to PNG instead of JPEG").BoolVar(&opts.ToPNG)
-	convert.Flag("bmp", "Encode images to 4-Bit BMP (16 colors) instead of JPEG").BoolVar(&opts.ToBMP)
-	convert.Flag("gif", "Encode images to GIF instead of JPEG").BoolVar(&opts.ToGIF)
-	convert.Flag("tiff", "Encode images to TIFF instead of JPEG").BoolVar(&opts.ToTIFF)
-	convert.Flag("rgb", "Convert images that have RGB colorspace (use --no-rgb if you only want to convert grayscale images)").Default("true").BoolVar(&opts.RGB)
+	convert.Flag("cover", "Convert cover image (use --no-cover if you want to exclude cover)").Default("true").BoolVar(&opts.ConvertCover)
+	convert.Flag("rgb", "Convert images that have RGB colorspace (use --no-rgb if you only want to convert grayscaled images)").Default("true").BoolVar(&opts.RGB)
 	convert.Flag("nonimage", "Leave non image files in archive (use --no-nonimage to remove non image files from archive)").Default("true").BoolVar(&opts.NonImage)
 	convert.Flag("grayscale", "Convert images to grayscale (monochromatic)").BoolVar(&opts.Grayscale)
 	convert.Flag("rotate", "Rotate images, valid values are 0, 90, 180, 270").Default(strconv.Itoa(0)).IntVar(&opts.Rotate)
@@ -61,6 +61,11 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.Flag("brightness", "Adjust brightness of the images, must be in range (-100, 100)").Default(strconv.Itoa(0)).Float64Var(&opts.Brightness)
 	convert.Flag("contrast", "Adjust contrast of the images, must be in range (-100, 100)").Default(strconv.Itoa(0)).Float64Var(&opts.Contrast)
 	convert.Flag("suffix", "Add suffix to file basename").StringVar(&opts.Suffix)
+	convert.Flag("levels-inmin", "Shadow input value").Default(strconv.Itoa(0)).Float64Var(&opts.LevelsInMin)
+	convert.Flag("levels-gamma", "Midpoint/Gamma").Default(strconv.Itoa(1.00)).Float64Var(&opts.LevelsGamma)
+	convert.Flag("levels-inmax", "Highlight input value").Default(strconv.Itoa(255)).Float64Var(&opts.LevelsInMax)
+	convert.Flag("levels-outmin", "Shadow output value").Default(strconv.Itoa(0)).Float64Var(&opts.LevelsOutMin)
+	convert.Flag("levels-outmax", "Highlight output value").Default(strconv.Itoa(255)).Float64Var(&opts.LevelsOutMax)
 
 	cover := kingpin.Command("cover", "Extract cover")
 	cover.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&args)

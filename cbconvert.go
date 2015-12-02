@@ -79,37 +79,42 @@ var throttle = make(chan int, runtime.NumCPU()+1)
 
 // Options
 type Options struct {
-	ToPNG      bool    // encode images to PNG instead of JPEG
-	ToBMP      bool    // encode images to 4-Bit BMP (16 colors) instead of JPEG
-	ToGIF      bool    // encode images to GIF instead of JPEG
-	ToTIFF     bool    // encode images to TIFF instead of JPEG
-	Quality    int     // JPEG image quality
-	Width      int     // image width
-	Height     int     // image height
-	Fit        bool    // Best fit for required width and height
-	Filter     int     // 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
-	RGB        bool    // convert images that have RGB colorspace
-	NonImage   bool    // Leave non image files in archive
-	Suffix     string  // add suffix to file basename
-	Cover      bool    // extract cover
-	Thumbnail  bool    // extract cover thumbnail (freedesktop spec.)
-	Outdir     string  // output directory
-	Grayscale  bool    // convert images to grayscale (monochromatic)
-	Rotate     int     // Rotate images, valid values are 0, 90, 180, 270
-	Flip       string  // Flip images, valid values are none, horizontal, vertical
-	Brightness float64 // Adjust brightness of the images, must be in range (-100, 100)
-	Contrast   float64 // Adjust contrast of the images, must be in range (-100, 100)
-	Recursive  bool    // process subdirectories recursively
-	Size       int64   // process only files larger then size (in MB)
-	Quiet      bool    // hide console output
+	Format       string  // Image format, valid values are jpeg, png, gif, tiff, bmp
+	Quality      int     // JPEG image quality
+	Width        int     // image width
+	Height       int     // image height
+	Fit          bool    // Best fit for required width and height
+	Filter       int     // 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
+	ConvertCover bool    // convert cover image
+	RGB          bool    // convert images that have RGB colorspace
+	NonImage     bool    // Leave non image files in archive
+	Suffix       string  // add suffix to file basename
+	Cover        bool    // extract cover
+	Thumbnail    bool    // extract cover thumbnail (freedesktop spec.)
+	Outdir       string  // output directory
+	Grayscale    bool    // convert images to grayscale (monochromatic)
+	Rotate       int     // Rotate images, valid values are 0, 90, 180, 270
+	Flip         string  // Flip images, valid values are none, horizontal, vertical
+	Brightness   float64 // Adjust brightness of the images, must be in range (-100, 100)
+	Contrast     float64 // Adjust contrast of the images, must be in range (-100, 100)
+	Recursive    bool    // process subdirectories recursively
+	Size         int64   // process only files larger then size (in MB)
+	Quiet        bool    // hide console output
+	LevelsInMin  float64 // shadow input value
+	LevelsInMax  float64 // highlight input value
+	LevelsGamma  float64 // midpoint/gamma
+	LevelsOutMin float64 // shadow output value
+	LevelsOutMax float64 // highlight output value
 }
 
 // Convertor struct
 type Convertor struct {
-	Opts    Options // Options struct
-	Workdir string  // Current working directory
-	Nfiles  int     // Number of files
-	Current int     // Index of current file
+	Opts        Options // Options struct
+	Workdir     string  // Current working directory
+	Nfiles      int     // Number of files
+	CurrFile    int     // Index of current file
+	Ncontents   int     // Number of contents in archive/document
+	CurrContent int     // Index of current content
 }
 
 // NewConvertor returns new convertor
@@ -123,15 +128,19 @@ func NewConvertor(o Options) *Convertor {
 func (c *Convertor) convertImage(img image.Image, index int, pathName string) {
 	defer wg.Done()
 
-	var ext string = "jpg"
-	if c.Opts.ToPNG {
+	var ext string
+	switch c.Opts.Format {
+	case "jpeg":
+		ext = "jpg"
+	case "png":
 		ext = "png"
-	} else if c.Opts.ToBMP {
-		ext = "bmp"
-	} else if c.Opts.ToGIF {
+	case "gif":
 		ext = "gif"
-	} else if c.Opts.ToTIFF {
+	case "tiff":
 		ext = "tiff"
+	case "bmp":
+		ext = "bmp"
+
 	}
 
 	var filename string
@@ -141,36 +150,48 @@ func (c *Convertor) convertImage(img image.Image, index int, pathName string) {
 		filename = filepath.Join(c.Workdir, fmt.Sprintf("%03d.%s", index, ext))
 	}
 
-	if c.Opts.ToPNG {
-		// convert image to PNG
-		if c.Opts.Grayscale {
-			c.encodeImageMagick(img, filename)
-		} else {
-			c.encodeImage(img, filename)
-		}
-	} else if c.Opts.ToBMP {
-		// convert image to 4-Bit BMP (16 colors)
-		c.encodeImageMagick(img, filename)
-	} else if c.Opts.ToGIF {
-		// convert image to GIF
-		c.encodeImageMagick(img, filename)
-	} else if c.Opts.ToTIFF {
-		// convert image to TIFF
-		c.encodeImage(img, filename)
-	} else {
+	img = c.TransformImage(img)
+
+	if c.Opts.LevelsInMin != 0 || c.Opts.LevelsInMax != 255 || c.Opts.LevelsGamma != 1.00 ||
+		c.Opts.LevelsOutMin != 0 || c.Opts.LevelsOutMax != 255 {
+		img = c.LevelImage(img)
+	}
+
+	switch c.Opts.Format {
+	case "jpeg":
 		// convert image to JPEG (default)
 		if c.Opts.Grayscale {
 			c.encodeImageMagick(img, filename)
 		} else {
 			c.encodeImage(img, filename)
 		}
+	case "png":
+		// convert image to PNG
+		if c.Opts.Grayscale {
+			c.encodeImageMagick(img, filename)
+		} else {
+			c.encodeImage(img, filename)
+		}
+	case "gif":
+		// convert image to GIF
+		c.encodeImageMagick(img, filename)
+	case "tiff":
+		// convert image to TIFF
+		if c.Opts.Grayscale {
+			c.encodeImageMagick(img, filename)
+		} else {
+			c.encodeImage(img, filename)
+		}
+	case "bmp":
+		// convert image to 4-Bit BMP (16 colors)
+		c.encodeImageMagick(img, filename)
 	}
 
 	<-throttle
 }
 
 // Transforms image (resize, rotate, flip, brightness, contrast)
-func (c *Convertor) transformImage(img image.Image) image.Image {
+func (c *Convertor) TransformImage(img image.Image) image.Image {
 	var i image.Image = img
 
 	if c.Opts.Width > 0 || c.Opts.Height > 0 {
@@ -212,6 +233,49 @@ func (c *Convertor) transformImage(img image.Image) image.Image {
 	return i
 }
 
+// Applies a Photoshop-like levels operation on an image
+func (c *Convertor) LevelImage(img image.Image) image.Image {
+	imagick.Initialize()
+
+	mw := imagick.NewMagickWand()
+	defer mw.Destroy()
+
+	err := mw.ReadImageBlob(c.GetImageBytes(img))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error ReadImageBlob: %v\n", err.Error())
+		return img
+	}
+
+	_, qrange := imagick.GetQuantumRange()
+	quantumRange := float64(qrange)
+
+	inmin := (quantumRange * c.Opts.LevelsInMin) / 255
+	inmax := (quantumRange * c.Opts.LevelsInMax) / 255
+	outmin := (quantumRange * c.Opts.LevelsOutMin) / 255
+	outmax := (quantumRange * c.Opts.LevelsOutMax) / 255
+
+	err = mw.LevelImage(inmin, c.Opts.LevelsGamma, inmax)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error LevelImageChannel Input: %v\n", err.Error())
+		return img
+	}
+
+	err = mw.LevelImage(-outmin, 1.0, quantumRange+(quantumRange-outmax))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error LevelImageChannel Output: %v\n", err.Error())
+		return img
+	}
+
+	blob := mw.GetImageBlob()
+	i, err := c.decodeImage(bytes.NewReader(blob), "levels")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error decodeImage: %v\n", err.Error())
+		return img
+	}
+
+	return i
+}
+
 // Converts PDF/EPUB/XPS document to CBZ
 func (c *Convertor) convertDocument(file string) {
 	c.Workdir, _ = ioutil.TempDir(os.TempDir(), "cbc")
@@ -222,24 +286,25 @@ func (c *Convertor) convertDocument(file string) {
 		return
 	}
 
-	npages := doc.Pages()
+	c.Ncontents = doc.Pages()
+	c.CurrContent = 0
 
 	if !c.Opts.Quiet {
-		bar = pb.New(npages)
+		bar = pb.New(c.Ncontents)
 		bar.ShowTimeLeft = false
-		bar.Prefix(fmt.Sprintf("Converting %d of %d: ", c.Current, c.Nfiles))
+		bar.Prefix(fmt.Sprintf("Converting %d of %d: ", c.CurrFile, c.Nfiles))
 		bar.Start()
 	}
 
-	for n := 0; n < npages; n++ {
+	for n := 0; n < c.Ncontents; n++ {
+		c.CurrContent++
 		if !c.Opts.Quiet {
 			bar.Increment()
 		}
 
 		img, err := doc.Image(n)
-
-		if err == nil {
-			img = c.transformImage(img)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error Image: %v\n", err.Error())
 		}
 
 		if img != nil {
@@ -256,18 +321,23 @@ func (c *Convertor) convertDocument(file string) {
 func (c *Convertor) convertArchive(file string) {
 	c.Workdir, _ = ioutil.TempDir(os.TempDir(), "cbc")
 
-	ncontents := len(c.listArchive(file))
+	contents := c.listArchive(file)
+	c.Ncontents = len(contents)
+	c.CurrContent = 0
+
+	cover := c.getCover(c.getImagesFromSlice(contents))
 
 	archive, err := unarr.NewArchive(file)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error NewReader: %v\n", err.Error())
+		return
 	}
 	defer archive.Close()
 
 	if !c.Opts.Quiet {
-		bar = pb.New(ncontents)
+		bar = pb.New(c.Ncontents)
 		bar.ShowTimeLeft = false
-		bar.Prefix(fmt.Sprintf("Converting %d of %d: ", c.Current, c.Nfiles))
+		bar.Prefix(fmt.Sprintf("Converting %d of %d: ", c.CurrFile, c.Nfiles))
 		bar.Start()
 	}
 
@@ -282,6 +352,7 @@ func (c *Convertor) convertArchive(file string) {
 			}
 		}
 
+		c.CurrContent++
 		if !c.Opts.Quiet {
 			bar.Increment()
 		}
@@ -310,17 +381,24 @@ func (c *Convertor) convertArchive(file string) {
 				continue
 			}
 
-			i := c.transformImage(img)
+			if !c.Opts.ConvertCover {
+				if cover == pathname {
+					img = c.TransformImage(img)
+					c.encodeImage(img, filepath.Join(c.Workdir, filepath.Base(pathname)))
+					continue
+				}
+			}
 
-			if !c.Opts.RGB && !c.isGrayScale(i) {
-				c.encodeImage(i, filepath.Join(c.Workdir, filepath.Base(pathname)))
+			if !c.Opts.RGB && !c.isGrayScale(img) {
+				img = c.TransformImage(img)
+				c.encodeImage(img, filepath.Join(c.Workdir, filepath.Base(pathname)))
 				continue
 			}
 
-			if i != nil {
+			if img != nil {
 				throttle <- 1
 				wg.Add(1)
-				go c.convertImage(i, 0, pathname)
+				go c.convertImage(img, 0, pathname)
 			}
 		} else {
 			if c.Opts.NonImage {
@@ -335,17 +413,20 @@ func (c *Convertor) convertArchive(file string) {
 func (c *Convertor) convertDirectory(path string) {
 	c.Workdir, _ = ioutil.TempDir(os.TempDir(), "cbc")
 
-	images := c.getImages(path)
+	images := c.getImagesFromPath(path)
+	c.Ncontents = len(images)
+	c.CurrContent = 0
 
 	if !c.Opts.Quiet {
-		bar = pb.New(c.Nfiles)
+		bar = pb.New(c.Ncontents)
 		bar.ShowTimeLeft = false
-		bar.Prefix(fmt.Sprintf("Converting %d of %d: ", c.Current, c.Nfiles))
+		bar.Prefix(fmt.Sprintf("Converting %d of %d: ", c.CurrFile, c.Nfiles))
 		bar.Start()
 	}
 
 	for index, img := range images {
-		if c.Opts.Quiet {
+		c.CurrContent++
+		if !c.Opts.Quiet {
 			bar.Increment()
 		}
 
@@ -361,9 +442,8 @@ func (c *Convertor) convertDirectory(path string) {
 			continue
 		}
 
-		i = c.transformImage(i)
-
 		if !c.Opts.RGB && !c.isGrayScale(i) {
+			i = c.TransformImage(i)
 			c.encodeImage(i, filepath.Join(c.Workdir, filepath.Base(img)))
 			continue
 		}
@@ -394,10 +474,12 @@ func (c *Convertor) saveArchive(file string) {
 	z := zip.NewWriter(zipfile)
 	files, _ := ioutil.ReadDir(c.Workdir)
 
+	ncontents := len(files)
+
 	if !c.Opts.Quiet {
-		bar = pb.New(len(files))
+		bar = pb.New(ncontents)
 		bar.ShowTimeLeft = false
-		bar.Prefix(fmt.Sprintf("Compressing %d of %d: ", c.Current, c.Nfiles))
+		bar.Prefix(fmt.Sprintf("Compressing %d of %d: ", c.CurrFile, c.Nfiles))
 		bar.Start()
 	}
 
@@ -464,10 +546,7 @@ func (c *Convertor) encodeImageMagick(i image.Image, filename string) (err error
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
-	b := new(bytes.Buffer)
-	jpeg.Encode(b, i, &jpeg.Options{c.Opts.Quality})
-
-	err = mw.ReadImageBlob(b.Bytes())
+	err = mw.ReadImageBlob(c.GetImageBytes(i))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error ReadImageBlob: %v\n", err.Error())
 		return
@@ -481,6 +560,10 @@ func (c *Convertor) encodeImageMagick(i image.Image, filename string) (err error
 	switch filepath.Ext(filename) {
 	case ".png":
 		mw.SetImageFormat("PNG")
+		mw.WriteImage(filename)
+	case ".tif":
+	case ".tiff":
+		mw.SetImageFormat("TIFF")
 		mw.WriteImage(filename)
 	case ".gif":
 		mw.SetImageFormat("GIF")
@@ -516,7 +599,7 @@ func (c *Convertor) listArchive(file string) []string {
 	var contents []string
 	archive, err := unarr.NewArchive(file)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error NewReader: %v\n", err.Error())
+		return contents
 	}
 	defer archive.Close()
 
@@ -526,7 +609,6 @@ func (c *Convertor) listArchive(file string) []string {
 			if err == io.EOF {
 				break
 			} else {
-				fmt.Fprintf(os.Stderr, "Error Entry: %v\n", err.Error())
 				continue
 			}
 		}
@@ -605,7 +687,7 @@ func (c *Convertor) coverDocument(file string) (image.Image, error) {
 
 // Extracts cover from directory
 func (c *Convertor) coverDirectory(dir string) (image.Image, error) {
-	images := c.getImages(dir)
+	images := c.getImagesFromPath(dir)
 	cover := c.getCover(images)
 
 	p, err := os.Open(cover)
@@ -646,7 +728,7 @@ func (c *Convertor) GetFiles(args []string) []string {
 		path, _ := filepath.Abs(arg)
 		stat, err := os.Stat(path)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error Stat: %v\n", err.Error())
+			fmt.Fprintf(os.Stderr, "Error Stat GetFiles: %v\n", err.Error())
 			continue
 		}
 
@@ -662,7 +744,7 @@ func (c *Convertor) GetFiles(args []string) []string {
 			} else {
 				fs, _ := ioutil.ReadDir(path)
 				for _, f := range fs {
-					if c.isArchive(f.Name()) || c.isArchive(f.Name()) {
+					if c.isArchive(f.Name()) || c.isDocument(f.Name()) {
 						if c.isSize(f.Size()) {
 							files = append(files, filepath.Join(path, f.Name()))
 						}
@@ -682,7 +764,7 @@ func (c *Convertor) GetFiles(args []string) []string {
 }
 
 // Returns list of found image files for given directory
-func (c *Convertor) getImages(path string) []string {
+func (c *Convertor) getImagesFromPath(path string) []string {
 	var images []string
 
 	walkFiles := func(fp string, f os.FileInfo, err error) error {
@@ -697,7 +779,7 @@ func (c *Convertor) getImages(path string) []string {
 	f, _ := filepath.Abs(path)
 	stat, err := os.Stat(f)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error Stat: %v\n", err.Error())
+		fmt.Fprintf(os.Stderr, "Error Stat getImagesFromPath: %v\n", err.Error())
 		return images
 	}
 
@@ -712,6 +794,26 @@ func (c *Convertor) getImages(path string) []string {
 	return images
 }
 
+// Returns list of found image files for given slice of files
+func (c *Convertor) getImagesFromSlice(files []string) []string {
+	var images []string
+
+	for _, f := range files {
+		if c.isImage(f) {
+			images = append(images, f)
+		}
+	}
+
+	return images
+}
+
+// Returns image bytes/blob to be used with ImageMagick
+func (c *Convertor) GetImageBytes(i image.Image) []byte {
+	b := new(bytes.Buffer)
+	jpeg.Encode(b, i, &jpeg.Options{c.Opts.Quality})
+	return b.Bytes()
+}
+
 // Returns the filename that is the most likely to be the cover
 func (c *Convertor) getCover(images []string) string {
 	if len(images) == 0 {
@@ -719,7 +821,9 @@ func (c *Convertor) getCover(images []string) string {
 	}
 
 	for _, i := range images {
-		if strings.HasPrefix(i, "cover") || strings.HasPrefix(i, "front") {
+		e := c.getBasename(i)
+		if strings.HasPrefix(i, "cover") || strings.HasPrefix(i, "front") ||
+			strings.HasSuffix(e, "cover") || strings.HasSuffix(e, "front") {
 			return i
 		}
 	}
@@ -807,11 +911,10 @@ func (c *Convertor) getBasename(file string) string {
 	return basename
 }
 
-// Extracts cover
-func (c *Convertor) ExtractCover(file string, info os.FileInfo) {
+// Returns cover image.Image
+func (c *Convertor) GetCoverImage(file string, info os.FileInfo) (image.Image, error) {
 	var err error
 	var cover image.Image
-	c.Current += 1
 
 	if info.IsDir() {
 		cover, err = c.coverDirectory(file)
@@ -822,7 +925,19 @@ func (c *Convertor) ExtractCover(file string, info os.FileInfo) {
 	}
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error Cover: %v\n", err.Error())
+		return nil, err
+	}
+
+	return cover, nil
+}
+
+// Extracts cover
+func (c *Convertor) ExtractCover(file string, info os.FileInfo) {
+	c.CurrFile += 1
+
+	cover, err := c.GetCoverImage(file, info)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error GetCoverImage: %v\n", err.Error())
 		return
 	}
 
@@ -847,16 +962,12 @@ func (c *Convertor) ExtractCover(file string, info os.FileInfo) {
 
 // Extracts thumbnail
 func (c *Convertor) ExtractThumbnail(file string, info os.FileInfo) {
-	var err error
-	var cover image.Image
-	c.Current += 1
+	c.CurrFile += 1
 
-	if info.IsDir() {
-		cover, err = c.coverDirectory(file)
-	} else if c.isDocument(file) {
-		cover, err = c.coverDocument(file)
-	} else {
-		cover, err = c.coverArchive(file)
+	cover, err := c.GetCoverImage(file, info)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error GetCoverImage: %v\n", err.Error())
+		return
 	}
 
 	if err != nil {
@@ -891,7 +1002,7 @@ func (c *Convertor) ExtractThumbnail(file string, info os.FileInfo) {
 	filename := filepath.Join(c.Opts.Outdir, fmt.Sprintf("%x.png", md5.Sum([]byte(fileuri))))
 
 	mw.SetImageFormat("PNG")
-	mw.SetImageProperty("Software", "cbconvert")
+	mw.SetImageProperty("Software", "CBconvert")
 	mw.SetImageProperty("Description", "Thumbnail of "+fileuri)
 	mw.SetImageProperty("Thumb::URI", fileuri)
 	mw.SetImageProperty("Thumb::MTime", strconv.FormatInt(info.ModTime().Unix(), 10))
@@ -903,7 +1014,7 @@ func (c *Convertor) ExtractThumbnail(file string, info os.FileInfo) {
 
 // Converts comic book
 func (c *Convertor) ConvertComic(file string, info os.FileInfo) {
-	c.Current += 1
+	c.CurrFile += 1
 	if info.IsDir() {
 		c.convertDirectory(file)
 		c.saveArchive(file)
