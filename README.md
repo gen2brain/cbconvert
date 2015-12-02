@@ -25,7 +25,7 @@ Download
  - [Windows GUI](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-0.5.zip)
  - [Windows CMD](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-cmd-0.5.zip)
 
- - [Linux 64bit GUI](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-0.5.0.tar.gz)
+ - [Linux 64bit GUI](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-0.5.tar.gz)
  - [Linux 64bit CMD](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-cmd-0.5.tar.gz)
 
 Using command line app
