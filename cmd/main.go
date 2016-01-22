@@ -77,6 +77,7 @@ func parseFlags() (cbconvert.Options, []string) {
 
 	thumbnail := kingpin.Command("thumbnail", "Extract cover thumbnail (freedesktop spec.)")
 	thumbnail.Arg("args", "filename or directory").Required().ExistingFilesOrDirsVar(&args)
+	thumbnail.Flag("outfile", "Output file").Default("").StringVar(&opts.Outfile)
 	thumbnail.Flag("width", "Image width").Default(strconv.Itoa(0)).IntVar(&opts.Width)
 	thumbnail.Flag("height", "Image height").Default(strconv.Itoa(0)).IntVar(&opts.Height)
 	thumbnail.Flag("fit", "Best fit for required width and height").BoolVar(&opts.Fit)

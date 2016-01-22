@@ -3,13 +3,13 @@
 	{
 		"FileVersion": {
 			"Major": 0,
-			"Minor": 5,
+			"Minor": 6,
 			"Patch": 0,
 			"Build": 0
 		},
 		"ProductVersion": {
 			"Major": 0,
-			"Minor": 5,
+			"Minor": 6,
 			"Patch": 0,
 			"Build": 0
 		},
@@ -24,14 +24,14 @@
 		"Comments": "Comic Book converter",
 		"CompanyName": "",
 		"FileDescription": "CBconvert GUI",
-		"FileVersion": "0.5.0",
+		"FileVersion": "0.6.0",
 		"InternalName": "",
 		"LegalCopyright": "",
 		"LegalTrademarks": "",
 		"OriginalFilename": "cbconvert.exe",
 		"PrivateBuild": "",
 		"ProductName": "CBconvert",
-		"ProductVersion": "0.5.0",
+		"ProductVersion": "0.6.0",
 		"SpecialBuild": ""
 	},
 	"VarFileInfo":

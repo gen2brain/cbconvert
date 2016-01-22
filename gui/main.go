@@ -257,6 +257,7 @@ func (c *Comics) SetEnabled(b bool) {
 	c.Root.ObjectByName("checkBoxNoRGB").Set("enabled", b)
 	c.Root.ObjectByName("checkBoxConvertCover").Set("enabled", b)
 	c.Root.ObjectByName("spinboxSize").Set("enabled", b)
+	c.Root.ObjectByName("buttonLevels").Set("enabled", b)
 	c.Root.ObjectByName("sliderBrightness").Set("enabled", b)
 	c.Root.ObjectByName("sliderContrast").Set("enabled", b)
 	c.Root.ObjectByName("checkBoxGrayscale").Set("enabled", b)

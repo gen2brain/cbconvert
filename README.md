@@ -8,6 +8,8 @@ CBconvert is a [Comic Book](http://en.wikipedia.org/wiki/Comic_Book_Archive_file
 
 It can convert one comic at a time or bulk convert comics to different formats to fit your various devices.
 
+![screenshot](http://cbconvert.com/screenshot.png)
+
 Features
 --------
 
@@ -27,6 +29,21 @@ Download
 
  - [Linux 64bit GUI](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-0.5.tar.gz)
  - [Linux 64bit CMD](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-cmd-0.5.tar.gz)
+
+Using cbconvert in file managers to generate freedesktop thumbnails
+-------------------------------------------------------------------
+
+Just copy cbconvert cmd binary to your PATH and create file ~/.local/share/thumbnailers/cbconvert.thumbnailer :
+    
+    [Thumbnailer Entry]
+    TryExec=cbconvert
+    Exec=cbconvert thumbnail --quiet --width %s --outfile %o %i
+    MimeType=application/pdf;application/x-pdf;image/pdf;application/x-cbz;application/x-cbr;application/x-cb7;application/x-cbt;application/oxps;application/vnd.ms-xpsdocument;application/epub+zip;
+
+This is how it looks like in PCManFM file manager:
+
+![thumbnails](http://cbconvert.com/thumbnails.png)
+
 
 Using command line app
 ----------------------

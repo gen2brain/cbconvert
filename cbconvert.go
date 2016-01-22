@@ -91,6 +91,7 @@ type Options struct {
 	Suffix       string  // add suffix to file basename
 	Cover        bool    // extract cover
 	Thumbnail    bool    // extract cover thumbnail (freedesktop spec.)
+	Outfile      string  // output file
 	Outdir       string  // output directory
 	Grayscale    bool    // convert images to grayscale (monochromatic)
 	Rotate       int     // Rotate images, valid values are 0, 90, 180, 270
@@ -998,8 +999,17 @@ func (c *Convertor) ExtractThumbnail(file string, info os.FileInfo) {
 		fmt.Fprintf(os.Stderr, "Error ReadImageBlob: %v\n", err.Error())
 	}
 
-	fileuri := "file://" + file
-	filename := filepath.Join(c.Opts.Outdir, fmt.Sprintf("%x.png", md5.Sum([]byte(fileuri))))
+	var fileuri string
+	var filename string
+
+	if c.Opts.Outfile == "" {
+		fileuri = "file://" + file
+		filename = filepath.Join(c.Opts.Outdir, fmt.Sprintf("%x.png", md5.Sum([]byte(fileuri))))
+	} else {
+		abs, _ := filepath.Abs(c.Opts.Outfile)
+		fileuri = "file://" + abs
+		filename = abs
+	}
 
 	mw.SetImageFormat("PNG")
 	mw.SetImageProperty("Software", "CBconvert")
