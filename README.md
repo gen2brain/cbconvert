@@ -24,11 +24,11 @@ Features
 Download
 --------
 
- - [Windows GUI](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-0.5.zip)
- - [Windows CMD](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-cmd-0.5.zip)
+ - [Windows GUI](https://github.com/gen2brain/cbconvert/releases/download/0.6.0/cbconvert-0.6.zip)
+ - [Windows CMD](https://github.com/gen2brain/cbconvert/releases/download/0.6.0/cbconvert-cmd-0.6.zip)
 
- - [Linux 64bit GUI](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-0.5.tar.gz)
- - [Linux 64bit CMD](https://github.com/gen2brain/cbconvert/releases/download/0.5.0/cbconvert-cmd-0.5.tar.gz)
+ - [Linux 64bit GUI](https://github.com/gen2brain/cbconvert/releases/download/0.6.0/cbconvert-0.6.tar.gz)
+ - [Linux 64bit CMD](https://github.com/gen2brain/cbconvert/releases/download/0.6.0/cbconvert-cmd-0.6.tar.gz)
 
 Using cbconvert in file managers to generate freedesktop thumbnails
 -------------------------------------------------------------------
