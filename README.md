@@ -8,7 +8,7 @@ CBconvert is a [Comic Book](http://en.wikipedia.org/wiki/Comic_Book_Archive_file
 
 It can convert one comic at a time or bulk convert comics to different formats to fit your various devices.
 
-![screenshot](http://cbconvert.com/screenshot.png)
+![screenshot](https://goo.gl/AxsWsA)
 
 Features
 --------
@@ -42,7 +42,7 @@ Just copy cbconvert cmd binary to your PATH and create file ~/.local/share/thumb
 
 This is how it looks like in PCManFM file manager:
 
-![thumbnails](http://cbconvert.com/thumbnails.png)
+![thumbnails](https://goo.gl/I39Otm)
 
 
 Using command line app
