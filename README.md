@@ -18,17 +18,19 @@ It can convert comics to different formats to fit your various devices.
 
 ### Download
 
- - [Windows](https://github.com/gen2brain/cbconvert/releases/download/0.7.0/cbconvert-0.7.zip)
- - [Linux](https://github.com/gen2brain/cbconvert/releases/download/0.7.0/cbconvert-0.7.tar.gz)
+ - [Windows](https://github.com/gen2brain/cbconvert/releases/download/0.7.0/cbconvert-0.7.0.zip)
+ - [Linux](https://github.com/gen2brain/cbconvert/releases/download/0.7.0/cbconvert-0.7.0.tar.gz)
 
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 
 Copy cbconvert cli binary to your PATH and create file ~/.local/share/thumbnailers/cbconvert.thumbnailer :
-    
-    [Thumbnailer Entry]
-    TryExec=cbconvert
-    Exec=cbconvert thumbnail --quiet --width %s --outfile %o %i
-    MimeType=application/pdf;application/x-pdf;image/pdf;application/x-cbz;application/x-cbr;application/x-cb7;application/x-cbt;application/epub+zip;
+
+```
+[Thumbnailer Entry]
+TryExec=cbconvert
+Exec=cbconvert thumbnail --quiet --width %s --outfile %o %i
+MimeType=application/pdf;application/x-pdf;image/pdf;application/x-cbz;application/x-cbr;application/x-cb7;application/x-cbt;application/epub+zip;
+```
 
 This is what it looks like in the PCManFM file manager:
 
