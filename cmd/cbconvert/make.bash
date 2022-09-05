@@ -3,7 +3,7 @@
 MUSL="/usr/x86_64-pc-linux-musl"
 MINGW="/usr/i686-w64-mingw32"
 
-VERSION="`git --git-dir ../../.git describe --tags --abbrev=0 >/dev/null 2>&1 || echo '0.0.0'`"
+VERSION="`git --git-dir ../../.git describe --tags --abbrev=0 2>/dev/null || echo '0.0.0'`"
 
 BUILDDIR="cbconvert-${VERSION}"
 mkdir -p ${BUILDDIR}
