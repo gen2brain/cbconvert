@@ -8,18 +8,18 @@ It can convert comics to different formats to fit your various devices.
 
 ### Features
 
- - reads RAR, ZIP, 7Z, CBR, CBZ, CB7, CBT, PDF, EPUB, and plain directory
- - always saves processed comics in CBZ (ZIP) archive format
- - images can be converted to JPEG, PNG, TIFF, WEBP, or 4-Bit BMP (16 colors) file format
- - rotate, flip, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images
- - resize algorithms (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
- - export covers from comics
- - create thumbnails from covers by [FreeDesktop](http://www.freedesktop.org/wiki/) specification
+* reads RAR, ZIP, 7Z, CBR, CBZ, CB7, CBT, PDF, EPUB, and plain directory
+* always saves processed comics in CBZ (ZIP) archive format
+* images can be converted to JPEG, PNG, TIFF, WEBP, or 4-Bit BMP (16 colors) file format
+* rotate, flip, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images
+* resize algorithms (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
+* export covers from comics
+* create thumbnails from covers by [FreeDesktop](http://www.freedesktop.org/wiki/) specification
 
 ### Download
 
- - [Windows](https://github.com/gen2brain/cbconvert/releases/download/0.7.0/cbconvert-0.7.0.zip)
- - [Linux](https://github.com/gen2brain/cbconvert/releases/download/0.7.0/cbconvert-0.7.0.tar.gz)
+* [Windows](https://github.com/gen2brain/cbconvert/releases/download/0.7.0/cbconvert-0.7.0.zip)
+* [Linux](https://github.com/gen2brain/cbconvert/releases/download/0.7.0/cbconvert-0.7.0.tar.gz)
 
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 
@@ -39,6 +39,7 @@ This is what it looks like in the PCManFM file manager:
 
 ### Using command line app
 
+```
     Usage: cbconvert <command> [<flags>] [file1 dir1 ... fileOrDirN]
 
 
@@ -141,33 +142,34 @@ This is what it looks like in the PCManFM file manager:
             Process subdirectories recursively (default "false")
         --quiet
             Hide console output (default "false")
+```
 
 ### Examples
 
 Rescale images to 1200px for all supported files found in a directory with a size larger than 60MB:
 
-    cbconvert --recursive --width 1200 --size 60 /media/comics/Thorgal/
+`cbconvert --recursive --width 1200 --size 60 /media/comics/Thorgal/`
 
 Convert all images in pdf to 4bit BMP images and save the result in ~/comics directory:
 
-    cbconvert --bmp --outdir ~/comics /media/comics/Garfield/Garfield_01.pdf
+`cbconvert --bmp --outdir ~/comics /media/comics/Garfield/Garfield_01.pdf`
 
 [BMP](http://en.wikipedia.org/wiki/BMP_file_format) format is a very good choice for black&white pages. Archive size can be smaller 2-3x and the file will be readable by comic readers.
 
 Generate thumbnails by [freedesktop specification](http://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html) in ~/.cache/thumbnails/normal directory with width 512:
 
-    cbconvert thumbnail --width 512 --outdir ~/.cache/thumbnails/normal /media/comics/GrooTheWanderer/
+`cbconvert thumbnail --width 512 --outdir ~/.cache/thumbnails/normal /media/comics/GrooTheWanderer/`
 
 Extract covers to ~/covers dir for all supported files found in the directory, Lanczos algorithm is used for resizing:
 
-    cbconvert cover --outdir ~/covers --filter=7 /media/comics/GrooTheWanderer/
+`cbconvert cover --outdir ~/covers --filter=7 /media/comics/GrooTheWanderer/`
 
 ### Compile
 
 Install ImageMagick development packages, e.g. on Ubuntu:
 
-    apt-get install libmagickcore-dev libmagickwand-dev
+`apt-get install libmagickcore-dev libmagickwand-dev`
 
 Install to GOBIN:
 
-    go install github.com/gen2brain/cbconvert/cmd/cbconvert@latest
+`go install github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
