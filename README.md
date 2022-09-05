@@ -166,10 +166,6 @@ Extract covers to ~/covers dir for all supported files found in the directory, L
 
 ### Compile
 
-Install ImageMagick development packages, e.g. on Ubuntu:
-
-`apt-get install libmagickcore-dev libmagickwand-dev`
-
-Install to GOBIN:
+Install ImageMagick 7 libraries and headers and then install to GOBIN:
 
 `go install github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
