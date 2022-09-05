@@ -1,0 +1,17 @@
+on: [push, pull_request]
+name: Build
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.19
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Install package
+      run: |
+        sudo apt-get -y install libmagickcore-dev libmagickwand-dev
+    - name: Build
+      run: go build ./...
