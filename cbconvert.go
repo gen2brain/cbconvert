@@ -296,7 +296,7 @@ func (c *Convertor) levelImage(img image.Image) (image.Image, error) {
 	return i, nil
 }
 
-// convertDocument converts PDF/EPUB/XPS document to CBZ.
+// convertDocument converts PDF/EPUB document to CBZ.
 func (c *Convertor) convertDocument(fileName string) error {
 	c.Workdir, _ = os.MkdirTemp(os.TempDir(), "cbc")
 
@@ -484,6 +484,11 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
+				err = file.Close()
+				if err != nil {
+					return fmt.Errorf("convertDirectory: %w", err)
+				}
+
 				continue
 			}
 
@@ -661,7 +666,7 @@ func (c *Convertor) listArchive(fileName string) ([]string, error) {
 	return archive.List()
 }
 
-// coverArchive extracts coverName from archive.
+// coverArchive extracts cover from archive.
 func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
 	var images []string
 
@@ -702,7 +707,7 @@ func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
 	return img, nil
 }
 
-// coverDocument extracts coverName from document.
+// coverDocument extracts cover from document.
 func (c *Convertor) coverDocument(fileName string) (image.Image, error) {
 	doc, err := fitz.New(fileName)
 	if err != nil {
@@ -719,7 +724,7 @@ func (c *Convertor) coverDocument(fileName string) (image.Image, error) {
 	return img, nil
 }
 
-// coverDirectory extracts coverName from directory.
+// coverDirectory extracts cover from directory.
 func (c *Convertor) coverDirectory(dir string) (image.Image, error) {
 	contents, err := c.imagesFromPath(dir)
 	if err != nil {
@@ -906,7 +911,7 @@ func (c *Convertor) copyFile(reader io.Reader, filename string) error {
 	return nil
 }
 
-// coverName returns the filename that is the most likely to be the coverName.
+// coverName returns the filename that is the most likely to be the cover.
 func (c *Convertor) coverName(images []string) string {
 	if len(images) == 0 {
 		return ""
@@ -914,8 +919,8 @@ func (c *Convertor) coverName(images []string) string {
 
 	for _, i := range images {
 		e := c.baseNoExt(i)
-		if strings.HasPrefix(i, "coverName") || strings.HasPrefix(i, "front") ||
-			strings.HasSuffix(e, "coverName") || strings.HasSuffix(e, "front") {
+		if strings.HasPrefix(i, "cover") || strings.HasPrefix(i, "front") ||
+			strings.HasSuffix(e, "cover") || strings.HasSuffix(e, "front") {
 			return i
 		}
 	}
@@ -924,7 +929,7 @@ func (c *Convertor) coverName(images []string) string {
 	return images[0]
 }
 
-// coverImage returns coverName as image.Image.
+// coverImage returns cover as image.Image.
 func (c *Convertor) coverImage(fileName string, fileInfo os.FileInfo) (image.Image, error) {
 	var err error
 	var cover image.Image
@@ -1017,7 +1022,7 @@ func (c *Convertor) Files(args []string) ([]string, error) {
 	return files, nil
 }
 
-// ExtractCover extracts coverName.
+// ExtractCover extracts cover.
 func (c *Convertor) ExtractCover(fileName string, fileInfo os.FileInfo) error {
 	c.CurrFile++
 

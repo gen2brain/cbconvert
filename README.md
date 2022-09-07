@@ -23,7 +23,7 @@ It can convert comics to different formats to fit your various devices.
 
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 
-Copy cbconvert cli binary to your PATH and create file ~/.local/share/thumbnailers/cbconvert.thumbnailer :
+Copy cbconvert cli binary to your PATH and create file ~/.local/share/thumbnailers/cbconvert.thumbnailer:
 
 ```
 [Thumbnailer Entry]
