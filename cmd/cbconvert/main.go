@@ -92,12 +92,14 @@ func main() {
 				fmt.Println(err)
 				os.Exit(1)
 			}
+			continue
 		} else if opts.Thumbnail {
 			err = conv.ExtractThumbnail(file, stat)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
+			continue
 		}
 
 		err = conv.Convert(file, stat)
