@@ -24,6 +24,7 @@ import (
 
 	"github.com/chai2010/webp"
 	_ "github.com/hotei/bmp"
+	"github.com/strukturag/libheif/go/heif"
 	"golang.org/x/image/tiff"
 
 	"github.com/disintegration/imaging"
@@ -64,10 +65,12 @@ var filters = map[int]imaging.ResampleFilter{
 
 // Options type.
 type Options struct {
-	// Image format, valid values are jpeg, png, tiff, bmp, webp
+	// Image format, valid values are jpeg, png, tiff, bmp, webp, avif
 	Format string
 	// JPEG image quality
 	Quality int
+	// Lossless compression (avif)
+	Lossless bool
 	// Image width
 	Width int
 	// Image height
@@ -204,6 +207,11 @@ func (c *Convertor) convertImage(ctx context.Context, img image.Image, index int
 			return err
 		}
 	case "webp":
+		err = c.encodeImage(img, fileName)
+		if err != nil {
+			return err
+		}
+	case "avif":
 		err = c.encodeImage(img, fileName)
 		if err != nil {
 			return err
@@ -579,6 +587,47 @@ func (c *Convertor) decodeImage(reader io.Reader, fileName string) (img image.Im
 	return
 }
 
+// decodeIM decodes image from reader (ImageMagick).
+func (c *Convertor) decodeIM(reader io.Reader, fileName string) (img image.Image, err error) {
+	imagick.Initialize()
+
+	mw := imagick.NewMagickWand()
+	defer mw.Destroy()
+
+	var data []byte
+	var out interface{}
+
+	data, err = io.ReadAll(reader)
+	if err != nil {
+		return img, fmt.Errorf("decodeIM: %w", err)
+	}
+
+	err = mw.SetFilename(fileName)
+	if err != nil {
+		return img, fmt.Errorf("decodeIM: %w", err)
+	}
+
+	err = mw.ReadImageBlob(data)
+	if err != nil {
+		return img, fmt.Errorf("decodeIM: %w", err)
+	}
+
+	w := mw.GetImageWidth()
+	h := mw.GetImageHeight()
+
+	out, err = mw.ExportImagePixels(0, 0, w, h, "RGBA", imagick.PIXEL_CHAR)
+	if err != nil {
+		return img, fmt.Errorf("decodeIM: %w", err)
+	}
+
+	b := image.Rect(0, 0, int(w), int(h))
+	rgba := image.NewRGBA(b)
+	rgba.Pix = out.([]byte)
+	img = rgba
+
+	return
+}
+
 // encodeImage encodes image to file.
 func (c *Convertor) encodeImage(img image.Image, fileName string) error {
 	file, err := os.Create(fileName)
@@ -600,6 +649,18 @@ func (c *Convertor) encodeImage(img image.Image, fileName string) error {
 		err = jpeg.Encode(file, img, &jpeg.Options{Quality: c.Opts.Quality})
 	case ".webp":
 		err = webp.Encode(file, img, &webp.Options{Quality: float32(c.Opts.Quality)})
+	case ".avif":
+		img = imageToRGBA(img)
+		lossLess := heif.LosslessModeDisabled
+		if c.Opts.Lossless {
+			lossLess = heif.LosslessModeEnabled
+		}
+
+		ctx, err := heif.EncodeFromImage(img, heif.CompressionAV1, c.Opts.Quality, lossLess, 0)
+		if err != nil {
+			return fmt.Errorf("encodeImage: %w", err)
+		}
+		err = ctx.WriteToFile(fileName)
 	}
 	if err != nil {
 		return fmt.Errorf("encodeImage: %w", err)
@@ -647,6 +708,11 @@ func (c *Convertor) encodeIM(i image.Image, fileName string) error {
 		_ = mw.WriteImage(fileName)
 	case ".jpg", ".jpeg":
 		_ = mw.SetImageFormat("JPEG")
+		_ = mw.SetImageCompressionQuality(uint(c.Opts.Quality))
+		_ = mw.WriteImage(fileName)
+	case ".avif":
+		_ = mw.SetImageFormat("AVIF")
+		_ = mw.SetImageCompressionQuality(uint(c.Opts.Quality))
 		_ = mw.WriteImage(fileName)
 	}
 
@@ -846,7 +912,7 @@ func (c *Convertor) isDocument(f string) bool {
 
 // isImage checks if file is image.
 func (c *Convertor) isImage(f string) bool {
-	var types = []string{".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".webp"}
+	var types = []string{".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".webp", ".avif"}
 	for _, t := range types {
 		if strings.ToLower(filepath.Ext(f)) == t {
 			return true

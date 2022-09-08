@@ -10,6 +10,8 @@ github.com/gen2brain/go-unarr v0.1.6 h1:2TtfIQ2dGuCkgEYa+vPE1ydcpkB3CtBbdYMfRSGL
 github.com/gen2brain/go-unarr v0.1.6/go.mod h1:P05CsEe8jVEXhxqXqp9mFKUKFV0BKpFmtgNWf8Mcoos=
 github.com/hotei/bmp v0.0.0-20150430041436-f620cebab0c7 h1:NlUATi3cllRJhpM4mfR9BxiLRXT83bcSLcOa+S8lrME=
 github.com/hotei/bmp v0.0.0-20150430041436-f620cebab0c7/go.mod h1:Hku3FQ2laCEwSv7Z8YkC0er38jLaUycUCbsFkWMr+z4=
+github.com/strukturag/libheif v1.13.0 h1:SuLo/Fl/Nzbw0ixOya1YZSl0Xd27X4fgofGnJdvOHqI=
+github.com/strukturag/libheif v1.13.0/go.mod h1:E/PNRlmVtrtj9j2AvBZlrO4dsBDu6KfwDZn7X1Ce8Ks=
 golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8/go.mod h1:FeLwcggjj3mMvU+oOTbSwawSJRM1uh48EjtB4UJZlP0=
 golang.org/x/image v0.0.0-20220902085622-e7cb96979f69 h1:Lj6HJGCSn5AjxRAH2+r35Mir4icalbqku+CLUtjnvXY=
 golang.org/x/image v0.0.0-20220902085622-e7cb96979f69/go.mod h1:doUCurBvlfPMKfmIpRIywoHmhN3VyhnoFDbvIEWF4hY=

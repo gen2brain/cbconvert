@@ -10,7 +10,7 @@ It can convert comics to different formats to fit your various devices.
 
 * reads RAR, ZIP, 7Z, CBR, CBZ, CB7, CBT, PDF, EPUB, and plain directory
 * always saves processed comics in CBZ (ZIP) archive format
-* images can be converted to JPEG, PNG, TIFF, WEBP, or 4-Bit BMP (16 colors) file format
+* images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, or 4-Bit BMP (16 colors) file format
 * rotate, flip, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images
 * resize algorithms (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
 * export covers from comics
@@ -18,8 +18,10 @@ It can convert comics to different formats to fit your various devices.
 
 ### Download
 
-* [Windows](https://github.com/gen2brain/cbconvert/releases/download/0.7.0/cbconvert-0.7.0-windows-i686.zip)
-* [Linux](https://github.com/gen2brain/cbconvert/releases/download/0.7.0/cbconvert-0.7.0-linux-x86_64.tar.gz)
+* [Windows x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.0/cbconvert-0.8.0-windows-x86_64.zip)
+* [Linux x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.0/cbconvert-0.8.0-linux-x86_64.tar.gz)
+* [macOS x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.0/cbconvert-0.8.0-darwin-x86_64.tar.gz)
+* [macOS aarch64](https://github.com/gen2brain/cbconvert/releases/download/0.8.0/cbconvert-0.8.0-darwin-aarch64.tar.gz)
 
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 
@@ -55,9 +57,11 @@ This is what it looks like in the PCManFM file manager:
         --fit
             Best fit for required width and height (default "false")
         --format
-            Image format, valid values are jpeg, png, tiff, bmp, webp (default "jpeg")
+            Image format, valid values are jpeg, png, tiff, bmp, webp, avif (default "jpeg")
         --quality
-            JPEG image quality (default "75")
+            Image quality (default "75")
+        --lossless
+            Lossless compression (avif) (default "false")
         --filter
             0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
         --no-cover
