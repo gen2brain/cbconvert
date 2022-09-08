@@ -20,8 +20,8 @@ It can convert comics to different formats to fit your various devices.
 
 * [Windows x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.0/cbconvert-0.8.0-windows-x86_64.zip)
 * [Linux x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.0/cbconvert-0.8.0-linux-x86_64.tar.gz)
-* [macOS x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.0/cbconvert-0.8.0-darwin-x86_64.tar.gz)
-* [macOS aarch64](https://github.com/gen2brain/cbconvert/releases/download/0.8.0/cbconvert-0.8.0-darwin-aarch64.tar.gz)
+* [macOS x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.0/cbconvert-0.8.0-darwin-x86_64.zip)
+* [macOS aarch64](https://github.com/gen2brain/cbconvert/releases/download/0.8.0/cbconvert-0.8.0-darwin-aarch64.zip)
 
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 
