@@ -170,6 +170,6 @@ Extract covers to ~/covers dir for all supported files found in the directory, L
 
 ### Compile
 
-Install ImageMagick 7 libraries and headers and then install to GOBIN:
+Install ImageMagick7 and libheif (with libaom) libraries and headers and then install to GOBIN:
 
 `go install github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
