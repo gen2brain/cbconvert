@@ -1,4 +1,4 @@
-module cbconvert
+module github.com/gen2brain/cbconvert/cmd/cbconvert
 
 go 1.19
 
