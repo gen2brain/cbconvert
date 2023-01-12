@@ -469,7 +469,7 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 		if c.isNonImage(img) && !c.Opts.NoNonImage {
 			err = c.copyFile(file, filepath.Join(c.Workdir, filepath.Base(img)))
 			if err != nil {
-				return fmt.Errorf("convertArchive: %w", err)
+				return fmt.Errorf("convertDirectory: %w", err)
 			}
 
 			err = file.Close()
@@ -479,6 +479,14 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 
 			continue
 		} else if c.isImage(img) {
+			if c.Opts.NoConvert {
+				err = c.copyFile(file, filepath.Join(c.Workdir, filepath.Base(img)))
+				if err != nil {
+					return fmt.Errorf("convertDirectory: %w", err)
+				}
+
+				continue
+			}
 
 			i, err := c.decodeImage(file, img)
 			if err != nil {
