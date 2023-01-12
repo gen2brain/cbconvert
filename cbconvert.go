@@ -1174,16 +1174,36 @@ func (c *Convertor) ExtractThumbnail(filename string, info os.FileInfo) error {
 		fname = abs
 	}
 
-	_ = mw.SetImageFormat("PNG")
-	_ = mw.SetImageProperty("Software", "CBconvert")
-	_ = mw.SetImageProperty("Description", "Thumbnail of "+furi)
-	_ = mw.SetImageProperty("Thumb::URI", furi)
-	_ = mw.SetImageProperty("Thumb::MTime", strconv.FormatInt(info.ModTime().Unix(), 10))
-	_ = mw.SetImageProperty("Thumb::Size", strconv.FormatInt(info.Size(), 10))
-	_ = mw.SetImageProperty("Thumb::Mimetype", mime.TypeByExtension(filepath.Ext(filename)))
+	err = mw.SetImageFormat("PNG")
+	if err != nil {
+		return fmt.Errorf("extractThumbnail: %w", err)
+	}
+	err = mw.SetImageProperty("Software", "CBconvert")
+	if err != nil {
+		return fmt.Errorf("extractThumbnail: %w", err)
+	}
+	err = mw.SetImageProperty("Description", "Thumbnail of "+furi)
+	if err != nil {
+		return fmt.Errorf("extractThumbnail: %w", err)
+	}
+	err = mw.SetImageProperty("Thumb::URI", furi)
+	if err != nil {
+		return fmt.Errorf("extractThumbnail: %w", err)
+	}
+	err = mw.SetImageProperty("Thumb::MTime", strconv.FormatInt(info.ModTime().Unix(), 10))
+	if err != nil {
+		return fmt.Errorf("extractThumbnail: %w", err)
+	}
+	err = mw.SetImageProperty("Thumb::Size", strconv.FormatInt(info.Size(), 10))
+	if err != nil {
+		return fmt.Errorf("extractThumbnail: %w", err)
+	}
+	err = mw.SetImageProperty("Thumb::Mimetype", mime.TypeByExtension(filepath.Ext(filename)))
+	if err != nil {
+		return fmt.Errorf("extractThumbnail: %w", err)
+	}
 
-	_ = mw.WriteImage(fname)
-	return nil
+	return mw.WriteImage(fname)
 }
 
 // Convert converts comic book.
