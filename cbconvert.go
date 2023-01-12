@@ -185,17 +185,7 @@ func (c *Convertor) convertImage(ctx context.Context, img image.Image, index int
 	}
 
 	switch c.Opts.Format {
-	case "jpeg":
-		err = c.encodeImage(img, fileName)
-		if err != nil {
-			return err
-		}
-	case "png":
-		err = c.encodeImage(img, fileName)
-		if err != nil {
-			return err
-		}
-	case "tiff":
+	case "jpeg", "png", "tiff", "webp", "avif":
 		err = c.encodeImage(img, fileName)
 		if err != nil {
 			return err
@@ -203,16 +193,6 @@ func (c *Convertor) convertImage(ctx context.Context, img image.Image, index int
 	case "bmp":
 		// convert image to 4-Bit BMP (16 colors)
 		err = c.encodeIM(img, fileName)
-		if err != nil {
-			return err
-		}
-	case "webp":
-		err = c.encodeImage(img, fileName)
-		if err != nil {
-			return err
-		}
-	case "avif":
-		err = c.encodeImage(img, fileName)
 		if err != nil {
 			return err
 		}
@@ -296,9 +276,14 @@ func (c *Convertor) levelImage(img image.Image) (image.Image, error) {
 	}
 
 	blob := mw.GetImageBlob()
-	i, err := c.decodeImage(bytes.NewReader(blob), "levels")
+
+	var i image.Image
+	i, err = c.decodeImage(bytes.NewReader(blob), "levels")
 	if err != nil {
-		return img, fmt.Errorf("levelImage: %w", err)
+		i, err = c.decodeIM(bytes.NewReader(blob), "levels")
+		if err != nil {
+			return nil, fmt.Errorf("levelImage: %w", err)
+		}
 	}
 
 	return i, nil
@@ -397,9 +382,13 @@ func (c *Convertor) convertArchive(fileName string) error {
 				continue
 			}
 
-			img, err := c.decodeImage(bytes.NewReader(data), pathName)
+			var img image.Image
+			img, err = c.decodeImage(bytes.NewReader(data), pathName)
 			if err != nil {
-				return fmt.Errorf("convertArchive: %w", err)
+				img, err = c.decodeIM(bytes.NewReader(data), pathName)
+				if err != nil {
+					return fmt.Errorf("convertArchive: %w", err)
+				}
 			}
 
 			if cover == pathName && c.Opts.NoCover {
@@ -488,9 +477,13 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 				continue
 			}
 
-			i, err := c.decodeImage(file, img)
+			var i image.Image
+			i, err = c.decodeImage(file, img)
 			if err != nil {
-				return fmt.Errorf("convertDirectory: %w", err)
+				i, err = c.decodeIM(file, img)
+				if err != nil {
+					return fmt.Errorf("coverDirectory: %w", err)
+				}
 			}
 
 			if c.Opts.NoRGB && !c.isGrayScale(i) {
@@ -773,9 +766,13 @@ func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
 		return nil, fmt.Errorf("coverArchive: %w", err)
 	}
 
-	img, err := c.decodeImage(bytes.NewReader(data), cover)
+	var img image.Image
+	img, err = c.decodeImage(bytes.NewReader(data), cover)
 	if err != nil {
-		return nil, fmt.Errorf("coverArchive: %w", err)
+		img, err = c.decodeIM(bytes.NewReader(data), cover)
+		if err != nil {
+			return nil, fmt.Errorf("coverArchive: %w", err)
+		}
 	}
 
 	return img, nil
@@ -814,9 +811,13 @@ func (c *Convertor) coverDirectory(dir string) (image.Image, error) {
 	}
 	defer file.Close()
 
-	img, err := c.decodeImage(file, cover)
+	var img image.Image
+	img, err = c.decodeImage(file, cover)
 	if err != nil {
-		return nil, fmt.Errorf("coverDirectory: %w", err)
+		img, err = c.decodeIM(file, cover)
+		if err != nil {
+			return nil, fmt.Errorf("coverDirectory: %w", err)
+		}
 	}
 
 	return img, nil
