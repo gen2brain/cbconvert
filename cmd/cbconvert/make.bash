@@ -54,7 +54,7 @@ PKG_CONFIG_LIBDIR="$MACOS_x86_64/SDK/MacOSX12.1.sdk/usr/lib/pkgconfig" \
 CGO_CFLAGS="-I$MACOS_x86_64/usr/include -I$MACOS_x86_64/macports/pkgs/opt/local/include" \
 CGO_LDFLAGS="-L$MACOS_x86_64/SDK/MacOSX12.1.sdk/usr/lib -L$MACOS_x86_64/macports/pkgs/opt/local/lib -mmacosx-version-min=10.13" \
 CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
-go build -trimpath -tags 'extlib static' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w" && \
+go build -trimpath -tags 'extlib pkgconfig' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w" && \
 cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && zip -rq "${BUILDDIR}-darwin-x86_64.zip" ${BUILDDIR}
 rm -rf ${BUILDDIR}
 
@@ -68,6 +68,6 @@ PKG_CONFIG_LIBDIR="$MACOS_aarch64/SDK/MacOSX12.1.sdk/usr/lib/pkgconfig" \
 CGO_CFLAGS="-I$MACOS_aarch64/usr/include -I$MACOS_aarch64/macports/pkgs/opt/local/include" \
 CGO_LDFLAGS="-L$MACOS_aarch64/SDK/MacOSX12.1.sdk/usr/lib -L$MACOS_aarch64/macports/pkgs/opt/local/lib -mmacosx-version-min=10.13" \
 CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
-go build -trimpath -tags 'extlib static' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w" && \
+go build -trimpath -tags 'extlib pkgconfig' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w" && \
 cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && zip -rq "${BUILDDIR}-darwin-aarch64.zip" ${BUILDDIR}
 rm -rf ${BUILDDIR}
