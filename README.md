@@ -31,7 +31,7 @@ Copy cbconvert cli binary to your PATH and create file ~/.local/share/thumbnaile
 [Thumbnailer Entry]
 TryExec=cbconvert
 Exec=cbconvert thumbnail --quiet --width %s --outfile %o %i
-MimeType=application/pdf;application/x-pdf;image/pdf;application/x-cbz;application/x-cbr;application/x-cb7;application/x-cbt;application/epub+zip;
+MimeType=application/pdf;application/x-pdf;image/pdf;application/x-cbz;application/x-cbr;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;
 ```
 
 This is what it looks like in the PCManFM file manager:
