@@ -991,16 +991,29 @@ func (c *Convertor) coverName(images []string) string {
 		return ""
 	}
 
-	for _, i := range images {
-		e := c.baseNoExt(i)
-		if strings.HasPrefix(i, "cover") || strings.HasPrefix(i, "front") ||
-			strings.HasSuffix(e, "cover") || strings.HasSuffix(e, "front") {
-			return i
+	lower := make([]string, 0)
+	for idx, img := range images {
+		img = strings.ToLower(img)
+		lower = append(lower, img)
+		ext := c.baseNoExt(img)
+
+		if strings.HasPrefix(img, "cover") || strings.HasPrefix(img, "front") ||
+			strings.HasSuffix(ext, "cover") || strings.HasSuffix(ext, "front") {
+			return images[idx]
 		}
 	}
 
-	sort.Sort(sortorder.Natural(images))
-	return images[0]
+	sort.Sort(sortorder.Natural(lower))
+	cover := lower[0]
+
+	for idx, img := range images {
+		img = strings.ToLower(img)
+		if img == cover {
+			return images[idx]
+		}
+	}
+
+	return ""
 }
 
 // coverImage returns cover as image.Image.
