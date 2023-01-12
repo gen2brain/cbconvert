@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 MUSL_x86_64="/usr/x86_64-pc-linux-musl"
+MUSL_aarch64="/usr/aarch64-pc-linux-musl"
 MINGW_x86_64="/usr/x86_64-w64-mingw32"
 MACOS_x86_64="/usr/x86_64-apple-darwin"
 MACOS_aarch64="/usr/aarch64-apple-darwin"
@@ -15,8 +16,20 @@ PKG_CONFIG_LIBDIR="$MUSL_x86_64/usr/lib/pkgconfig" \
 CGO_CFLAGS="-I$MUSL_x86_64/usr/include" \
 CGO_LDFLAGS="-L$MUSL_x86_64/usr/lib" \
 CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
-go build -trimpath -tags 'extlib static' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w '-extldflags=-static'"
-cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && tar -czf "${BUILDDIR}-linux-x86_64.tar.gz" ${BUILDDIR} 
+go build -trimpath -tags 'extlib pkgconfig' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w '-extldflags=-static'" && \
+cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && tar -czf "${BUILDDIR}-linux-x86_64.tar.gz" ${BUILDDIR}
+rm -rf ${BUILDDIR}
+
+BUILDDIR="cbconvert-${VERSION}"; mkdir -p ${BUILDDIR}
+CC=aarch64-pc-linux-musl-gcc \
+PKG_CONFIG="aarch64-pc-linux-musl-pkg-config" \
+PKG_CONFIG_PATH="$MUSL_aarch64/usr/lib/pkgconfig" \
+PKG_CONFIG_LIBDIR="$MUSL_aarch64/usr/lib/pkgconfig" \
+CGO_CFLAGS="-I$MUSL_aarch64/usr/include" \
+CGO_LDFLAGS="-L$MUSL_aarch64/usr/lib" \
+CGO_ENABLED=1 GOOS=linux GOARCH=arm64 \
+go build -trimpath -tags 'extlib pkgconfig' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w '-extldflags=-static'" && \
+cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && tar -czf "${BUILDDIR}-linux-aarch64.tar.gz" ${BUILDDIR}
 rm -rf ${BUILDDIR}
 
 BUILDDIR="cbconvert-${VERSION}"; mkdir -p ${BUILDDIR}
@@ -27,7 +40,7 @@ PKG_CONFIG_LIBDIR="$MINGW_x86_64/usr/lib/pkgconfig" \
 CGO_CFLAGS="-I$MINGW_x86_64/usr/include" \
 CGO_LDFLAGS="-L$MINGW_x86_64/usr/lib" \
 CGO_ENABLED=1 GOOS=windows GOARCH=amd64 \
-go build -trimpath -tags 'extlib static' -v -o ${BUILDDIR}/cbconvert.exe -ldflags "-s -w '-extldflags=-static -Wl,--allow-multiple-definition'"
+go build -trimpath -tags 'extlib pkgconfig' -v -o ${BUILDDIR}/cbconvert.exe -ldflags "-s -w '-extldflags=-static -Wl,--allow-multiple-definition'" && \
 cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && zip -rq "${BUILDDIR}-windows-x86_64.zip" ${BUILDDIR}
 rm -rf ${BUILDDIR}
 
@@ -41,7 +54,7 @@ PKG_CONFIG_LIBDIR="$MACOS_x86_64/SDK/MacOSX12.1.sdk/usr/lib/pkgconfig" \
 CGO_CFLAGS="-I$MACOS_x86_64/usr/include -I$MACOS_x86_64/macports/pkgs/opt/local/include" \
 CGO_LDFLAGS="-L$MACOS_x86_64/SDK/MacOSX12.1.sdk/usr/lib -L$MACOS_x86_64/macports/pkgs/opt/local/lib -mmacosx-version-min=10.13" \
 CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
-go build -trimpath -tags 'extlib static' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w"
+go build -trimpath -tags 'extlib static' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w" && \
 cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && zip -rq "${BUILDDIR}-darwin-x86_64.zip" ${BUILDDIR}
 rm -rf ${BUILDDIR}
 
@@ -55,6 +68,6 @@ PKG_CONFIG_LIBDIR="$MACOS_aarch64/SDK/MacOSX12.1.sdk/usr/lib/pkgconfig" \
 CGO_CFLAGS="-I$MACOS_aarch64/usr/include -I$MACOS_aarch64/macports/pkgs/opt/local/include" \
 CGO_LDFLAGS="-L$MACOS_aarch64/SDK/MacOSX12.1.sdk/usr/lib -L$MACOS_aarch64/macports/pkgs/opt/local/lib -mmacosx-version-min=10.13" \
 CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
-go build -trimpath -tags 'extlib static' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w"
+go build -trimpath -tags 'extlib static' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w" && \
 cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && zip -rq "${BUILDDIR}-darwin-aarch64.zip" ${BUILDDIR}
 rm -rf ${BUILDDIR}
