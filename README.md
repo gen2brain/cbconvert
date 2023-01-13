@@ -18,11 +18,11 @@ It can convert comics to different formats to fit your various devices.
 
 ### Download
 
-* [Windows x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.1/cbconvert-0.8.1-windows-x86_64.zip)
-* [Linux x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.1/cbconvert-0.8.1-linux-x86_64.tar.gz)
-* [Linux aarch64](https://github.com/gen2brain/cbconvert/releases/download/0.8.1/cbconvert-0.8.1-linux-aarch64.tar.gz)
-* [macOS x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.1/cbconvert-0.8.1-darwin-x86_64.zip)
-* [macOS aarch64](https://github.com/gen2brain/cbconvert/releases/download/0.8.1/cbconvert-0.8.1-darwin-aarch64.zip)
+* [Windows x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.2/cbconvert-0.8.2-windows-x86_64.zip)
+* [Linux x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.2/cbconvert-0.8.2-linux-x86_64.tar.gz)
+* [Linux aarch64](https://github.com/gen2brain/cbconvert/releases/download/0.8.2/cbconvert-0.8.2-linux-aarch64.tar.gz)
+* [macOS x86_64](https://github.com/gen2brain/cbconvert/releases/download/0.8.2/cbconvert-0.8.2-darwin-x86_64.zip)
+* [macOS aarch64](https://github.com/gen2brain/cbconvert/releases/download/0.8.2/cbconvert-0.8.2-darwin-aarch64.zip)
 
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 
