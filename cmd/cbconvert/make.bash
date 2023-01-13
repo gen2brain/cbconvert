@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+GLIBC_x86_64="/usr/x86_64-pc-linux-gnu-static"
 MUSL_x86_64="/usr/x86_64-pc-linux-musl"
 MUSL_aarch64="/usr/aarch64-pc-linux-musl"
 MINGW_x86_64="/usr/x86_64-w64-mingw32"
@@ -9,16 +10,28 @@ MACOS_aarch64="/usr/aarch64-apple-darwin"
 VERSION="`git --git-dir ../../.git describe --tags --abbrev=0 2>/dev/null || echo '0.0.0'`"
 
 BUILDDIR="cbconvert-${VERSION}"; mkdir -p ${BUILDDIR}
-CC=x86_64-pc-linux-musl-gcc \
-PKG_CONFIG="x86_64-pc-linux-musl-pkg-config" \
-PKG_CONFIG_PATH="$MUSL_x86_64/usr/lib/pkgconfig" \
-PKG_CONFIG_LIBDIR="$MUSL_x86_64/usr/lib/pkgconfig" \
-CGO_CFLAGS="-I$MUSL_x86_64/usr/include" \
-CGO_LDFLAGS="-L$MUSL_x86_64/usr/lib" \
+CC=x86_64-pc-linux-gnu-gcc \
+PKG_CONFIG="x86_64-pc-linux-gnu-pkg-config" \
+PKG_CONFIG_PATH="$GLIBC_x86_64/usr/lib64/pkgconfig" \
+PKG_CONFIG_LIBDIR="$GLIBC_x86_64/usr/lib64/pkgconfig" \
+CGO_CFLAGS="-I$GLIBC_x86_64/usr/include" \
+CGO_LDFLAGS="-L$GLIBC_x86_64/usr/lib64" \
 CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
 go build -trimpath -tags 'extlib pkgconfig' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w '-extldflags=-static'" && \
 cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && tar -czf "${BUILDDIR}-linux-x86_64.tar.gz" ${BUILDDIR}
 rm -rf ${BUILDDIR}
+
+#BUILDDIR="cbconvert-${VERSION}"; mkdir -p ${BUILDDIR}
+#CC=x86_64-pc-linux-musl-gcc \
+#PKG_CONFIG="x86_64-pc-linux-musl-pkg-config" \
+#PKG_CONFIG_PATH="$MUSL_x86_64/usr/lib/pkgconfig" \
+#PKG_CONFIG_LIBDIR="$MUSL_x86_64/usr/lib/pkgconfig" \
+#CGO_CFLAGS="-I$MUSL_x86_64/usr/include" \
+#CGO_LDFLAGS="-L$MUSL_x86_64/usr/lib" \
+#CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
+#go build -trimpath -tags 'extlib pkgconfig' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w '-extldflags=-static'" && \
+#cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && tar -czf "${BUILDDIR}-linux-x86_64.tar.gz" ${BUILDDIR}
+#rm -rf ${BUILDDIR}
 
 BUILDDIR="cbconvert-${VERSION}"; mkdir -p ${BUILDDIR}
 CC=aarch64-pc-linux-musl-gcc \
