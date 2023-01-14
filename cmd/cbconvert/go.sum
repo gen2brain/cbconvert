@@ -7,8 +7,8 @@ github.com/disintegration/imaging v1.6.2 h1:w1LecBlG2Lnp8B3jk5zSuNqd7b4DXhcjwek1
 github.com/disintegration/imaging v1.6.2/go.mod h1:44/5580QXChDfwIclfc/PCwrr44amcmDAg8hxG0Ewe4=
 github.com/fvbommel/sortorder v1.0.2 h1:mV4o8B2hKboCdkJm+a7uX/SIpZob4JzUpc5GGnM45eo=
 github.com/fvbommel/sortorder v1.0.2/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
-github.com/gen2brain/cbconvert v0.0.0-20230112123620-c24d7b7e18c4 h1:DMAjwfDN0yhxfJjrZLqCjL1CSEvcBUbOGPPEW1WhYXw=
-github.com/gen2brain/cbconvert v0.0.0-20230112123620-c24d7b7e18c4/go.mod h1:GO5h+s7160FK66rth/0QS06HgXFwE57jaP3OTX/8Rv0=
+github.com/gen2brain/cbconvert v0.0.0-20230114093920-943cd9bb9530 h1:hyHrH4Y+AOVaYgDyrsz549ahu+nuPINWraGry6IebrU=
+github.com/gen2brain/cbconvert v0.0.0-20230114093920-943cd9bb9530/go.mod h1:GO5h+s7160FK66rth/0QS06HgXFwE57jaP3OTX/8Rv0=
 github.com/gen2brain/go-fitz v1.20.2 h1:4FPJCU/ImQ32oojBsYn/+oTkRORxbAhAA+Yw1Fm97MA=
 github.com/gen2brain/go-fitz v1.20.2/go.mod h1:YbQPODTC/UnQ/RK4JyD3zfpDQ19UKiV85nMMT3XpT0s=
 github.com/gen2brain/go-unarr v0.1.6 h1:2TtfIQ2dGuCkgEYa+vPE1ydcpkB3CtBbdYMfRSGLdA8=
