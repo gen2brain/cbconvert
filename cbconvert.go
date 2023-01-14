@@ -472,6 +472,11 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
+				err = file.Close()
+				if err != nil {
+					return fmt.Errorf("convertDirectory: %w", err)
+				}
+
 				continue
 			}
 
