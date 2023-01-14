@@ -246,8 +246,6 @@ func (c *Convertor) transformImage(img image.Image) image.Image {
 
 // levelImage applies a Photoshop-like levels operation on an image.
 func (c *Convertor) levelImage(img image.Image) (image.Image, error) {
-	imagick.Initialize()
-
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
@@ -590,8 +588,6 @@ func (c *Convertor) decodeImage(reader io.Reader, fileName string) (img image.Im
 
 // decodeIM decodes image from reader (ImageMagick).
 func (c *Convertor) decodeIM(reader io.Reader, fileName string) (img image.Image, err error) {
-	imagick.Initialize()
-
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
@@ -672,8 +668,6 @@ func (c *Convertor) encodeImage(img image.Image, fileName string) error {
 
 // encodeIM encodes image to file (ImageMagick).
 func (c *Convertor) encodeIM(i image.Image, fileName string) error {
-	imagick.Initialize()
-
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
@@ -1041,6 +1035,16 @@ func (c *Convertor) coverImage(fileName string, fileInfo os.FileInfo) (image.Ima
 	return cover, nil
 }
 
+// Initialize inits ImageMagick.
+func (c *Convertor) Initialize() {
+	imagick.Initialize()
+}
+
+// Terminate terminates ImageMagick.
+func (c *Convertor) Terminate() {
+	imagick.Terminate()
+}
+
 // Files returns list of found comic files.
 func (c *Convertor) Files(args []string) ([]string, error) {
 	var files []string
@@ -1164,8 +1168,6 @@ func (c *Convertor) ExtractThumbnail(filename string, info os.FileInfo) error {
 	} else {
 		cover = imaging.Resize(cover, 256, 0, filters[c.Opts.Filter])
 	}
-
-	imagick.Initialize()
 
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
