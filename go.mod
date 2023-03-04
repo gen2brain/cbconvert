@@ -10,7 +10,7 @@ require (
 	github.com/gen2brain/go-unarr v0.1.6
 	github.com/hotei/bmp v0.0.0-20150430041436-f620cebab0c7
 	github.com/strukturag/libheif v1.13.0
-	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69
-	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
+	golang.org/x/image v0.5.0
+	golang.org/x/sync v0.1.0
 	gopkg.in/gographics/imagick.v3 v3.4.1
 )
