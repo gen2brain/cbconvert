@@ -1118,8 +1118,8 @@ func (c *Convertor) Files(args []string) ([]string, error) {
 	return files, nil
 }
 
-// ExtractCover extracts cover.
-func (c *Convertor) ExtractCover(fileName string, fileInfo os.FileInfo) error {
+// Cover extracts cover.
+func (c *Convertor) Cover(fileName string, fileInfo os.FileInfo) error {
 	c.CurrFile++
 
 	cover, err := c.coverImage(fileName, fileInfo)
@@ -1153,11 +1153,11 @@ func (c *Convertor) ExtractCover(fileName string, fileInfo os.FileInfo) error {
 	return nil
 }
 
-// ExtractThumbnail extracts thumbnail.
-func (c *Convertor) ExtractThumbnail(filename string, info os.FileInfo) error {
+// Thumbnail extracts thumbnail.
+func (c *Convertor) Thumbnail(fileName string, info os.FileInfo) error {
 	c.CurrFile++
 
-	cover, err := c.coverImage(filename, info)
+	cover, err := c.coverImage(fileName, info)
 	if err != nil {
 		return err
 	}
@@ -1181,16 +1181,16 @@ func (c *Convertor) ExtractThumbnail(filename string, info os.FileInfo) error {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
 
-	var fname string
-	var furi string
+	var fName string
+	var fUri string
 
 	if c.Opts.Outfile == "" {
-		furi = "file://" + filename
-		fname = filepath.Join(c.Opts.Outdir, fmt.Sprintf("%x.png", md5.Sum([]byte(furi))))
+		fUri = "file://" + fileName
+		fName = filepath.Join(c.Opts.Outdir, fmt.Sprintf("%x.png", md5.Sum([]byte(fUri))))
 	} else {
 		abs, _ := filepath.Abs(c.Opts.Outfile)
-		furi = "file://" + abs
-		fname = abs
+		fUri = "file://" + abs
+		fName = abs
 	}
 
 	err = mw.SetImageFormat("PNG")
@@ -1201,11 +1201,11 @@ func (c *Convertor) ExtractThumbnail(filename string, info os.FileInfo) error {
 	if err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
-	err = mw.SetImageProperty("Description", "Thumbnail of "+furi)
+	err = mw.SetImageProperty("Description", "Thumbnail of "+fUri)
 	if err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
-	err = mw.SetImageProperty("Thumb::URI", furi)
+	err = mw.SetImageProperty("Thumb::URI", fUri)
 	if err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
@@ -1217,12 +1217,12 @@ func (c *Convertor) ExtractThumbnail(filename string, info os.FileInfo) error {
 	if err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
-	err = mw.SetImageProperty("Thumb::Mimetype", mime.TypeByExtension(filepath.Ext(filename)))
+	err = mw.SetImageProperty("Thumb::Mimetype", mime.TypeByExtension(filepath.Ext(fileName)))
 	if err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
 
-	return mw.WriteImage(fname)
+	return mw.WriteImage(fName)
 }
 
 // Convert converts comic book.

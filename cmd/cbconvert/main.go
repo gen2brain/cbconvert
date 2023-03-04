@@ -90,14 +90,14 @@ func main() {
 		}
 
 		if opts.Cover {
-			err = conv.ExtractCover(file, stat)
+			err = conv.Cover(file, stat)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 			continue
 		} else if opts.Thumbnail {
-			err = conv.ExtractThumbnail(file, stat)
+			err = conv.Thumbnail(file, stat)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
