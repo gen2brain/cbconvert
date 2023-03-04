@@ -166,12 +166,11 @@ func (c *Convertor) convertImage(ctx context.Context, img image.Image, index int
 		c.OnProgress()
 	}
 
-	var ext = c.Opts.Format
 	var fileName string
 	if pathName != "" {
-		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%s.%s", c.baseNoExt(pathName), ext))
+		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%s.%s", c.baseNoExt(pathName), c.Opts.Format))
 	} else {
-		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%03d.%s", index, ext))
+		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%03d.%s", index, c.Opts.Format))
 	}
 
 	img = c.transformImage(img)
@@ -1136,20 +1135,19 @@ func (c *Convertor) ExtractCover(fileName string, fileInfo os.FileInfo) error {
 		}
 	}
 
-	fname := filepath.Join(c.Opts.Outdir, fmt.Sprintf("%s.jpg", c.baseNoExt(fileName)))
-	file, err := os.Create(fname)
-	if err != nil {
-		return fmt.Errorf("extractCover: %w", err)
-	}
+	fName := filepath.Join(c.Opts.Outdir, fmt.Sprintf("%s.%s", c.baseNoExt(fileName), c.Opts.Format))
 
-	err = jpeg.Encode(file, cover, &jpeg.Options{Quality: c.Opts.Quality})
-	if err != nil {
-		return fmt.Errorf("extractCover: %w", err)
-	}
-
-	err = file.Close()
-	if err != nil {
-		return fmt.Errorf("extractCover: %w", err)
+	switch c.Opts.Format {
+	case "jpeg", "png", "tiff", "webp", "avif":
+		err = c.encodeImage(cover, fName)
+		if err != nil {
+			return err
+		}
+	case "bmp":
+		err = c.encodeIM(cover, fName)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -113,8 +113,10 @@ This is what it looks like in the PCManFM file manager:
             Image height (default "0")
         --fit
             Best fit for required width and height (default "false")
+        --format
+            Image format, valid values are jpeg, png, tiff, bmp, webp, avif (default "jpeg")
         --quality
-            JPEG image quality (default "75")
+            Image quality (default "75")
         --filter
             0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
         --outdir

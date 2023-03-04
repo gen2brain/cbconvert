@@ -152,6 +152,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	cover.IntVar(&opts.Width, "width", 0, "Image width")
 	cover.IntVar(&opts.Height, "height", 0, "Image height")
 	cover.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
+	cover.StringVar(&opts.Format, "format", "jpeg", "Image format, valid values are jpeg, png, tiff, bmp, webp, avif")
 	cover.IntVar(&opts.Quality, "quality", 75, "Image quality")
 	cover.IntVar(&opts.Filter, "filter", 2, "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos")
 	cover.StringVar(&opts.Outdir, "outdir", ".", "Output directory")
