@@ -149,6 +149,12 @@ This is what it looks like in the PCManFM file manager:
             Process subdirectories recursively (default "false")
         --quiet
             Hide console output (default "false")
+
+      meta
+            CBZ metadata
+
+        --cover
+            Print cover name (default "false")
 ```
 
 ### Examples

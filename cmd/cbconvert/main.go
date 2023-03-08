@@ -47,7 +47,7 @@ func main() {
 	}
 
 	var bar *progressbar.ProgressBar
-	if opts.Cover || opts.Thumbnail {
+	if opts.Cover || opts.Thumbnail || opts.Meta {
 		if !opts.Quiet {
 			bar = progressbar.NewOptions(conv.Nfiles,
 				progressbar.OptionShowCount(),
@@ -89,7 +89,19 @@ func main() {
 			os.Exit(1)
 		}
 
-		if opts.Cover {
+		if opts.Meta {
+			ret, err := conv.Meta(file, stat)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+
+			if opts.Cover {
+				fmt.Println(ret)
+			}
+
+			continue
+		} else if opts.Cover {
 			err = conv.Cover(file, stat)
 			if err != nil {
 				fmt.Println(err)
@@ -172,6 +184,10 @@ func parseFlags() (cbconvert.Options, []string) {
 	thumbnail.BoolVar(&opts.Recursive, "recursive", false, "Process subdirectories recursively")
 	thumbnail.BoolVar(&opts.Quiet, "quiet", false, "Hide console output")
 
+	meta := flag.NewFlagSet("meta", flag.ExitOnError)
+	meta.SortFlags = false
+	meta.BoolVar(&opts.Cover, "cover", false, "Print cover name")
+
 	convert.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
 		_, _ = fmt.Fprintf(os.Stderr, "\nCommands:\n")
@@ -189,6 +205,12 @@ func parseFlags() (cbconvert.Options, []string) {
 		})
 		_, _ = fmt.Fprintf(os.Stderr, "\n  thumbnail\n    \tExtract cover thumbnail (freedesktop spec.)\n\n")
 		thumbnail.VisitAll(func(f *flag.Flag) {
+			_, _ = fmt.Fprintf(os.Stderr, "    --%s", f.Name)
+			_, _ = fmt.Fprintf(os.Stderr, "\n    \t")
+			_, _ = fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
+		})
+		_, _ = fmt.Fprintf(os.Stderr, "\n  meta\n    \tCBZ metadata\n\n")
+		meta.VisitAll(func(f *flag.Flag) {
 			_, _ = fmt.Fprintf(os.Stderr, "    --%s", f.Name)
 			_, _ = fmt.Fprintf(os.Stderr, "\n    \t")
 			_, _ = fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
@@ -214,6 +236,10 @@ func parseFlags() (cbconvert.Options, []string) {
 		opts.Thumbnail = true
 		_ = thumbnail.Parse(os.Args[2:])
 		args = thumbnail.Args()
+	case "meta":
+		opts.Meta = true
+		_ = meta.Parse(os.Args[2:])
+		args = meta.Args()
 	default:
 		_ = convert.Parse(os.Args[1:])
 		args = convert.Args()

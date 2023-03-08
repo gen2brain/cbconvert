@@ -93,6 +93,8 @@ type Options struct {
 	Cover bool
 	// Extract cover thumbnail (freedesktop spec.)
 	Thumbnail bool
+	// CBZ metadata
+	Meta bool
 	// Output file
 	Outfile string
 	// Output directory
@@ -1223,6 +1225,30 @@ func (c *Convertor) Thumbnail(fileName string, info os.FileInfo) error {
 	}
 
 	return mw.WriteImage(fName)
+}
+
+// Meta manipulates with CBZ metadata.
+func (c *Convertor) Meta(fileName string, info os.FileInfo) (any, error) {
+	c.CurrFile++
+
+	if c.Opts.Cover {
+		var images []string
+
+		contents, err := c.listArchive(fileName)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, ct := range contents {
+			if c.isImage(ct) {
+				images = append(images, ct)
+			}
+		}
+
+		return c.coverName(images), nil
+	}
+
+	return nil, nil
 }
 
 // Convert converts comic book.
