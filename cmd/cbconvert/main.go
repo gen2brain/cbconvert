@@ -21,8 +21,7 @@ func main() {
 	go func() {
 		for range c {
 			fmt.Println("\naborting")
-			err := os.RemoveAll(conv.Workdir)
-			if err != nil {
+			if err := os.RemoveAll(conv.Workdir); err != nil {
 				fmt.Println(err)
 			}
 			os.Exit(1)
@@ -30,8 +29,7 @@ func main() {
 	}()
 
 	if _, err := os.Stat(opts.Outdir); err != nil {
-		err = os.MkdirAll(opts.Outdir, 0775)
-		if err != nil {
+		if err := os.MkdirAll(opts.Outdir, 0775); err != nil {
 			fmt.Println(err)
 		}
 		os.Exit(1)
@@ -102,23 +100,20 @@ func main() {
 
 			continue
 		} else if opts.Cover {
-			err = conv.Cover(file, stat)
-			if err != nil {
+			if err := conv.Cover(file, stat); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 			continue
 		} else if opts.Thumbnail {
-			err = conv.Thumbnail(file, stat)
-			if err != nil {
+			if err = conv.Thumbnail(file, stat); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 			continue
 		}
 
-		err = conv.Convert(file, stat)
-		if err != nil {
+		if err := conv.Convert(file, stat); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}

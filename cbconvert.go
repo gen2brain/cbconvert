@@ -187,14 +187,12 @@ func (c *Convertor) convertImage(ctx context.Context, img image.Image, index int
 
 	switch c.Opts.Format {
 	case "jpeg", "png", "tiff", "webp", "avif":
-		err = c.encodeImage(img, fileName)
-		if err != nil {
+		if err := c.encodeImage(img, fileName); err != nil {
 			return err
 		}
 	case "bmp":
 		// convert image to 4-Bit BMP (16 colors)
-		err = c.encodeIM(img, fileName)
-		if err != nil {
+		if err := c.encodeIM(img, fileName); err != nil {
 			return err
 		}
 	}
@@ -264,13 +262,11 @@ func (c *Convertor) levelImage(img image.Image) (image.Image, error) {
 	outmin := (quantumRange * c.Opts.LevelsOutMin) / 255
 	outmax := (quantumRange * c.Opts.LevelsOutMax) / 255
 
-	err = mw.LevelImage(inmin, c.Opts.LevelsGamma, inmax)
-	if err != nil {
+	if err := mw.LevelImage(inmin, c.Opts.LevelsGamma, inmax); err != nil {
 		return img, fmt.Errorf("levelImage: %w", err)
 	}
 
-	err = mw.LevelImage(-outmin, 1.0, quantumRange+(quantumRange-outmax))
-	if err != nil {
+	if err := mw.LevelImage(-outmin, 1.0, quantumRange+(quantumRange-outmax)); err != nil {
 		return img, fmt.Errorf("levelImage: %w", err)
 	}
 
@@ -290,7 +286,12 @@ func (c *Convertor) levelImage(img image.Image) (image.Image, error) {
 
 // convertDocument converts PDF/EPUB document to CBZ.
 func (c *Convertor) convertDocument(fileName string) error {
-	c.Workdir, _ = os.MkdirTemp(os.TempDir(), "cbc")
+	var err error
+
+	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
+	if err != nil {
+		return fmt.Errorf("convertDocument: %w", err)
+	}
 
 	doc, err := fitz.New(fileName)
 	if err != nil {
@@ -327,7 +328,12 @@ func (c *Convertor) convertDocument(fileName string) error {
 
 // convertArchive converts archive to CBZ.
 func (c *Convertor) convertArchive(fileName string) error {
-	c.Workdir, _ = os.MkdirTemp(os.TempDir(), "cbc")
+	var err error
+
+	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
+	if err != nil {
+		return fmt.Errorf("convertArchive: %w", err)
+	}
 
 	contents, err := c.listArchive(fileName)
 	if err != nil {
@@ -373,8 +379,7 @@ func (c *Convertor) convertArchive(fileName string) error {
 
 		if c.isImage(pathName) {
 			if c.Opts.NoConvert {
-				err = c.copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName)))
-				if err != nil {
+				if err = c.copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
@@ -392,8 +397,7 @@ func (c *Convertor) convertArchive(fileName string) error {
 
 			if cover == pathName && c.Opts.NoCover {
 				img = c.transformImage(img)
-				err = c.encodeImage(img, filepath.Join(c.Workdir, filepath.Base(pathName)))
-				if err != nil {
+				if err = c.encodeImage(img, filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
@@ -402,8 +406,7 @@ func (c *Convertor) convertArchive(fileName string) error {
 
 			if c.Opts.NoRGB && !c.isGrayScale(img) {
 				img = c.transformImage(img)
-				err = c.encodeImage(img, filepath.Join(c.Workdir, filepath.Base(pathName)))
-				if err != nil {
+				if err = c.encodeImage(img, filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
@@ -417,8 +420,7 @@ func (c *Convertor) convertArchive(fileName string) error {
 			}
 		} else {
 			if !c.Opts.NoNonImage {
-				err = c.copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName)))
-				if err != nil {
+				if err = c.copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 			}
@@ -430,7 +432,12 @@ func (c *Convertor) convertArchive(fileName string) error {
 
 // convertDirectory converts directory to CBZ.
 func (c *Convertor) convertDirectory(dirPath string) error {
-	c.Workdir, _ = os.MkdirTemp(os.TempDir(), "cbc")
+	var err error
+
+	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
+	if err != nil {
+		return fmt.Errorf("convertDirectory: %w", err)
+	}
 
 	contents, err := c.imagesFromPath(dirPath)
 	if err != nil {
@@ -455,26 +462,22 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 		}
 
 		if c.isNonImage(img) && !c.Opts.NoNonImage {
-			err = c.copyFile(file, filepath.Join(c.Workdir, filepath.Base(img)))
-			if err != nil {
+			if err = c.copyFile(file, filepath.Join(c.Workdir, filepath.Base(img))); err != nil {
 				return fmt.Errorf("convertDirectory: %w", err)
 			}
 
-			err = file.Close()
-			if err != nil {
+			if err = file.Close(); err != nil {
 				return fmt.Errorf("convertDirectory: %w", err)
 			}
 
 			continue
 		} else if c.isImage(img) {
 			if c.Opts.NoConvert {
-				err = c.copyFile(file, filepath.Join(c.Workdir, filepath.Base(img)))
-				if err != nil {
+				if err = c.copyFile(file, filepath.Join(c.Workdir, filepath.Base(img))); err != nil {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
-				err = file.Close()
-				if err != nil {
+				if err = file.Close(); err != nil {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
@@ -492,21 +495,18 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 
 			if c.Opts.NoRGB && !c.isGrayScale(i) {
 				i = c.transformImage(i)
-				err = c.encodeImage(i, filepath.Join(c.Workdir, filepath.Base(img)))
-				if err != nil {
+				if err = c.encodeImage(i, filepath.Join(c.Workdir, filepath.Base(img))); err != nil {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
-				err = file.Close()
-				if err != nil {
+				if err = file.Close(); err != nil {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
 				continue
 			}
 
-			err = file.Close()
-			if err != nil {
+			if err = file.Close(); err != nil {
 				return fmt.Errorf("convertDirectory: %w", err)
 			}
 
@@ -569,13 +569,11 @@ func (c *Convertor) saveArchive(fileName string) error {
 		}
 	}
 
-	err = z.Close()
-	if err != nil {
+	if err = z.Close(); err != nil {
 		return fmt.Errorf("saveArchive: %w", err)
 	}
 
-	err = zipfile.Close()
-	if err != nil {
+	if err = zipfile.Close(); err != nil {
 		return fmt.Errorf("saveArchive: %w", err)
 	}
 
@@ -605,13 +603,11 @@ func (c *Convertor) decodeIM(reader io.Reader, fileName string) (img image.Image
 		return img, fmt.Errorf("decodeIM: %w", err)
 	}
 
-	err = mw.SetFilename(fileName)
-	if err != nil {
+	if err = mw.SetFilename(fileName); err != nil {
 		return img, fmt.Errorf("decodeIM: %w", err)
 	}
 
-	err = mw.ReadImageBlob(data)
-	if err != nil {
+	if err = mw.ReadImageBlob(data); err != nil {
 		return img, fmt.Errorf("decodeIM: %w", err)
 	}
 
@@ -678,43 +674,80 @@ func (c *Convertor) encodeIM(i image.Image, fileName string) error {
 	defer mw.Destroy()
 
 	rgba := imageToRGBA(i)
-	err := mw.ConstituteImage(uint(i.Bounds().Dx()), uint(i.Bounds().Dy()), "RGBA", imagick.PIXEL_CHAR, rgba.Pix)
-	if err != nil {
+	if err := mw.ConstituteImage(uint(i.Bounds().Dx()), uint(i.Bounds().Dy()), "RGBA", imagick.PIXEL_CHAR, rgba.Pix); err != nil {
 		return fmt.Errorf("encodeIM: %w", err)
 	}
 
 	if c.Opts.Grayscale {
-		_ = mw.TransformImageColorspace(imagick.COLORSPACE_GRAY)
+		if err := mw.TransformImageColorspace(imagick.COLORSPACE_GRAY); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
 	}
 
 	switch filepath.Ext(fileName) {
 	case ".png":
-		_ = mw.SetImageFormat("PNG")
-		_ = mw.WriteImage(fileName)
+		if err := mw.SetImageFormat("PNG"); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.WriteImage(fileName); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
 	case ".tif", ".tiff":
-		_ = mw.SetImageFormat("TIFF")
-		_ = mw.WriteImage(fileName)
+		if err := mw.SetImageFormat("TIFF"); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.WriteImage(fileName); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
 	case ".bmp":
 		pw := imagick.NewPixelWand()
 		pw.SetColor("black")
 		defer pw.Destroy()
 
-		_ = mw.SetImageFormat("BMP3")
-		_ = mw.SetImageBackgroundColor(pw)
-		_ = mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_REMOVE)
-		_ = mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_DEACTIVATE)
-		_ = mw.SetImageMatte(false)
-		_ = mw.SetImageCompression(imagick.COMPRESSION_NO)
-		_ = mw.QuantizeImage(16, mw.GetImageColorspace(), 1, imagick.DITHER_METHOD_FLOYD_STEINBERG, true)
-		_ = mw.WriteImage(fileName)
+		if err := mw.SetImageFormat("BMP3"); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.SetImageBackgroundColor(pw); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_REMOVE); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_DEACTIVATE); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.SetImageMatte(false); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.SetImageCompression(imagick.COMPRESSION_NO); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.QuantizeImage(16, mw.GetImageColorspace(), 1, imagick.DITHER_METHOD_FLOYD_STEINBERG, true); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.WriteImage(fileName); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
 	case ".jpg", ".jpeg":
-		_ = mw.SetImageFormat("JPEG")
-		_ = mw.SetImageCompressionQuality(uint(c.Opts.Quality))
-		_ = mw.WriteImage(fileName)
+		if err := mw.SetImageFormat("JPEG"); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.WriteImage(fileName); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
 	case ".avif":
-		_ = mw.SetImageFormat("AVIF")
-		_ = mw.SetImageCompressionQuality(uint(c.Opts.Quality))
-		_ = mw.WriteImage(fileName)
+		if err := mw.SetImageFormat("AVIF"); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
+		if err := mw.WriteImage(fileName); err != nil {
+			return fmt.Errorf("encodeIM: %w", err)
+		}
 	}
 
 	return nil
@@ -756,8 +789,7 @@ func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
 	}
 	defer archive.Close()
 
-	err = archive.EntryFor(cover)
-	if err != nil {
+	if err = archive.EntryFor(cover); err != nil {
 		return nil, err
 	}
 
@@ -882,6 +914,7 @@ func imageToRGBA(src image.Image) *image.RGBA {
 	b := src.Bounds()
 	dst := image.NewRGBA(b)
 	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
+
 	return dst
 }
 
@@ -894,6 +927,7 @@ func imageToGray(src image.Image) *image.Gray {
 	b := src.Bounds()
 	dst := image.NewGray(b)
 	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
+
 	return dst
 }
 
@@ -905,6 +939,7 @@ func (c *Convertor) isArchive(f string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -916,6 +951,7 @@ func (c *Convertor) isDocument(f string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -927,6 +963,7 @@ func (c *Convertor) isImage(f string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -938,6 +975,7 @@ func (c *Convertor) isNonImage(f string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -948,6 +986,7 @@ func (c *Convertor) isSize(size int64) bool {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -957,6 +996,7 @@ func (c *Convertor) isGrayScale(img image.Image) bool {
 	if model == color.GrayModel || model == color.Gray16Model {
 		return true
 	}
+
 	return false
 }
 
@@ -1086,8 +1126,7 @@ func (c *Convertor) Files(args []string) ([]string, error) {
 			}
 		} else {
 			if c.Opts.Recursive {
-				err = filepath.Walk(path, walkFiles)
-				if err != nil {
+				if err := filepath.Walk(path, walkFiles); err != nil {
 					return files, fmt.Errorf("files: %w", err)
 				}
 			} else {
@@ -1141,13 +1180,11 @@ func (c *Convertor) Cover(fileName string, fileInfo os.FileInfo) error {
 
 	switch c.Opts.Format {
 	case "jpeg", "png", "tiff", "webp", "avif":
-		err = c.encodeImage(cover, fName)
-		if err != nil {
+		if err := c.encodeImage(cover, fName); err != nil {
 			return err
 		}
 	case "bmp":
-		err = c.encodeIM(cover, fName)
-		if err != nil {
+		if err := c.encodeIM(cover, fName); err != nil {
 			return err
 		}
 	}
@@ -1178,8 +1215,7 @@ func (c *Convertor) Thumbnail(fileName string, info os.FileInfo) error {
 	defer mw.Destroy()
 
 	rgba := imageToRGBA(cover)
-	err = mw.ConstituteImage(uint(cover.Bounds().Dx()), uint(cover.Bounds().Dy()), "RGBA", imagick.PIXEL_CHAR, rgba.Pix)
-	if err != nil {
+	if err := mw.ConstituteImage(uint(cover.Bounds().Dx()), uint(cover.Bounds().Dy()), "RGBA", imagick.PIXEL_CHAR, rgba.Pix); err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
 
@@ -1195,32 +1231,25 @@ func (c *Convertor) Thumbnail(fileName string, info os.FileInfo) error {
 		fName = abs
 	}
 
-	err = mw.SetImageFormat("PNG")
-	if err != nil {
+	if err := mw.SetImageFormat("PNG"); err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
-	err = mw.SetImageProperty("Software", "CBconvert")
-	if err != nil {
+	if err := mw.SetImageProperty("Software", "CBconvert"); err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
-	err = mw.SetImageProperty("Description", "Thumbnail of "+fUri)
-	if err != nil {
+	if err := mw.SetImageProperty("Description", "Thumbnail of "+fUri); err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
-	err = mw.SetImageProperty("Thumb::URI", fUri)
-	if err != nil {
+	if err := mw.SetImageProperty("Thumb::URI", fUri); err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
-	err = mw.SetImageProperty("Thumb::MTime", strconv.FormatInt(info.ModTime().Unix(), 10))
-	if err != nil {
+	if err := mw.SetImageProperty("Thumb::MTime", strconv.FormatInt(info.ModTime().Unix(), 10)); err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
-	err = mw.SetImageProperty("Thumb::Size", strconv.FormatInt(info.Size(), 10))
-	if err != nil {
+	if err := mw.SetImageProperty("Thumb::Size", strconv.FormatInt(info.Size(), 10)); err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
-	err = mw.SetImageProperty("Thumb::Mimetype", mime.TypeByExtension(filepath.Ext(fileName)))
-	if err != nil {
+	if err := mw.SetImageProperty("Thumb::Mimetype", mime.TypeByExtension(filepath.Ext(fileName))); err != nil {
 		return fmt.Errorf("extractThumbnail: %w", err)
 	}
 
@@ -1256,30 +1285,24 @@ func (c *Convertor) Convert(filename string, info os.FileInfo) error {
 	c.CurrFile++
 
 	if info.IsDir() {
-		err := c.convertDirectory(filename)
-		if err != nil {
+		if err := c.convertDirectory(filename); err != nil {
 			return err
 		}
-		err = c.saveArchive(filename)
-		if err != nil {
+		if err := c.saveArchive(filename); err != nil {
 			return err
 		}
 	} else if c.isDocument(filename) {
-		err := c.convertDocument(filename)
-		if err != nil {
+		if err := c.convertDocument(filename); err != nil {
 			return err
 		}
-		err = c.saveArchive(filename)
-		if err != nil {
+		if err := c.saveArchive(filename); err != nil {
 			return err
 		}
 	} else {
-		err := c.convertArchive(filename)
-		if err != nil {
+		if err := c.convertArchive(filename); err != nil {
 			return err
 		}
-		err = c.saveArchive(filename)
-		if err != nil {
+		if err := c.saveArchive(filename); err != nil {
 			return err
 		}
 	}
