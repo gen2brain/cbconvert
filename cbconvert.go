@@ -6,12 +6,6 @@ import (
 	"context"
 	"crypto/md5"
 	"fmt"
-	"image"
-	"image/color"
-	"image/draw"
-	_ "image/gif"
-	"image/jpeg"
-	"image/png"
 	"io"
 	"mime"
 	"os"
@@ -21,6 +15,13 @@ import (
 	"strconv"
 	"strings"
 	"sync/atomic"
+
+	"image"
+	"image/color"
+	"image/draw"
+	_ "image/gif"
+	"image/jpeg"
+	"image/png"
 
 	"github.com/chai2010/webp"
 	_ "github.com/hotei/bmp"
@@ -580,6 +581,19 @@ func (c *Convertor) saveArchive(fileName string) error {
 	return os.RemoveAll(c.Workdir)
 }
 
+// listArchive lists contents of archive.
+func (c *Convertor) listArchive(fileName string) ([]string, error) {
+	var contents []string
+
+	archive, err := unarr.NewArchive(fileName)
+	if err != nil {
+		return contents, err
+	}
+	defer archive.Close()
+
+	return archive.List()
+}
+
 // decodeImage decodes image from reader.
 func (c *Convertor) decodeImage(reader io.Reader, fileName string) (img image.Image, err error) {
 	img, _, err = image.Decode(reader)
@@ -753,19 +767,6 @@ func (c *Convertor) encodeIM(i image.Image, fileName string) error {
 	return nil
 }
 
-// listArchive lists contents of archive.
-func (c *Convertor) listArchive(fileName string) ([]string, error) {
-	var contents []string
-
-	archive, err := unarr.NewArchive(fileName)
-	if err != nil {
-		return contents, err
-	}
-	defer archive.Close()
-
-	return archive.List()
-}
-
 // coverArchive extracts cover from archive.
 func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
 	var images []string
@@ -785,12 +786,12 @@ func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
 
 	archive, err := unarr.NewArchive(fileName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("coverArchive: %w", err)
 	}
 	defer archive.Close()
 
 	if err = archive.EntryFor(cover); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("coverArchive: %w", err)
 	}
 
 	data, err := archive.ReadAll()
@@ -1040,7 +1041,7 @@ func (c *Convertor) coverName(images []string) string {
 
 		if strings.HasPrefix(img, "cover") || strings.HasPrefix(img, "front") ||
 			strings.HasSuffix(ext, "cover") || strings.HasSuffix(ext, "front") {
-			return images[idx]
+			return filepath.ToSlash(images[idx])
 		}
 	}
 
@@ -1050,7 +1051,7 @@ func (c *Convertor) coverName(images []string) string {
 	for idx, img := range images {
 		img = strings.ToLower(img)
 		if img == cover {
-			return images[idx]
+			return filepath.ToSlash(images[idx])
 		}
 	}
 
