@@ -366,7 +366,7 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 			if err != nil {
 				i, err = c.imDecode(file, img)
 				if err != nil {
-					return fmt.Errorf("coverDirectory: %w", err)
+					return fmt.Errorf("convertDirectory: %w", err)
 				}
 			}
 
@@ -764,7 +764,7 @@ func (c *Convertor) archiveList(fileName string) ([]string, error) {
 
 	archive, err := unarr.NewArchive(fileName)
 	if err != nil {
-		return contents, err
+		return contents, fmt.Errorf("archiveList: %w", err)
 	}
 	defer archive.Close()
 
@@ -773,16 +773,70 @@ func (c *Convertor) archiveList(fileName string) ([]string, error) {
 
 // archiveComment returns ZIP comment.
 func (c *Convertor) archiveComment(fileName string) (string, error) {
-	r, err := zip.OpenReader(fileName)
+	zr, err := zip.OpenReader(fileName)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("archiveComment: %w", err)
 	}
 
-	return r.Comment, nil
+	return zr.Comment, nil
 }
 
 // archiveSetComment sets ZIP comment.
 func (c *Convertor) archiveSetComment(fileName, commentBody string) error {
+	zr, err := zip.OpenReader(fileName)
+	if err != nil {
+		return fmt.Errorf("archiveSetComment: %w", err)
+	}
+	defer zr.Close()
+
+	zf, err := os.CreateTemp(os.TempDir(), "cbc")
+	if err != nil {
+		return fmt.Errorf("archiveSetComment: %w", err)
+	}
+
+	tmpName := zf.Name()
+	defer os.Remove(tmpName)
+
+	zw := zip.NewWriter(zf)
+	zw.SetComment(commentBody)
+
+	for _, item := range zr.File {
+		ir, err := item.OpenRaw()
+		if err != nil {
+			return fmt.Errorf("archiveSetComment: %w", err)
+		}
+
+		it, err := zw.CreateRaw(&item.FileHeader)
+		if err != nil {
+			return fmt.Errorf("archiveSetComment: %w", err)
+		}
+
+		_, err = io.Copy(it, ir)
+		if err != nil {
+			return fmt.Errorf("archiveSetComment: %w", err)
+		}
+	}
+
+	err = zw.Close()
+	if err != nil {
+		return fmt.Errorf("archiveSetComment: %w", err)
+	}
+
+	err = zf.Close()
+	if err != nil {
+		return fmt.Errorf("archiveSetComment: %w", err)
+	}
+
+	data, err := os.ReadFile(tmpName)
+	if err != nil {
+		return fmt.Errorf("archiveSetComment: %w", err)
+	}
+
+	err = os.WriteFile(fileName, data, 0644)
+	if err != nil {
+		return fmt.Errorf("archiveSetComment: %w", err)
+	}
+
 	return nil
 }
 
@@ -1303,6 +1357,10 @@ func (c *Convertor) Meta(fileName string, info os.FileInfo) (any, error) {
 
 		return comment, nil
 	} else if c.Opts.CommentBody != "" {
+		err := c.archiveSetComment(fileName, c.Opts.CommentBody)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return nil, nil

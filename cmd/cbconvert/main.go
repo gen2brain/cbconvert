@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"github.com/gen2brain/cbconvert"
-	"github.com/schollz/progressbar/v3"
+	pb "github.com/schollz/progressbar/v3"
 	flag "github.com/spf13/pflag"
 )
 
@@ -44,26 +44,26 @@ func main() {
 		os.Exit(1)
 	}
 
-	var bar *progressbar.ProgressBar
+	var bar *pb.ProgressBar
 	if opts.Cover || opts.Thumbnail || opts.Meta {
 		if !opts.Quiet {
-			bar = progressbar.NewOptions(conv.Nfiles,
-				progressbar.OptionShowCount(),
-				progressbar.OptionClearOnFinish(),
-				progressbar.OptionUseANSICodes(true),
-				progressbar.OptionSetPredictTime(false),
+			bar = pb.NewOptions(conv.Nfiles,
+				pb.OptionShowCount(),
+				pb.OptionClearOnFinish(),
+				pb.OptionUseANSICodes(true),
+				pb.OptionSetPredictTime(false),
 			)
 		}
 	}
 
 	conv.OnStart = func() {
 		if !opts.Quiet {
-			bar = progressbar.NewOptions(conv.Ncontents,
-				progressbar.OptionShowCount(),
-				progressbar.OptionClearOnFinish(),
-				progressbar.OptionUseANSICodes(true),
-				progressbar.OptionSetDescription(fmt.Sprintf("Converting %d of %d:", conv.CurrFile, conv.Nfiles)),
-				progressbar.OptionSetPredictTime(false),
+			bar = pb.NewOptions(conv.Ncontents,
+				pb.OptionShowCount(),
+				pb.OptionClearOnFinish(),
+				pb.OptionUseANSICodes(true),
+				pb.OptionSetDescription(fmt.Sprintf("Converting %d of %d:", conv.CurrFile, conv.Nfiles)),
+				pb.OptionSetPredictTime(false),
 			)
 		}
 	}
@@ -120,6 +120,8 @@ func main() {
 			os.Exit(1)
 		}
 	}
+
+	_, _ = fmt.Fprintf(os.Stderr, "\r")
 }
 
 // parseFlags parses command line flags
@@ -185,7 +187,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	meta.SortFlags = false
 	meta.BoolVar(&opts.Cover, "cover", false, "Print cover name")
 	meta.BoolVar(&opts.Comment, "comment", false, "Print comment")
-	meta.StringVar(&opts.CommentBody, "comment-body", "", "Set comment body (file or string)")
+	meta.StringVar(&opts.CommentBody, "comment-body", "", "Set comment")
 
 	convert.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
