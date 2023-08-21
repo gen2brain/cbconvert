@@ -1,6 +1,6 @@
 module github.com/gen2brain/cbconvert
 
-go 1.19
+go 1.21
 
 require (
 	github.com/chai2010/webp v1.1.1
@@ -9,8 +9,8 @@ require (
 	github.com/gen2brain/go-fitz v1.22.2
 	github.com/gen2brain/go-unarr v0.1.7
 	github.com/hotei/bmp v0.0.0-20150430041436-f620cebab0c7
-	github.com/strukturag/libheif v1.13.0
-	golang.org/x/image v0.7.0
-	golang.org/x/sync v0.2.0
-	gopkg.in/gographics/imagick.v3 v3.4.2
+	github.com/strukturag/libheif v1.15.2
+	golang.org/x/image v0.11.0
+	golang.org/x/sync v0.3.0
+	gopkg.in/gographics/imagick.v3 v3.4.3
 )

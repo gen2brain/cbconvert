@@ -96,6 +96,8 @@ func main() {
 
 			if opts.Cover {
 				fmt.Println(ret)
+			} else if opts.Comment {
+				fmt.Println(ret)
 			}
 
 			continue
@@ -182,6 +184,8 @@ func parseFlags() (cbconvert.Options, []string) {
 	meta := flag.NewFlagSet("meta", flag.ExitOnError)
 	meta.SortFlags = false
 	meta.BoolVar(&opts.Cover, "cover", false, "Print cover name")
+	meta.BoolVar(&opts.Comment, "comment", false, "Print comment")
+	meta.StringVar(&opts.CommentBody, "comment-body", "", "Set comment body (file or string)")
 
 	convert.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
