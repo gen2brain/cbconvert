@@ -155,6 +155,11 @@ This is what it looks like in the PCManFM file manager:
 
         --cover
             Print cover name (default "false")
+        --comment
+    	    Print comment (default "false")
+        --comment-body
+    	    Set comment (default "")
+
 ```
 
 ### Examples
