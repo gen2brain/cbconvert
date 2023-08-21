@@ -1,11 +1,13 @@
 module github.com/gen2brain/cbconvert/cmd/cbconvert
 
-go 1.19
+go 1.21
+
+toolchain go1.21.0
 
 //replace github.com/gen2brain/cbconvert => ../../
 
 require (
-	github.com/gen2brain/cbconvert v0.0.0-20230602085208-16d01e292edd
+	github.com/gen2brain/cbconvert v0.0.0-20230821155257-7b6c766dcc17
 	github.com/schollz/progressbar/v3 v3.10.0
 	github.com/spf13/pflag v1.0.5
 )
@@ -20,10 +22,10 @@ require (
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/rivo/uniseg v0.3.4 // indirect
-	github.com/strukturag/libheif v1.13.0 // indirect
-	golang.org/x/image v0.7.0 // indirect
-	golang.org/x/sync v0.2.0 // indirect
+	github.com/strukturag/libheif v1.15.2 // indirect
+	golang.org/x/image v0.11.0 // indirect
+	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/term v0.5.0 // indirect
-	gopkg.in/gographics/imagick.v3 v3.4.2 // indirect
+	gopkg.in/gographics/imagick.v3 v3.4.3 // indirect
 )
