@@ -1,3 +1,6 @@
 go 1.21.0
 
-use ./cmd/cbconvert
+use (
+	.
+	./cmd/cbconvert
+)

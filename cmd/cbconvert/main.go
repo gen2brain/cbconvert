@@ -89,8 +89,9 @@ func main() {
 			os.Exit(1)
 		}
 
-		if opts.Meta {
-			ret, err := conv.Meta(file, stat)
+		switch {
+		case opts.Meta:
+			ret, err := conv.Meta(file)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -103,17 +104,19 @@ func main() {
 			}
 
 			continue
-		} else if opts.Cover {
+		case opts.Cover:
 			if err := conv.Cover(file, stat); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
+
 			continue
-		} else if opts.Thumbnail {
+		case opts.Thumbnail:
 			if err = conv.Thumbnail(file, stat); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
+
 			continue
 		}
 
@@ -277,9 +280,9 @@ func piped() bool {
 
 	if f.Mode()&os.ModeNamedPipe == 0 {
 		return false
-	} else {
-		return true
 	}
+
+	return true
 }
 
 // lines returns slice of lines from reader.
