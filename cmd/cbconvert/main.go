@@ -135,6 +135,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.IntVar(&opts.Height, "height", 0, "Image height")
 	convert.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
 	convert.StringVar(&opts.Format, "format", "jpeg", "Image format, valid values are jpeg, png, tiff, bmp, webp, avif")
+	convert.StringVar(&opts.Archive, "archive", "zip", "Archive format, valid values are zip, tar")
 	convert.IntVar(&opts.Quality, "quality", 75, "Image quality")
 	convert.BoolVar(&opts.Lossless, "lossless", false, "Lossless compression (avif)")
 	convert.IntVar(&opts.Filter, "filter", 2, "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos")
@@ -186,8 +187,8 @@ func parseFlags() (cbconvert.Options, []string) {
 	meta := flag.NewFlagSet("meta", flag.ExitOnError)
 	meta.SortFlags = false
 	meta.BoolVar(&opts.Cover, "cover", false, "Print cover name")
-	meta.BoolVar(&opts.Comment, "comment", false, "Print comment")
-	meta.StringVar(&opts.CommentBody, "comment-body", "", "Set comment")
+	meta.BoolVar(&opts.Comment, "comment", false, "Print zip comment")
+	meta.StringVar(&opts.CommentBody, "comment-body", "", "Set zip comment")
 
 	convert.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))

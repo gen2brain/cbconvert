@@ -1,6 +1,7 @@
 package cbconvert
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bytes"
 	"context"
@@ -68,6 +69,8 @@ var filters = map[int]imaging.ResampleFilter{
 type Options struct {
 	// Image format, valid values are jpeg, png, tiff, bmp, webp, avif
 	Format string
+	// Archive format, valid values are zip, tar
+	Archive string
 	// JPEG image quality
 	Quality int
 	// Lossless compression (avif)
@@ -701,6 +704,17 @@ func (c *Convertor) imEncode(i image.Image, fileName string) error {
 
 // archiveSave saves workdir to CBZ archive.
 func (c *Convertor) archiveSave(fileName string) error {
+	if c.Opts.Archive == "zip" {
+		return c.archiveSaveZip(fileName)
+	} else if c.Opts.Archive == "tar" {
+		return c.archiveSaveTar(fileName)
+	}
+
+	return nil
+}
+
+// archiveSaveZip saves workdir to CBZ archive.
+func (c *Convertor) archiveSaveZip(fileName string) error {
 	if c.OnCompress != nil {
 		c.OnCompress()
 	}
@@ -709,50 +723,108 @@ func (c *Convertor) archiveSave(fileName string) error {
 
 	zipFile, err := os.Create(zipName)
 	if err != nil {
-		return fmt.Errorf("archiveSave: %w", err)
+		return fmt.Errorf("archiveSaveZip: %w", err)
 	}
 
 	z := zip.NewWriter(zipFile)
 
 	files, err := os.ReadDir(c.Workdir)
 	if err != nil {
-		return fmt.Errorf("archiveSave: %w", err)
+		return fmt.Errorf("archiveSaveZip: %w", err)
 	}
 
 	for _, file := range files {
 		r, err := os.ReadFile(filepath.Join(c.Workdir, file.Name()))
 		if err != nil {
-			return fmt.Errorf("archiveSave: %w", err)
+			return fmt.Errorf("archiveSaveZip: %w", err)
 		}
 
 		info, err := file.Info()
 		if err != nil {
-			return fmt.Errorf("archiveSave: %w", err)
+			return fmt.Errorf("archiveSaveZip: %w", err)
 		}
 
 		zipInfo, err := zip.FileInfoHeader(info)
 		if err != nil {
-			return fmt.Errorf("archiveSave: %w", err)
+			return fmt.Errorf("archiveSaveZip: %w", err)
 		}
 
 		zipInfo.Method = zip.Deflate
 		w, err := z.CreateHeader(zipInfo)
 		if err != nil {
-			return fmt.Errorf("archiveSave: %w", err)
+			return fmt.Errorf("archiveSaveZip: %w", err)
 		}
 
 		_, err = w.Write(r)
 		if err != nil {
-			return fmt.Errorf("archiveSave: %w", err)
+			return fmt.Errorf("archiveSaveZip: %w", err)
 		}
 	}
 
 	if err = z.Close(); err != nil {
-		return fmt.Errorf("archiveSave: %w", err)
+		return fmt.Errorf("archiveSaveZip: %w", err)
 	}
 
 	if err = zipFile.Close(); err != nil {
-		return fmt.Errorf("archiveSave: %w", err)
+		return fmt.Errorf("archiveSaveZip: %w", err)
+	}
+
+	return os.RemoveAll(c.Workdir)
+}
+
+// archiveSaveTar saves workdir to CBT archive.
+func (c *Convertor) archiveSaveTar(fileName string) error {
+	if c.OnCompress != nil {
+		c.OnCompress()
+	}
+
+	tarName := filepath.Join(c.Opts.Outdir, fmt.Sprintf("%s%s.cbt", c.baseNoExt(fileName), c.Opts.Suffix))
+
+	tarFile, err := os.Create(tarName)
+	if err != nil {
+		return fmt.Errorf("archiveSaveTar: %w", err)
+	}
+
+	tw := tar.NewWriter(tarFile)
+
+	files, err := os.ReadDir(c.Workdir)
+	if err != nil {
+		return fmt.Errorf("archiveSaveTar: %w", err)
+	}
+
+	for _, file := range files {
+		r, err := os.ReadFile(filepath.Join(c.Workdir, file.Name()))
+		if err != nil {
+			return fmt.Errorf("archiveSaveTar: %w", err)
+		}
+
+		info, err := file.Info()
+		if err != nil {
+			return fmt.Errorf("archiveSaveTar: %w", err)
+		}
+
+		header, err := tar.FileInfoHeader(info, info.Name())
+		if err != nil {
+			return fmt.Errorf("archiveSaveTar: %w", err)
+		}
+
+		err = tw.WriteHeader(header)
+		if err != nil {
+			return fmt.Errorf("archiveSaveTar: %w", err)
+		}
+
+		_, err = tw.Write(r)
+		if err != nil {
+			return fmt.Errorf("archiveSaveTar: %w", err)
+		}
+	}
+
+	if err = tw.Close(); err != nil {
+		return fmt.Errorf("archiveSaveTar: %w", err)
+	}
+
+	if err = tarFile.Close(); err != nil {
+		return fmt.Errorf("archiveSaveTar: %w", err)
 	}
 
 	return os.RemoveAll(c.Workdir)

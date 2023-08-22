@@ -9,7 +9,7 @@ It can convert comics to different formats to fit your various devices.
 ### Features
 
 * reads RAR, ZIP, 7Z, CBR, CBZ, CB7, CBT, PDF, EPUB, and plain directory
-* always saves processed comics in CBZ (ZIP) archive format
+* saves processed comics in CBZ (ZIP) archive format or CBT (TAR)
 * images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, or 4-Bit BMP (16 colors) file format
 * rotate, flip, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images
 * resize algorithms (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
@@ -32,7 +32,7 @@ Copy cbconvert cli binary to your PATH and create file ~/.local/share/thumbnaile
 [Thumbnailer Entry]
 TryExec=cbconvert
 Exec=cbconvert thumbnail --quiet --width %s --outfile %o %i
-MimeType=application/pdf;application/x-pdf;image/pdf;application/x-cbz;application/x-cbr;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;
+MimeType=application/pdf;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;
 ```
 
 This is what it looks like in the PCManFM file manager:
@@ -59,6 +59,8 @@ This is what it looks like in the PCManFM file manager:
             Best fit for required width and height (default "false")
         --format
             Image format, valid values are jpeg, png, tiff, bmp, webp, avif (default "jpeg")
+        --archive
+    	    Archive format, valid values are zip, tar (default "zip")
         --quality
             Image quality (default "75")
         --lossless
@@ -156,9 +158,9 @@ This is what it looks like in the PCManFM file manager:
         --cover
             Print cover name (default "false")
         --comment
-    	    Print comment (default "false")
+    	    Print zip comment (default "false")
         --comment-body
-    	    Set comment (default "")
+    	    Set zip comment (default "")
 
 ```
 
