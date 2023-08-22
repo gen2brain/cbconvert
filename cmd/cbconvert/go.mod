@@ -4,10 +4,8 @@ go 1.21
 
 toolchain go1.21.0
 
-//replace github.com/gen2brain/cbconvert => ../../
-
 require (
-	github.com/gen2brain/cbconvert v0.0.0-20230822092933-69b0b510102f
+	github.com/gen2brain/cbconvert v0.0.0-20230822093050-cd2f7501e0a1
 	github.com/schollz/progressbar/v3 v3.10.0
 	github.com/spf13/pflag v1.0.5
 )
