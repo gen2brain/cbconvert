@@ -14,7 +14,7 @@ It can convert comics to different formats to fit your various devices.
 * rotate, flip, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images
 * resize algorithms (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
 * export covers from comics
-* create thumbnails from covers by [FreeDesktop](http://www.freedesktop.org/wiki/) specification
+* create thumbnails from covers by [FreeDesktop](http://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html) specification
 
 ### Download
 
@@ -48,8 +48,8 @@ This is what it looks like in the PCManFM file manager:
 
     Commands:
 
-      convert*
-            Convert archive or document (default command)
+      convert
+            Convert archive or document
 
         --width
             Image width (default "0")
@@ -175,10 +175,6 @@ Convert all images in pdf to 4bit BMP images and save the result in ~/comics dir
 `cbconvert --bmp --outdir ~/comics /media/comics/Garfield/Garfield_01.pdf`
 
 [BMP](http://en.wikipedia.org/wiki/BMP_file_format) format is a very good choice for black&white pages. Archive size can be smaller 2-3x and the file will be readable by comic readers.
-
-Generate thumbnails by [freedesktop specification](http://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html) in ~/.cache/thumbnails/normal directory with width 512:
-
-`cbconvert thumbnail --width 512 --outdir ~/.cache/thumbnails/normal /media/comics/GrooTheWanderer/`
 
 Extract covers to ~/covers dir for all supported files found in the directory, Lanczos algorithm is used for resizing:
 

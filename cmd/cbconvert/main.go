@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -124,7 +126,7 @@ func main() {
 	_, _ = fmt.Fprintf(os.Stderr, "\r")
 }
 
-// parseFlags parses command line flags
+// parseFlags parses command line flags.
 func parseFlags() (cbconvert.Options, []string) {
 	opts := cbconvert.Options{}
 	var args []string
@@ -193,7 +195,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
 		_, _ = fmt.Fprintf(os.Stderr, "\nCommands:\n")
-		_, _ = fmt.Fprintf(os.Stderr, "\n  convert*\n    \tConvert archive or document (default command)\n\n")
+		_, _ = fmt.Fprintf(os.Stderr, "\n  convert\n    \tConvert archive or document\n\n")
 		convert.VisitAll(func(f *flag.Flag) {
 			_, _ = fmt.Fprintf(os.Stderr, "    --%s", f.Name)
 			_, _ = fmt.Fprintf(os.Stderr, "\n    \t")
@@ -222,29 +224,39 @@ func parseFlags() (cbconvert.Options, []string) {
 
 	if len(os.Args) < 2 {
 		convert.Usage()
-		_, _ = fmt.Fprintf(os.Stderr, "no arguments\n")
+		_, _ = fmt.Fprintf(os.Stderr, "no command\n")
 		os.Exit(1)
+	}
+
+	pipe := piped()
+	if pipe {
+		args = lines(os.Stdin)
 	}
 
 	switch os.Args[1] {
 	case "convert":
 		_ = convert.Parse(os.Args[2:])
-		args = convert.Args()
+		if !pipe {
+			args = convert.Args()
+		}
 	case "cover":
 		opts.Cover = true
 		_ = cover.Parse(os.Args[2:])
-		args = cover.Args()
+		if !pipe {
+			args = cover.Args()
+		}
 	case "thumbnail":
 		opts.Thumbnail = true
 		_ = thumbnail.Parse(os.Args[2:])
-		args = thumbnail.Args()
+		if !pipe {
+			args = thumbnail.Args()
+		}
 	case "meta":
 		opts.Meta = true
 		_ = meta.Parse(os.Args[2:])
-		args = meta.Args()
-	default:
-		_ = convert.Parse(os.Args[1:])
-		args = convert.Args()
+		if !pipe {
+			args = meta.Args()
+		}
 	}
 
 	if len(args) == 0 {
@@ -254,4 +266,31 @@ func parseFlags() (cbconvert.Options, []string) {
 	}
 
 	return opts, args
+}
+
+// piped checks if we have a piped stdin.
+func piped() bool {
+	f, err := os.Stdin.Stat()
+	if err != nil {
+		return false
+	}
+
+	if f.Mode()&os.ModeNamedPipe == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+// lines returns slice of lines from reader.
+func lines(r io.Reader) []string {
+	data := make([]string, 0)
+	scanner := bufio.NewScanner(r)
+
+	for scanner.Scan() {
+		text := scanner.Text()
+		data = append(data, text)
+	}
+
+	return data
 }
