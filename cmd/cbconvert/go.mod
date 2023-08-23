@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	github.com/gen2brain/cbconvert v0.0.0-20230822123705-685b6bf15349
+	github.com/gen2brain/cbconvert v0.0.0-20230823101732-0ba0337ef85b
 	github.com/schollz/progressbar/v3 v3.10.0
 	github.com/spf13/pflag v1.0.5
 )
