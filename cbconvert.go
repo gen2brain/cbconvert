@@ -1324,6 +1324,28 @@ func (c *Convertor) Files(args []string) ([]string, error) {
 		return nil
 	}
 
+	walkDirs := func(fp string, f os.FileInfo, err error) error {
+		if f.IsDir() {
+			fs, err := os.ReadDir(filepath.Join(filepath.Dir(fp), f.Name()))
+			if err != nil {
+				return err
+			}
+
+			count := 0
+			for _, fn := range fs {
+				if !fn.IsDir() {
+					count++
+				}
+			}
+
+			if count > 1 {
+				files = append(files, fp)
+			}
+		}
+
+		return nil
+	}
+
 	for _, arg := range args {
 		path, err := filepath.Abs(arg)
 		if err != nil {
@@ -1367,7 +1389,13 @@ func (c *Convertor) Files(args []string) ([]string, error) {
 
 			if len(files) == 0 {
 				// append plain directory with images
-				files = append(files, path)
+				if c.Opts.Recursive {
+					if err := filepath.Walk(path, walkDirs); err != nil {
+						return files, fmt.Errorf("%s: %w", arg, err)
+					}
+				} else {
+					files = append(files, path)
+				}
 			}
 		}
 	}
