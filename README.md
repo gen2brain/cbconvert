@@ -8,7 +8,7 @@ It can convert comics to different formats to fit your various devices.
 
 ### Features
 
-* reads RAR, ZIP, 7Z, CBR, CBZ, CB7, CBT, PDF, EPUB, and plain directory
+* reads RAR, ZIP, 7Z, CBR, CBZ, CB7, CBT, PDF, EPUB, MOBI and plain directory
 * saves processed comics in CBZ (ZIP) archive format or CBT (TAR)
 * images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, or 4-Bit BMP (16 colors) file format
 * rotate, flip, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images
@@ -32,7 +32,7 @@ Copy cbconvert cli binary to your PATH and create file ~/.local/share/thumbnaile
 [Thumbnailer Entry]
 TryExec=cbconvert
 Exec=cbconvert thumbnail --quiet --width %s --outfile %o %i
-MimeType=application/pdf;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;
+MimeType=application/pdf;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;application/x-mobipocket-ebook;
 ```
 
 This is what it looks like in the PCManFM file manager:
