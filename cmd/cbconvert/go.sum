@@ -7,10 +7,10 @@ github.com/disintegration/imaging v1.6.2 h1:w1LecBlG2Lnp8B3jk5zSuNqd7b4DXhcjwek1
 github.com/disintegration/imaging v1.6.2/go.mod h1:44/5580QXChDfwIclfc/PCwrr44amcmDAg8hxG0Ewe4=
 github.com/fvbommel/sortorder v1.1.0 h1:fUmoe+HLsBTctBDoaBwpQo5N+nrCp8g/BjKb/6ZQmYw=
 github.com/fvbommel/sortorder v1.1.0/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
-github.com/gen2brain/cbconvert v0.0.0-20230824070052-d6ece9004160 h1:UdjFsbJi3dbc+1OkejTkQ3OemUdyJZDBCugquSTNuVM=
-github.com/gen2brain/cbconvert v0.0.0-20230824070052-d6ece9004160/go.mod h1:ezxhszto7NTQ7qVUQ5YqlbO/gCm/CofCJ/M5dyQKinY=
-github.com/gen2brain/go-fitz v1.22.2 h1:pisRYS3x/tvsiS4UzdBoiStmOxYoisOGNCUB4+0RKhE=
-github.com/gen2brain/go-fitz v1.22.2/go.mod h1:HU04vc+RisUh/kvEd2pB0LAxmK1oyXdN4ftyshUr9rQ=
+github.com/gen2brain/cbconvert v0.0.0-20230824094314-e938b140f074 h1:fUW60MgEEH44Y4ZNpi4Y4GwHeUzNayvJy+bJ5J1QiJI=
+github.com/gen2brain/cbconvert v0.0.0-20230824094314-e938b140f074/go.mod h1:8eCyHuxeUYNvyYr1nCS+M7zL0fjnb3CO5R5JIOgG4Tk=
+github.com/gen2brain/go-fitz v1.23.1 h1:x69/szWZXpI3jZ57mMqCg7WqqvtYnQG0lXts3L6M1Fc=
+github.com/gen2brain/go-fitz v1.23.1/go.mod h1:HU04vc+RisUh/kvEd2pB0LAxmK1oyXdN4ftyshUr9rQ=
 github.com/gen2brain/go-unarr v0.1.7 h1:mEE7bPShJIsmAX67t6BW2ibpEUO7j5WK152KgNM9NbQ=
 github.com/gen2brain/go-unarr v0.1.7/go.mod h1:MK9a3hddpaIxjEtrE1f/LA5yJ7gA34cS7Oyr325sY9s=
 github.com/hotei/bmp v0.0.0-20150430041436-f620cebab0c7 h1:NlUATi3cllRJhpM4mfR9BxiLRXT83bcSLcOa+S8lrME=

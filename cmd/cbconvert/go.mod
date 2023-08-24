@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	github.com/gen2brain/cbconvert v0.0.0-20230824070052-d6ece9004160
+	github.com/gen2brain/cbconvert v0.0.0-20230824094314-e938b140f074
 	github.com/schollz/progressbar/v3 v3.10.0
 	github.com/spf13/pflag v1.0.5
 )
@@ -14,7 +14,7 @@ require (
 	github.com/chai2010/webp v1.1.1 // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/fvbommel/sortorder v1.1.0 // indirect
-	github.com/gen2brain/go-fitz v1.22.2 // indirect
+	github.com/gen2brain/go-fitz v1.23.1 // indirect
 	github.com/gen2brain/go-unarr v0.1.7 // indirect
 	github.com/hotei/bmp v0.0.0-20150430041436-f620cebab0c7 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
