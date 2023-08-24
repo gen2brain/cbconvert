@@ -158,9 +158,13 @@ This is what it looks like in the PCManFM file manager:
         --cover
             Print cover name (default "false")
         --comment
-    	    Print zip comment (default "false")
+            Print zip comment (default "false")
         --comment-body
-    	    Set zip comment (default "")
+            Set zip comment (default "")
+        --file-add
+            Add file to archive (default "")
+        --file-remove
+            Remove file(s) from archive (glob pattern, i.e. *.xml) (default "")
 
 ```
 

@@ -104,6 +104,10 @@ type Options struct {
 	Comment bool
 	// ZIP comment body
 	CommentBody string
+	// Add file
+	FileAdd string
+	// Remove file
+	FileRemove string
 	// Output file
 	Outfile string
 	// Output directory
@@ -980,6 +984,165 @@ func (c *Convertor) archiveSetComment(fileName, commentBody string) error {
 	return nil
 }
 
+// archiveFileAdd adds file to archive.
+func (c *Convertor) archiveFileAdd(fileName, newFileName string) error {
+	zr, err := zip.OpenReader(fileName)
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+	defer zr.Close()
+
+	zf, err := os.CreateTemp(os.TempDir(), "cbc")
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+
+	tmpName := zf.Name()
+	defer os.Remove(tmpName)
+
+	zw := zip.NewWriter(zf)
+
+	for _, item := range zr.File {
+		if item.Name == newFileName {
+			continue
+		}
+
+		ir, err := item.OpenRaw()
+		if err != nil {
+			return fmt.Errorf("archiveFileAdd: %w", err)
+		}
+
+		item := item
+
+		it, err := zw.CreateRaw(&item.FileHeader)
+		if err != nil {
+			return fmt.Errorf("archiveFileAdd: %w", err)
+		}
+
+		_, err = io.Copy(it, ir)
+		if err != nil {
+			return fmt.Errorf("archiveFileAdd: %w", err)
+		}
+	}
+
+	info, err := os.Stat(newFileName)
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+
+	newData, err := os.ReadFile(newFileName)
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+
+	zipInfo, err := zip.FileInfoHeader(info)
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+
+	zipInfo.Method = zip.Deflate
+	w, err := zw.CreateHeader(zipInfo)
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+
+	_, err = w.Write(newData)
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+
+	err = zw.Close()
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+
+	err = zf.Close()
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+
+	data, err := os.ReadFile(tmpName)
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+
+	err = os.WriteFile(fileName, data, 0644)
+	if err != nil {
+		return fmt.Errorf("archiveFileAdd: %w", err)
+	}
+
+	return nil
+}
+
+// archiveFileRemove removes files from archive.
+func (c *Convertor) archiveFileRemove(fileName, pattern string) error {
+	zr, err := zip.OpenReader(fileName)
+	if err != nil {
+		return fmt.Errorf("archiveFileRemove: %w", err)
+	}
+	defer zr.Close()
+
+	zf, err := os.CreateTemp(os.TempDir(), "cbc")
+	if err != nil {
+		return fmt.Errorf("archiveFileRemove: %w", err)
+	}
+
+	tmpName := zf.Name()
+	defer os.Remove(tmpName)
+
+	zw := zip.NewWriter(zf)
+
+	for _, item := range zr.File {
+		matched, err := filepath.Match(pattern, item.Name)
+		if err != nil {
+			return fmt.Errorf("archiveFileRemove: %w", err)
+		}
+
+		if matched {
+			continue
+		}
+
+		ir, err := item.OpenRaw()
+		if err != nil {
+			return fmt.Errorf("archiveFileRemove: %w", err)
+		}
+
+		item := item
+
+		it, err := zw.CreateRaw(&item.FileHeader)
+		if err != nil {
+			return fmt.Errorf("archiveFileRemove: %w", err)
+		}
+
+		_, err = io.Copy(it, ir)
+		if err != nil {
+			return fmt.Errorf("archiveFileRemove: %w", err)
+		}
+	}
+
+	err = zw.Close()
+	if err != nil {
+		return fmt.Errorf("archiveFileRemove: %w", err)
+	}
+
+	err = zf.Close()
+	if err != nil {
+		return fmt.Errorf("archiveFileRemove: %w", err)
+	}
+
+	data, err := os.ReadFile(tmpName)
+	if err != nil {
+		return fmt.Errorf("archiveFileRemove: %w", err)
+	}
+
+	err = os.WriteFile(fileName, data, 0644)
+	if err != nil {
+		return fmt.Errorf("archiveFileRemove: %w", err)
+	}
+
+	return nil
+}
+
 // coverArchive extracts cover from archive.
 func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
 	var images []string
@@ -1557,6 +1720,16 @@ func (c *Convertor) Meta(fileName string) (any, error) {
 		return comment, nil
 	case c.Opts.CommentBody != "":
 		err := c.archiveSetComment(fileName, c.Opts.CommentBody)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", fileName, err)
+		}
+	case c.Opts.FileAdd != "":
+		err := c.archiveFileAdd(fileName, c.Opts.FileAdd)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", fileName, err)
+		}
+	case c.Opts.FileRemove != "":
+		err := c.archiveFileRemove(fileName, c.Opts.FileRemove)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", fileName, err)
 		}

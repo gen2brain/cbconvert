@@ -194,6 +194,8 @@ func parseFlags() (cbconvert.Options, []string) {
 	meta.BoolVar(&opts.Cover, "cover", false, "Print cover name")
 	meta.BoolVar(&opts.Comment, "comment", false, "Print zip comment")
 	meta.StringVar(&opts.CommentBody, "comment-body", "", "Set zip comment")
+	meta.StringVar(&opts.FileAdd, "file-add", "", "Add file to archive")
+	meta.StringVar(&opts.FileRemove, "file-remove", "", "Remove file from archive (glob pattern, i.e. *.xml)")
 
 	convert.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
