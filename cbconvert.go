@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mime"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -1667,7 +1666,7 @@ func (c *Convertor) Thumbnail(fileName string, info os.FileInfo) error {
 	if err := mw.SetImageProperty("Software", "CBconvert"); err != nil {
 		return fmt.Errorf("%s: %w", fileName, err)
 	}
-	if err := mw.SetImageProperty("Description", "Thumbnail of "+fURI); err != nil {
+	if err := mw.SetImageProperty("Description", "Thumbnail of "+fileName); err != nil {
 		return fmt.Errorf("%s: %w", fileName, err)
 	}
 	if err := mw.SetImageProperty("Thumb::URI", fURI); err != nil {
@@ -1677,9 +1676,6 @@ func (c *Convertor) Thumbnail(fileName string, info os.FileInfo) error {
 		return fmt.Errorf("%s: %w", fileName, err)
 	}
 	if err := mw.SetImageProperty("Thumb::Size", strconv.FormatInt(info.Size(), 10)); err != nil {
-		return fmt.Errorf("%s: %w", fileName, err)
-	}
-	if err := mw.SetImageProperty("Thumb::Mimetype", mime.TypeByExtension(filepath.Ext(fileName))); err != nil {
 		return fmt.Errorf("%s: %w", fileName, err)
 	}
 
