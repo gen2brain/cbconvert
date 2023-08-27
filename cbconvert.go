@@ -915,6 +915,7 @@ func (c *Convertor) archiveComment(fileName string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("archiveComment: %w", err)
 	}
+	defer zr.Close()
 
 	return zr.Comment, nil
 }
