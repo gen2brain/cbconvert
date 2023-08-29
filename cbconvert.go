@@ -30,6 +30,7 @@ import (
 	"golang.org/x/image/tiff"
 
 	"github.com/disintegration/imaging"
+	"github.com/dustin/go-humanize"
 	"github.com/fvbommel/sortorder"
 	"github.com/gen2brain/go-fitz"
 	"github.com/gen2brain/go-unarr"
@@ -108,9 +109,9 @@ type Options struct {
 	// Remove file
 	FileRemove string
 	// Output file
-	Outfile string
+	OutFile string
 	// Output directory
-	Outdir string
+	OutDir string
 	// Convert images to grayscale (monochromatic)
 	Grayscale bool
 	// Rotate images, valid values are 0, 90, 180, 270
@@ -118,25 +119,25 @@ type Options struct {
 	// Flip images, valid values are none, horizontal, vertical
 	Flip string
 	// Adjust the brightness of the images, must be in the range (-100, 100)
-	Brightness float64
+	Brightness int
 	// Adjust the contrast of the images, must be in the range (-100, 100)
-	Contrast float64
+	Contrast int
 	// Process subdirectories recursively
 	Recursive bool
 	// Process only files larger than size (in MB)
-	Size int64
+	Size int
 	// Hide console output
 	Quiet bool
 	// Shadow input value
-	LevelsInMin float64
+	LevelsInMin int
 	// Highlight input value
-	LevelsInMax float64
+	LevelsInMax int
 	// Midpoint/gamma
 	LevelsGamma float64
 	// Shadow output value
-	LevelsOutMin float64
+	LevelsOutMin int
 	// Highlight output value
-	LevelsOutMax float64
+	LevelsOutMax int
 }
 
 // Convertor type.
@@ -159,6 +160,14 @@ type Convertor struct {
 	OnProgress func()
 	// Compress function
 	OnCompress func()
+}
+
+// File type.
+type File struct {
+	Name      string
+	Path      string
+	Size      int64
+	SizeHuman string
 }
 
 // New returns new convertor.
@@ -501,11 +510,11 @@ func (c *Convertor) imageTransform(img image.Image) image.Image {
 	}
 
 	if c.Opts.Brightness != 0 {
-		i = imaging.AdjustBrightness(i, c.Opts.Brightness)
+		i = imaging.AdjustBrightness(i, float64(c.Opts.Brightness))
 	}
 
 	if c.Opts.Contrast != 0 {
-		i = imaging.AdjustContrast(i, c.Opts.Contrast)
+		i = imaging.AdjustContrast(i, float64(c.Opts.Contrast))
 	}
 
 	return i
@@ -525,16 +534,16 @@ func (c *Convertor) imageLevel(img image.Image) (image.Image, error) {
 	_, qrange := imagick.GetQuantumRange()
 	quantumRange := float64(qrange)
 
-	inmin := (quantumRange * c.Opts.LevelsInMin) / 255
-	inmax := (quantumRange * c.Opts.LevelsInMax) / 255
-	outmin := (quantumRange * c.Opts.LevelsOutMin) / 255
-	outmax := (quantumRange * c.Opts.LevelsOutMax) / 255
+	inMin := (quantumRange * float64(c.Opts.LevelsInMin)) / 255
+	inMax := (quantumRange * float64(c.Opts.LevelsInMax)) / 255
+	outMin := (quantumRange * float64(c.Opts.LevelsOutMin)) / 255
+	outMax := (quantumRange * float64(c.Opts.LevelsOutMax)) / 255
 
-	if err := mw.LevelImage(inmin, c.Opts.LevelsGamma, inmax); err != nil {
+	if err := mw.LevelImage(inMin, c.Opts.LevelsGamma, inMax); err != nil {
 		return img, fmt.Errorf("imageLevel: %w", err)
 	}
 
-	if err := mw.LevelImage(-outmin, 1.0, quantumRange+(quantumRange-outmax)); err != nil {
+	if err := mw.LevelImage(-outMin, 1.0, quantumRange+(quantumRange-outMax)); err != nil {
 		return img, fmt.Errorf("imageLevel: %w", err)
 	}
 
@@ -752,14 +761,14 @@ func (c *Convertor) archiveSaveZip(fileName string) error {
 
 	var zipName string
 	if c.Opts.Recursive {
-		err := os.MkdirAll(filepath.Join(c.Opts.Outdir, filepath.Dir(fileName)), 0755)
+		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Dir(fileName)), 0755)
 		if err != nil {
 			return fmt.Errorf("archiveSaveZip: %w", err)
 		}
 
-		zipName = filepath.Join(c.Opts.Outdir, filepath.Dir(fileName), fmt.Sprintf("%s%s.cbz", c.baseNoExt(fileName), c.Opts.Suffix))
+		zipName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%s%s.cbz", c.baseNoExt(fileName), c.Opts.Suffix))
 	} else {
-		zipName = filepath.Join(c.Opts.Outdir, fmt.Sprintf("%s%s.cbz", c.baseNoExt(fileName), c.Opts.Suffix))
+		zipName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s%s.cbz", c.baseNoExt(fileName), c.Opts.Suffix))
 	}
 
 	zipFile, err := os.Create(zipName)
@@ -826,14 +835,14 @@ func (c *Convertor) archiveSaveTar(fileName string) error {
 
 	var tarName string
 	if c.Opts.Recursive {
-		err := os.MkdirAll(filepath.Join(c.Opts.Outdir, filepath.Dir(fileName)), 0755)
+		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Dir(fileName)), 0755)
 		if err != nil {
 			return fmt.Errorf("archiveSaveTar: %w", err)
 		}
 
-		tarName = filepath.Join(c.Opts.Outdir, filepath.Dir(fileName), fmt.Sprintf("%s%s.cbt", c.baseNoExt(fileName), c.Opts.Suffix))
+		tarName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%s%s.cbt", c.baseNoExt(fileName), c.Opts.Suffix))
 	} else {
-		tarName = filepath.Join(c.Opts.Outdir, fmt.Sprintf("%s%s.cbt", c.baseNoExt(fileName), c.Opts.Suffix))
+		tarName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s%s.cbt", c.baseNoExt(fileName), c.Opts.Suffix))
 	}
 
 	tarFile, err := os.Create(tarName)
@@ -1416,7 +1425,7 @@ func (c *Convertor) isNonImage(f string) bool {
 // isSize checks size of file.
 func (c *Convertor) isSize(size int64) bool {
 	if c.Opts.Size > 0 {
-		if size < c.Opts.Size*(1024*1024) {
+		if size < int64(c.Opts.Size)*(1024*1024) {
 			return false
 		}
 	}
@@ -1471,8 +1480,17 @@ func (c *Convertor) Terminate() {
 }
 
 // Files returns list of found comic files.
-func (c *Convertor) Files(args []string) ([]string, error) {
-	var files []string
+func (c *Convertor) Files(args []string) ([]File, error) {
+	var files []File
+
+	toFile := func(fp string, f os.FileInfo) File {
+		var file File
+		file.Name = filepath.Base(fp)
+		file.Path = fp
+		file.Size = f.Size()
+		file.SizeHuman = humanize.IBytes(uint64(file.Size))
+		return file
+	}
 
 	walkFiles := func(fp string, f os.FileInfo, err error) error {
 		if f.IsDir() {
@@ -1480,7 +1498,7 @@ func (c *Convertor) Files(args []string) ([]string, error) {
 		}
 		if c.isArchive(fp) || c.isDocument(fp) {
 			if c.isSize(f.Size()) {
-				files = append(files, fp)
+				files = append(files, toFile(fp, f))
 			}
 		}
 
@@ -1502,7 +1520,7 @@ func (c *Convertor) Files(args []string) ([]string, error) {
 			}
 
 			if count > 1 {
-				files = append(files, fp)
+				files = append(files, toFile(fp, f))
 			}
 		}
 
@@ -1523,7 +1541,7 @@ func (c *Convertor) Files(args []string) ([]string, error) {
 		if !stat.IsDir() {
 			if c.isArchive(path) || c.isDocument(path) {
 				if c.isSize(stat.Size()) {
-					files = append(files, path)
+					files = append(files, toFile(path, stat))
 				}
 			}
 		} else {
@@ -1544,7 +1562,7 @@ func (c *Convertor) Files(args []string) ([]string, error) {
 							return files, fmt.Errorf("%s: %w", arg, err)
 						}
 						if c.isSize(info.Size()) {
-							files = append(files, filepath.Join(path, f.Name()))
+							files = append(files, toFile(filepath.Join(path, f.Name()), info))
 						}
 					}
 				}
@@ -1557,7 +1575,7 @@ func (c *Convertor) Files(args []string) ([]string, error) {
 						return files, fmt.Errorf("%s: %w", arg, err)
 					}
 				} else {
-					files = append(files, path)
+					files = append(files, toFile(path, stat))
 				}
 			}
 		}
@@ -1587,14 +1605,14 @@ func (c *Convertor) Cover(fileName string, fileInfo os.FileInfo) error {
 
 	var fName string
 	if c.Opts.Recursive {
-		err := os.MkdirAll(filepath.Join(c.Opts.Outdir, filepath.Dir(fileName)), 0755)
+		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Dir(fileName)), 0755)
 		if err != nil {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
 
-		fName = filepath.Join(c.Opts.Outdir, filepath.Dir(fileName), fmt.Sprintf("%s.%s", c.baseNoExt(fileName), c.Opts.Format))
+		fName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%s.%s", c.baseNoExt(fileName), c.Opts.Format))
 	} else {
-		fName = filepath.Join(c.Opts.Outdir, fmt.Sprintf("%s.%s", c.baseNoExt(fileName), c.Opts.Format))
+		fName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s.%s", c.baseNoExt(fileName), c.Opts.Format))
 	}
 
 	switch c.Opts.Format {
@@ -1642,21 +1660,21 @@ func (c *Convertor) Thumbnail(fileName string, info os.FileInfo) error {
 	var fName string
 	var fURI string
 
-	if c.Opts.Outfile == "" {
+	if c.Opts.OutFile == "" {
 		fURI = "file://" + fileName
 
 		if c.Opts.Recursive {
-			err := os.MkdirAll(filepath.Join(c.Opts.Outdir, filepath.Dir(fileName)), 0755)
+			err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Dir(fileName)), 0755)
 			if err != nil {
 				return fmt.Errorf("%s: %w", fileName, err)
 			}
 
-			fName = filepath.Join(c.Opts.Outdir, filepath.Dir(fileName), fmt.Sprintf("%x.png", md5.Sum([]byte(fURI))))
+			fName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%x.png", md5.Sum([]byte(fURI))))
 		} else {
-			fName = filepath.Join(c.Opts.Outdir, fmt.Sprintf("%x.png", md5.Sum([]byte(fURI))))
+			fName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%x.png", md5.Sum([]byte(fURI))))
 		}
 	} else {
-		abs, _ := filepath.Abs(c.Opts.Outfile)
+		abs, _ := filepath.Abs(c.Opts.OutFile)
 		fURI = "file://" + abs
 		fName = abs
 	}

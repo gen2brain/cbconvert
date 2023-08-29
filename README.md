@@ -8,7 +8,7 @@ It can convert comics to different formats to fit your various devices.
 
 ### Features
 
-* reads RAR, ZIP, 7Z, CBR, CBZ, CB7, CBT, PDF, EPUB, MOBI and plain directory
+* reads RAR, ZIP, 7Z, TAR, CBR, CBZ, CB7, CBT, PDF, EPUB, MOBI and plain directory
 * saves processed comics in CBZ (ZIP) archive format or CBT (TAR)
 * images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, or 4-Bit BMP (16 colors) file format
 * rotate, flip, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images

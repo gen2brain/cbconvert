@@ -30,8 +30,8 @@ func main() {
 		}
 	}()
 
-	if _, err := os.Stat(opts.Outdir); err != nil {
-		if err := os.MkdirAll(opts.Outdir, 0775); err != nil {
+	if _, err := os.Stat(opts.OutDir); err != nil {
+		if err := os.MkdirAll(opts.OutDir, 0775); err != nil {
 			fmt.Println(err)
 		}
 		os.Exit(1)
@@ -83,7 +83,7 @@ func main() {
 	}
 
 	for _, file := range files {
-		stat, err := os.Stat(file)
+		stat, err := os.Stat(file.Path)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -91,7 +91,7 @@ func main() {
 
 		switch {
 		case opts.Meta:
-			ret, err := conv.Meta(file)
+			ret, err := conv.Meta(file.Path)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -105,14 +105,14 @@ func main() {
 
 			continue
 		case opts.Cover:
-			if err := conv.Cover(file, stat); err != nil {
+			if err := conv.Cover(file.Path, stat); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 
 			continue
 		case opts.Thumbnail:
-			if err = conv.Thumbnail(file, stat); err != nil {
+			if err = conv.Thumbnail(file.Path, stat); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
@@ -120,7 +120,7 @@ func main() {
 			continue
 		}
 
-		if err := conv.Convert(file, stat); err != nil {
+		if err := conv.Convert(file.Path, stat); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -151,16 +151,16 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.BoolVar(&opts.Grayscale, "grayscale", false, "Convert images to grayscale (monochromatic)")
 	convert.IntVar(&opts.Rotate, "rotate", 0, "Rotate images, valid values are 0, 90, 180, 270")
 	convert.StringVar(&opts.Flip, "flip", "none", "Flip images, valid values are none, horizontal, vertical")
-	convert.Float64Var(&opts.Brightness, "brightness", 0, "Adjust the brightness of the images, must be in the range (-100, 100)")
-	convert.Float64Var(&opts.Contrast, "contrast", 0, "Adjust the contrast of the images, must be in the range (-100, 100)")
+	convert.IntVar(&opts.Brightness, "brightness", 0, "Adjust the brightness of the images, must be in the range (-100, 100)")
+	convert.IntVar(&opts.Contrast, "contrast", 0, "Adjust the contrast of the images, must be in the range (-100, 100)")
 	convert.StringVar(&opts.Suffix, "suffix", "", "Add suffix to file basename")
-	convert.Float64Var(&opts.LevelsInMin, "levels-inmin", 0, "Shadow input value")
+	convert.IntVar(&opts.LevelsInMin, "levels-inmin", 0, "Shadow input value")
 	convert.Float64Var(&opts.LevelsGamma, "levels-gamma", 1.0, "Midpoint/Gamma")
-	convert.Float64Var(&opts.LevelsInMax, "levels-inmax", 255, "Highlight input value")
-	convert.Float64Var(&opts.LevelsOutMin, "levels-outmin", 0, "Shadow output value")
-	convert.Float64Var(&opts.LevelsOutMax, "levels-outmax", 255, "Highlight output value")
-	convert.StringVar(&opts.Outdir, "outdir", ".", "Output directory")
-	convert.Int64Var(&opts.Size, "size", 0, "Process only files larger than size (in MB)")
+	convert.IntVar(&opts.LevelsInMax, "levels-inmax", 255, "Highlight input value")
+	convert.IntVar(&opts.LevelsOutMin, "levels-outmin", 0, "Shadow output value")
+	convert.IntVar(&opts.LevelsOutMax, "levels-outmax", 255, "Highlight output value")
+	convert.StringVar(&opts.OutDir, "outdir", ".", "Output directory")
+	convert.IntVar(&opts.Size, "size", 0, "Process only files larger than size (in MB)")
 	convert.BoolVar(&opts.Recursive, "recursive", false, "Process subdirectories recursively")
 	convert.BoolVar(&opts.Quiet, "quiet", false, "Hide console output")
 
@@ -172,8 +172,8 @@ func parseFlags() (cbconvert.Options, []string) {
 	cover.StringVar(&opts.Format, "format", "jpeg", "Image format, valid values are jpeg, png, tiff, bmp, webp, avif")
 	cover.IntVar(&opts.Quality, "quality", 75, "Image quality")
 	cover.IntVar(&opts.Filter, "filter", 2, "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos")
-	cover.StringVar(&opts.Outdir, "outdir", ".", "Output directory")
-	cover.Int64Var(&opts.Size, "size", 0, "Process only files larger than size (in MB)")
+	cover.StringVar(&opts.OutDir, "outdir", ".", "Output directory")
+	cover.IntVar(&opts.Size, "size", 0, "Process only files larger than size (in MB)")
 	cover.BoolVar(&opts.Recursive, "recursive", false, "Process subdirectories recursively")
 	cover.BoolVar(&opts.Quiet, "quiet", false, "Hide console output")
 
@@ -183,9 +183,9 @@ func parseFlags() (cbconvert.Options, []string) {
 	thumbnail.IntVar(&opts.Height, "height", 0, "Image height")
 	thumbnail.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
 	thumbnail.IntVar(&opts.Filter, "filter", 2, "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos")
-	thumbnail.StringVar(&opts.Outdir, "outdir", ".", "Output directory")
-	thumbnail.StringVar(&opts.Outfile, "outfile", "", "Output file")
-	thumbnail.Int64Var(&opts.Size, "size", 0, "Process only files larger than size (in MB)")
+	thumbnail.StringVar(&opts.OutDir, "outdir", ".", "Output directory")
+	thumbnail.StringVar(&opts.OutFile, "outfile", "", "Output file")
+	thumbnail.IntVar(&opts.Size, "size", 0, "Process only files larger than size (in MB)")
 	thumbnail.BoolVar(&opts.Recursive, "recursive", false, "Process subdirectories recursively")
 	thumbnail.BoolVar(&opts.Quiet, "quiet", false, "Hide console output")
 
