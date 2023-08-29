@@ -5,10 +5,12 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/disintegration/imaging v1.6.2 h1:w1LecBlG2Lnp8B3jk5zSuNqd7b4DXhcjwek1ei82L+c=
 github.com/disintegration/imaging v1.6.2/go.mod h1:44/5580QXChDfwIclfc/PCwrr44amcmDAg8hxG0Ewe4=
+github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
+github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/fvbommel/sortorder v1.1.0 h1:fUmoe+HLsBTctBDoaBwpQo5N+nrCp8g/BjKb/6ZQmYw=
 github.com/fvbommel/sortorder v1.1.0/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
-github.com/gen2brain/cbconvert v0.0.0-20230824094314-e938b140f074 h1:fUW60MgEEH44Y4ZNpi4Y4GwHeUzNayvJy+bJ5J1QiJI=
-github.com/gen2brain/cbconvert v0.0.0-20230824094314-e938b140f074/go.mod h1:8eCyHuxeUYNvyYr1nCS+M7zL0fjnb3CO5R5JIOgG4Tk=
+github.com/gen2brain/cbconvert v0.0.0-20230829180735-fdfa80875e2b h1:kGW7dejdm8bRf0fiQ5n/f5xXiHNJH4IUOS2dMUqtbX4=
+github.com/gen2brain/cbconvert v0.0.0-20230829180735-fdfa80875e2b/go.mod h1:5CIPgEHKNZtfH7FR0zzGMAzkFwagUyH7FcjIUDEx7Ps=
 github.com/gen2brain/go-fitz v1.23.1 h1:x69/szWZXpI3jZ57mMqCg7WqqvtYnQG0lXts3L6M1Fc=
 github.com/gen2brain/go-fitz v1.23.1/go.mod h1:HU04vc+RisUh/kvEd2pB0LAxmK1oyXdN4ftyshUr9rQ=
 github.com/gen2brain/go-unarr v0.1.7 h1:mEE7bPShJIsmAX67t6BW2ibpEUO7j5WK152KgNM9NbQ=
