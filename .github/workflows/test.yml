@@ -26,7 +26,7 @@ jobs:
     - name: Install libaom
       working-directory: build
       run: |
-        sudo make -j3 install
+        make -j3 && sudo make install
 
     - name: Wget libheif
       uses: wei/wget@v1
@@ -43,7 +43,7 @@ jobs:
     - name: Install libheif
       working-directory: libheif-1.15.2
       run: |
-        sudo make -j3 install
+        make -j3 && sudo make install
 
     - name: Wget ImageMagick
       uses: wei/wget@v1
@@ -64,7 +64,7 @@ jobs:
     - name: Install ImageMagick
       working-directory: ImageMagick-7.1.1-15
       run: |
-        sudo make -j3 install
+        make -j3 && sudo make install
 
     - name: Install Go
       uses: actions/setup-go@v2
