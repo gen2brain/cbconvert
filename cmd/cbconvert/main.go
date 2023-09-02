@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/gen2brain/cbconvert"
@@ -14,8 +15,43 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
+var appVersion string
+
+func init() {
+	if appVersion != "" {
+		return
+	}
+
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return
+	}
+
+	if info.Main.Version != "" {
+		appVersion = info.Main.Version
+	}
+
+	for _, kv := range info.Settings {
+		if kv.Value == "" {
+			continue
+		}
+		if kv.Key == "vcs.revision" {
+			appVersion = kv.Value
+			if len(appVersion) > 10 {
+				appVersion = kv.Value[:10]
+			}
+		}
+	}
+}
+
 func main() {
 	opts, args := parseFlags()
+
+	if opts.Version {
+		fmt.Println(filepath.Base(os.Args[0]), appVersion)
+		os.Exit(0)
+	}
+
 	conv := cbconvert.New(opts)
 
 	c := make(chan os.Signal, 2)
@@ -83,12 +119,6 @@ func main() {
 	}
 
 	for _, file := range files {
-		stat, err := os.Stat(file.Path)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
 		switch {
 		case opts.Meta:
 			ret, err := conv.Meta(file.Path)
@@ -105,14 +135,14 @@ func main() {
 
 			continue
 		case opts.Cover:
-			if err := conv.Cover(file.Path, stat); err != nil {
+			if err := conv.Cover(file.Path, file.Stat); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 
 			continue
 		case opts.Thumbnail:
-			if err = conv.Thumbnail(file.Path, stat); err != nil {
+			if err = conv.Thumbnail(file.Path, file.Stat); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
@@ -120,7 +150,7 @@ func main() {
 			continue
 		}
 
-		if err := conv.Convert(file.Path, stat); err != nil {
+		if err := conv.Convert(file.Path, file.Stat); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -197,34 +227,32 @@ func parseFlags() (cbconvert.Options, []string) {
 	meta.StringVar(&opts.FileAdd, "file-add", "", "Add file to archive")
 	meta.StringVar(&opts.FileRemove, "file-remove", "", "Remove file from archive (glob pattern, i.e. *.xml)")
 
-	convert.Usage = func() {
+	flag.NewFlagSet("version", flag.ExitOnError)
+
+	flag.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
 		_, _ = fmt.Fprintf(os.Stderr, "\nCommands:\n")
 		_, _ = fmt.Fprintf(os.Stderr, "\n  convert\n    \tConvert archive or document\n\n")
 		convert.VisitAll(func(f *flag.Flag) {
-			_, _ = fmt.Fprintf(os.Stderr, "    --%s", f.Name)
-			_, _ = fmt.Fprintf(os.Stderr, "\n    \t")
+			_, _ = fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
 			_, _ = fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		})
 		_, _ = fmt.Fprintf(os.Stderr, "\n  cover\n    \tExtract cover\n\n")
 		cover.VisitAll(func(f *flag.Flag) {
-			_, _ = fmt.Fprintf(os.Stderr, "    --%s", f.Name)
-			_, _ = fmt.Fprintf(os.Stderr, "\n    \t")
+			_, _ = fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
 			_, _ = fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		})
 		_, _ = fmt.Fprintf(os.Stderr, "\n  thumbnail\n    \tExtract cover thumbnail (freedesktop spec.)\n\n")
 		thumbnail.VisitAll(func(f *flag.Flag) {
-			_, _ = fmt.Fprintf(os.Stderr, "    --%s", f.Name)
-			_, _ = fmt.Fprintf(os.Stderr, "\n    \t")
+			_, _ = fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
 			_, _ = fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		})
 		_, _ = fmt.Fprintf(os.Stderr, "\n  meta\n    \tCBZ metadata\n\n")
 		meta.VisitAll(func(f *flag.Flag) {
-			_, _ = fmt.Fprintf(os.Stderr, "    --%s", f.Name)
-			_, _ = fmt.Fprintf(os.Stderr, "\n    \t")
+			_, _ = fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
 			_, _ = fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		})
-		_, _ = fmt.Fprintf(os.Stderr, "\n")
+		_, _ = fmt.Fprintf(os.Stderr, "\n  version\n    \tPrint version\n\n")
 	}
 
 	if len(os.Args) < 2 {
@@ -262,10 +290,12 @@ func parseFlags() (cbconvert.Options, []string) {
 		if !pipe {
 			args = meta.Args()
 		}
+	case "version":
+		opts.Version = true
 	}
 
-	if len(args) == 0 {
-		convert.Usage()
+	if len(args) == 0 && !opts.Version {
+		flag.Usage()
 		_, _ = fmt.Fprintf(os.Stderr, "no arguments\n")
 		os.Exit(1)
 	}
