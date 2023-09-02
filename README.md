@@ -198,6 +198,6 @@ This table maps quality settings for JPEG to the respective AVIF and WEBP qualit
 
 ### Compile
 
-Install ImageMagick7 and libheif (with libaom) libraries and headers and then install to GOBIN:
+Install ImageMagick7, MuPDF and libheif (with libaom) libraries and headers and then install to GOBIN:
 
-`go install github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
+`go install -tags extlib github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
