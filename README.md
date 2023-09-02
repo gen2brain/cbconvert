@@ -8,11 +8,11 @@ It can convert comics to different formats to fit your various devices.
 
 ### Features
 
-* reads RAR, ZIP, 7Z, TAR, CBR, CBZ, CB7, CBT, PDF, EPUB, MOBI and plain directory
-* saves processed comics in CBZ (ZIP) archive format or CBT (TAR)
+* reads CBR (RAR), CBZ (ZIP), CB7 (7Z), CBT (TAR), PDF, EPUB, MOBI and plain directory
+* saves processed comics in ZIP archive format or TAR
 * images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, or 4-Bit BMP (16 colors) file format
 * rotate, flip, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images
-* resize algorithms (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
+* resize filters (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
 * export covers from comics
 * create thumbnails from covers by [FreeDesktop](http://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html) specification
 
