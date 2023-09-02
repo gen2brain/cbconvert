@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 GLIBC_x86_64="/usr/x86_64-pc-linux-gnu-static"
-MUSL_aarch64="/usr/aarch64-pc-linux-musl"
 MINGW_x86_64="/usr/x86_64-w64-mingw32"
 MACOS_x86_64="/usr/x86_64-apple-darwin"
 MACOS_aarch64="/usr/aarch64-apple-darwin"
@@ -18,18 +17,6 @@ CGO_LDFLAGS="-L$GLIBC_x86_64/usr/lib64" \
 CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
 go build -trimpath -tags 'extlib pkgconfig' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w -X main.appVersion=${VERSION} '-extldflags=-static'" && \
 cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && tar -czf "${BUILDDIR}-linux-x86_64.tar.gz" ${BUILDDIR}
-rm -rf ${BUILDDIR}
-
-BUILDDIR="cbconvert-${VERSION}"; mkdir -p ${BUILDDIR}
-CC=aarch64-pc-linux-musl-gcc \
-PKG_CONFIG="aarch64-pc-linux-musl-pkg-config" \
-PKG_CONFIG_PATH="$MUSL_aarch64/usr/lib/pkgconfig" \
-PKG_CONFIG_LIBDIR="$MUSL_aarch64/usr/lib/pkgconfig" \
-CGO_CFLAGS="-I$MUSL_aarch64/usr/include" \
-CGO_LDFLAGS="-L$MUSL_aarch64/usr/lib" \
-CGO_ENABLED=1 GOOS=linux GOARCH=arm64 \
-go build -trimpath -tags 'extlib pkgconfig' -v -o ${BUILDDIR}/cbconvert -ldflags "-linkmode external -s -w -X main.appVersion=${VERSION} '-extldflags=-static'" && \
-cp ../../README.md ../../AUTHORS ../../COPYING ${BUILDDIR} && tar -czf "${BUILDDIR}-linux-aarch64.tar.gz" ${BUILDDIR}
 rm -rf ${BUILDDIR}
 
 BUILDDIR="cbconvert-${VERSION}"; mkdir -p ${BUILDDIR}
