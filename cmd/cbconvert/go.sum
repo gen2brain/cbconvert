@@ -9,8 +9,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/fvbommel/sortorder v1.1.0 h1:fUmoe+HLsBTctBDoaBwpQo5N+nrCp8g/BjKb/6ZQmYw=
 github.com/fvbommel/sortorder v1.1.0/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
-github.com/gen2brain/cbconvert v0.0.0-20230902071847-b1fcf530da5e h1:wkbLFoUCyAw8CJfegfb85q1ogNEgiK+1KcvFR2plbrA=
-github.com/gen2brain/cbconvert v0.0.0-20230902071847-b1fcf530da5e/go.mod h1:5CIPgEHKNZtfH7FR0zzGMAzkFwagUyH7FcjIUDEx7Ps=
+github.com/gen2brain/cbconvert v0.0.0-20230902080208-6936f697b466 h1:xrc1+L/Wc9BHokp+smaBt/A2R2+nfK0Ws0cvyzTHE7I=
+github.com/gen2brain/cbconvert v0.0.0-20230902080208-6936f697b466/go.mod h1:5CIPgEHKNZtfH7FR0zzGMAzkFwagUyH7FcjIUDEx7Ps=
 github.com/gen2brain/go-fitz v1.23.1 h1:x69/szWZXpI3jZ57mMqCg7WqqvtYnQG0lXts3L6M1Fc=
 github.com/gen2brain/go-fitz v1.23.1/go.mod h1:HU04vc+RisUh/kvEd2pB0LAxmK1oyXdN4ftyshUr9rQ=
 github.com/gen2brain/go-unarr v0.1.7 h1:mEE7bPShJIsmAX67t6BW2ibpEUO7j5WK152KgNM9NbQ=
