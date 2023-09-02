@@ -1,0 +1,78 @@
+on: [push, pull_request]
+name: Test
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v1.13
+      with:
+        cmake-version: '3.27.x'
+
+    - name: Wget libaom
+      uses: wei/wget@v1
+      with:
+        args: https://storage.googleapis.com/aom-releases/libaom-3.7.0.tar.gz
+    - name: Unpack libaom
+      run: |
+        tar -xpf libaom-3.7.0.tar.gz && mkdir build
+    - name: Configure libaom
+      working-directory: build
+      run: |
+        cmake -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCS=OFF \
+        -DENABLE_EXAMPLES=OFF -DENABLE_NASM=OFF -DENABLE_TESTS=OFF -DENABLE_TOOLS=OFF -DENABLE_WERROR=OFF \
+        -DAOM_TARGET_CPU=generic ../libaom-3.7.0
+    - name: Install libaom
+      working-directory: build
+      run: |
+        make -j3 install
+
+    - name: Wget libheif
+      uses: wei/wget@v1
+      with:
+        args: https://github.com/strukturag/libheif/releases/download/v1.15.2/libheif-1.15.2.tar.gz
+    - name: Unpack libheif
+      run: |
+        tar -xpf libheif-1.15.2.tar.gz
+    - name: Configure libheif
+      working-directory: libheif-1.15.2
+      run: |
+        ./configure --prefix=/usr --libdir=/usr/lib/x86_64-linux-gnu --enable-shared --disable-static --disable-libde265 \
+        --disable-dav1d --disable-go --enable-aom --disable-gdk-pixbuf --disable-rav1e --disable-tests --disable-x265
+    - name: Install libheif
+      working-directory: libheif-1.15.2
+      run: |
+        make -j3 install
+
+    - name: Wget ImageMagick
+      uses: wei/wget@v1
+      with:
+        args: -O ImageMagick-7.1.1-15.tar.gz https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.1-15.tar.gz
+    - name: Unpack ImageMagick
+      run: |
+        tar -xpf ImageMagick-7.1.1-15.tar.gz
+    - name: Configure ImageMagick
+      working-directory: ImageMagick-7.1.1-15
+      run: |
+        ./configure --prefix=/usr --libdir=/usr/lib/x86_64-linux-gnu --enable-shared --disable-static --enable-zero-configuration \
+        --without-frozenpaths --without-utilities --disable-hdri --disable-opencl --without-modules --without-magick-plus-plus --without-perl \
+        --without-bzlib --without-x --without-zip --with-zlib --without-dps --without-djvu --without-autotrace --without-fftw \
+        --without-fpx --without-fontconfig --without-freetype --without-gslib --without-gvc --without-jbig --without-openjp2 \
+        --without-jxl --without-lcms --without-lqr --without-lzma --without-openexr --without-pango --without-raw \
+        --without-rsvg --without-wmf --without-xml --disable-openmp --with-jpeg --with-heic --with-png --with-tiff --with-webp
+    - name: Install ImageMagick
+      working-directory: ImageMagick-7.1.1-15
+      run: |
+        make -j3 install
+
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.21
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Test
+      run: go test
