@@ -120,8 +120,6 @@ type Options struct {
 	Grayscale bool
 	// Rotate images, valid values are 0, 90, 180, 270
 	Rotate int
-	// Flip images, valid values are none, horizontal, vertical
-	Flip string
 	// Adjust the brightness of the images, must be in the range (-100, 100)
 	Brightness int
 	// Adjust the contrast of the images, must be in the range (-100, 100)
@@ -496,7 +494,7 @@ func (c *Convertor) imageConvert(ctx context.Context, img image.Image, index int
 	return nil
 }
 
-// imageTransform transforms image (resize, rotate, flip, brightness, contrast).
+// imageTransform transforms image (resize, rotate, brightness, contrast).
 func (c *Convertor) imageTransform(img image.Image) image.Image {
 	var i = img
 
@@ -516,15 +514,6 @@ func (c *Convertor) imageTransform(img image.Image) image.Image {
 			i = imaging.Rotate180(i)
 		case 270:
 			i = imaging.Rotate270(i)
-		}
-	}
-
-	if c.Opts.Flip != "none" {
-		switch c.Opts.Flip {
-		case "horizontal":
-			i = imaging.FlipH(i)
-		case "vertical":
-			i = imaging.FlipV(i)
 		}
 	}
 

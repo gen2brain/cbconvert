@@ -180,7 +180,6 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.BoolVar(&opts.NoConvert, "no-convert", false, "Do not transform or convert images")
 	convert.BoolVar(&opts.Grayscale, "grayscale", false, "Convert images to grayscale (monochromatic)")
 	convert.IntVar(&opts.Rotate, "rotate", 0, "Rotate images, valid values are 0, 90, 180, 270")
-	convert.StringVar(&opts.Flip, "flip", "none", "Flip images, valid values are none, horizontal, vertical")
 	convert.IntVar(&opts.Brightness, "brightness", 0, "Adjust the brightness of the images, must be in the range (-100, 100)")
 	convert.IntVar(&opts.Contrast, "contrast", 0, "Adjust the contrast of the images, must be in the range (-100, 100)")
 	convert.StringVar(&opts.Suffix, "suffix", "", "Add suffix to file basename")
