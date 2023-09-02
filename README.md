@@ -168,19 +168,33 @@ This is what it looks like in the PCManFM file manager:
 
 ### Examples
 
-Rescale images to 1200px for all supported files found in a directory with a size larger than 60MB:
+* Rescale images to 1200px for all supported files found in a directory with a size larger than 60MB:
 
 `cbconvert --recursive --width 1200 --size 60 /media/comics/Thorgal/`
 
-Convert all images in pdf to 4bit BMP images and save the result in ~/comics directory:
+* Convert all images in pdf to 4bit BMP images and save the result in ~/comics directory:
 
-`cbconvert --bmp --outdir ~/comics /media/comics/Garfield/Garfield_01.pdf`
+`cbconvert --format bmp --outdir ~/comics /media/comics/Garfield/Garfield_01.pdf`
 
 [BMP](http://en.wikipedia.org/wiki/BMP_file_format) format is a very good choice for black&white pages. Archive size can be smaller 2-3x and the file will be readable by comic readers.
 
-Extract covers to ~/covers dir for all supported files found in the directory, Lanczos algorithm is used for resizing:
+* Extract covers to ~/covers dir for all supported files found in the directory, Lanczos algorithm is used for resizing:
 
 `cbconvert cover --outdir ~/covers --filter=7 /media/comics/GrooTheWanderer/`
+
+* Convert all images to AVIF format:
+
+`cbconvert --format avif --quality 50 --width 1280 --outdir ~/comics /media/comics/Misc/`
+
+### Quality settings
+
+This table maps quality settings for JPEG to the respective AVIF and WEBP quality settings:
+
+|              |    |    |    |    |
+|--------------|----|----|----|----|
+| JPEG quality | 50 | 60 | 70 | 80 |
+| AVIF quality | 48 | 51 | 56 | 64 |
+| WEBP quality | 55 | 64 | 72 | 82 |
 
 ### Compile
 
