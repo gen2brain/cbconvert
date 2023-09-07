@@ -27,7 +27,6 @@ import (
 	"image/png"
 
 	"github.com/chai2010/webp"
-	_ "github.com/hotei/bmp" // allow 4-bit bmp decoding
 	"github.com/strukturag/libheif/go/heif"
 	"golang.org/x/image/tiff"
 
