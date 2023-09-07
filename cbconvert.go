@@ -1397,7 +1397,7 @@ func (c *Convertor) isArchive(f string) bool {
 
 // isDocument checks if file is document.
 func (c *Convertor) isDocument(f string) bool {
-	var types = []string{".pdf", ".epub", ".mobi"}
+	var types = []string{".pdf", ".xps", ".epub", ".mobi"}
 	for _, t := range types {
 		if strings.ToLower(filepath.Ext(f)) == t {
 			return true
