@@ -27,7 +27,6 @@ import (
 	"image/png"
 
 	"github.com/chai2010/webp"
-	"github.com/strukturag/libheif/go/heif"
 	"golang.org/x/image/tiff"
 
 	"github.com/disintegration/imaging"
@@ -69,14 +68,12 @@ var filters = map[int]imaging.ResampleFilter{
 
 // Options type.
 type Options struct {
-	// Image format, valid values are jpeg, png, tiff, bmp, webp, avif
+	// Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl
 	Format string
 	// Archive format, valid values are zip, tar
 	Archive string
 	// JPEG image quality
 	Quality int
-	// Lossless compression (avif)
-	Lossless bool
 	// Image width
 	Width int
 	// Image height
@@ -177,6 +174,20 @@ type Image struct {
 	Width     int
 	Height    int
 	SizeHuman string
+}
+
+// NewOptions returns default options.
+func NewOptions() Options {
+	o := Options{}
+	o.Format = "jpeg"
+	o.Archive = "zip"
+	o.Quality = 75
+	o.Filter = 2
+	o.LevelsGamma = 1.0
+	o.LevelsInMax = 255
+	o.LevelsOutMax = 255
+
+	return o
 }
 
 // New returns new convertor.
@@ -479,12 +490,11 @@ func (c *Convertor) imageConvert(ctx context.Context, img image.Image, index int
 	}
 
 	switch c.Opts.Format {
-	case "jpeg", "png", "tiff", "webp", "avif":
+	case "jpeg", "png", "tiff", "webp":
 		if err := c.imageEncode(img, fileName); err != nil {
 			return fmt.Errorf("imageConvert: %w", err)
 		}
-	case "bmp":
-		// convert image to 4-Bit BMP (16 colors)
+	case "bmp", "avif", "jxl":
 		if err := c.imEncode(img, fileName); err != nil {
 			return fmt.Errorf("imageConvert: %w", err)
 		}
@@ -643,18 +653,6 @@ func (c *Convertor) imageEncode(img image.Image, fileName string) error {
 		err = jpeg.Encode(file, img, &jpeg.Options{Quality: c.Opts.Quality})
 	case ".webp":
 		err = webp.Encode(file, img, &webp.Options{Quality: float32(c.Opts.Quality)})
-	case ".avif":
-		img = imageToRGBA(img)
-		lossLess := heif.LosslessModeDisabled
-		if c.Opts.Lossless {
-			lossLess = heif.LosslessModeEnabled
-		}
-
-		ctx, e := heif.EncodeFromImage(img, heif.CompressionAV1, c.Opts.Quality, lossLess, 0)
-		if e != nil {
-			return fmt.Errorf("imageEncode: %w", e)
-		}
-		err = ctx.WriteToFile(fileName)
 	}
 
 	if err != nil {
@@ -680,14 +678,8 @@ func (c *Convertor) imEncode(i image.Image, fileName string) error {
 		if err := mw.SetImageFormat("PNG"); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
-		if err := mw.WriteImage(fileName); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
 	case ".tif", ".tiff":
 		if err := mw.SetImageFormat("TIFF"); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.WriteImage(fileName); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
 	case ".bmp":
@@ -713,10 +705,7 @@ func (c *Convertor) imEncode(i image.Image, fileName string) error {
 		if err := mw.SetImageCompression(imagick.COMPRESSION_NO); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
-		if err := mw.QuantizeImage(16, mw.GetImageColorspace(), 1, imagick.DITHER_METHOD_FLOYD_STEINBERG, true); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.WriteImage(fileName); err != nil {
+		if err := mw.QuantizeImage(16, mw.GetImageColorspace(), 1, imagick.DITHER_METHOD_NO, true); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
 	case ".jpg", ".jpeg":
@@ -726,9 +715,6 @@ func (c *Convertor) imEncode(i image.Image, fileName string) error {
 		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
-		if err := mw.WriteImage(fileName); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
 	case ".avif":
 		if err := mw.SetImageFormat("AVIF"); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
@@ -736,9 +722,17 @@ func (c *Convertor) imEncode(i image.Image, fileName string) error {
 		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
-		if err := mw.WriteImage(fileName); err != nil {
+	case ".jxl":
+		if err := mw.SetImageFormat("JXL"); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
+		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
+			return fmt.Errorf("imEncode: %w", err)
+		}
+	}
+
+	if err := mw.WriteImage(fileName); err != nil {
+		return fmt.Errorf("imEncode: %w", err)
 	}
 
 	return nil
@@ -1409,7 +1403,7 @@ func (c *Convertor) isDocument(f string) bool {
 
 // isImage checks if file is image.
 func (c *Convertor) isImage(f string) bool {
-	var types = []string{".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".webp", ".avif"}
+	var types = []string{".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".webp", ".avif", ".jxl"}
 	for _, t := range types {
 		if strings.ToLower(filepath.Ext(f)) == t {
 			return true
@@ -1530,7 +1524,7 @@ func (c *Convertor) Files(args []string) ([]File, error) {
 
 			count := 0
 			for _, fn := range fs {
-				if !fn.IsDir() {
+				if !fn.IsDir() && c.isImage(fn.Name()) {
 					count++
 				}
 			}
@@ -1632,11 +1626,11 @@ func (c *Convertor) Cover(fileName string, fileInfo os.FileInfo) error {
 	}
 
 	switch c.Opts.Format {
-	case "jpeg", "png", "tiff", "webp", "avif":
+	case "jpeg", "png", "tiff", "webp":
 		if err := c.imageEncode(cover, fName); err != nil {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
-	case "bmp":
+	case "bmp", "avif", "jxl":
 		if err := c.imEncode(cover, fName); err != nil {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
@@ -1791,11 +1785,11 @@ func (c *Convertor) Preview(fileName string, fileInfo os.FileInfo, width, height
 	tmpName := c.tempName("cbc", "."+c.Opts.Format)
 
 	switch c.Opts.Format {
-	case "jpeg", "png", "tiff", "webp", "avif":
+	case "jpeg", "png", "tiff", "webp":
 		if err := c.imageEncode(i, tmpName); err != nil {
 			return img, fmt.Errorf("%s: %w", fileName, err)
 		}
-	case "bmp":
+	case "bmp", "avif", "jxl":
 		if err := c.imEncode(i, tmpName); err != nil {
 			return img, fmt.Errorf("%s: %w", fileName, err)
 		}

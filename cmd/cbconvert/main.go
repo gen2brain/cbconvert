@@ -169,10 +169,9 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.IntVar(&opts.Width, "width", 0, "Image width")
 	convert.IntVar(&opts.Height, "height", 0, "Image height")
 	convert.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
-	convert.StringVar(&opts.Format, "format", "jpeg", "Image format, valid values are jpeg, png, tiff, bmp, webp, avif")
+	convert.StringVar(&opts.Format, "format", "jpeg", "Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl")
 	convert.StringVar(&opts.Archive, "archive", "zip", "Archive format, valid values are zip, tar")
 	convert.IntVar(&opts.Quality, "quality", 75, "Image quality")
-	convert.BoolVar(&opts.Lossless, "lossless", false, "Lossless compression (avif)")
 	convert.IntVar(&opts.Filter, "filter", 2, "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos")
 	convert.BoolVar(&opts.NoCover, "no-cover", false, "Do not convert the cover image")
 	convert.BoolVar(&opts.NoRGB, "no-rgb", false, "Do not convert images that have RGB colorspace")
@@ -255,7 +254,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	}
 
 	if len(os.Args) < 2 {
-		convert.Usage()
+		flag.Usage()
 		_, _ = fmt.Fprintf(os.Stderr, "no command\n")
 		os.Exit(1)
 	}

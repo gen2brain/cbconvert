@@ -13,11 +13,8 @@ func TestConvert(t *testing.T) {
 		t.Error(err)
 	}
 
-	opts := Options{}
+	opts := NewOptions()
 	opts.OutDir = tmpDir
-	opts.Archive = "zip"
-	opts.Quality = 75
-	opts.Filter = 2
 
 	conv := New(opts)
 
@@ -29,7 +26,7 @@ func TestConvert(t *testing.T) {
 		t.Error(err)
 	}
 
-	for _, format := range []string{"jpeg", "png", "tiff", "bmp", "webp", "avif"} {
+	for _, format := range []string{"jpeg", "png", "tiff", "bmp", "webp", "avif", "jxl"} {
 		conv.Opts.Format = format
 
 		for _, file := range files {
@@ -54,11 +51,8 @@ func TestCover(t *testing.T) {
 		t.Error(err)
 	}
 
-	opts := Options{}
+	opts := NewOptions()
 	opts.OutDir = tmpDir
-	opts.Quality = 75
-	opts.Filter = 2
-	opts.Format = "jpeg"
 
 	conv := New(opts)
 
@@ -89,9 +83,8 @@ func TestThumbnail(t *testing.T) {
 		t.Error(err)
 	}
 
-	opts := Options{}
+	opts := NewOptions()
 	opts.OutDir = tmpDir
-	opts.Filter = 2
 
 	conv := New(opts)
 

@@ -10,7 +10,7 @@ It can convert comics to different formats to fit your various devices.
 
 * reads CBR (RAR), CBZ (ZIP), CB7 (7Z), CBT (TAR), PDF, XPS, EPUB, MOBI and plain directory
 * saves processed comics in ZIP archive format or TAR
-* images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, or 4-Bit BMP (16 colors) file format
+* images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL, or 4-Bit BMP (16 colors) file format
 * rotate, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images
 * resize filters (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
 * export covers from comics
@@ -58,13 +58,11 @@ This is what it looks like in the PCManFM file manager:
         --fit
             Best fit for required width and height (default "false")
         --format
-            Image format, valid values are jpeg, png, tiff, bmp, webp, avif (default "jpeg")
+            Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl (default "jpeg")
         --archive
     	    Archive format, valid values are zip, tar (default "zip")
         --quality
             Image quality (default "75")
-        --lossless
-            Lossless compression (avif) (default "false")
         --filter
             0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
         --no-cover
@@ -114,7 +112,7 @@ This is what it looks like in the PCManFM file manager:
         --fit
             Best fit for required width and height (default "false")
         --format
-            Image format, valid values are jpeg, png, tiff, bmp, webp, avif (default "jpeg")
+            Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl (default "jpeg")
         --quality
             Image quality (default "75")
         --filter
@@ -198,6 +196,6 @@ This table maps quality settings for JPEG to the respective AVIF and WEBP qualit
 
 ### Compile
 
-Install ImageMagick7, MuPDF and libheif (with libaom) libraries and headers and then install to GOBIN:
+Install ImageMagick7 (with libheif/libjxl support) and MuPDF libraries and headers and then install to GOBIN:
 
 `go install -tags extlib github.com/gen2brain/cbconvert/cmd/cbconvert@latest`

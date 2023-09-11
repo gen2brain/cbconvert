@@ -9,8 +9,7 @@ require (
 	github.com/fvbommel/sortorder v1.1.0
 	github.com/gen2brain/go-fitz v1.23.1
 	github.com/gen2brain/go-unarr v0.1.7
-	github.com/strukturag/libheif v1.15.2
-	golang.org/x/image v0.11.0
+	golang.org/x/image v0.12.0
 	golang.org/x/sync v0.3.0
 	gopkg.in/gographics/imagick.v3 v3.4.3
 )
