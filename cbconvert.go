@@ -1,13 +1,9 @@
 package cbconvert
 
 import (
-	"archive/tar"
-	"archive/zip"
 	"bytes"
 	"context"
 	"crypto/md5"
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -20,8 +16,6 @@ import (
 	"sync/atomic"
 
 	"image"
-	"image/color"
-	"image/draw"
 	_ "image/gif" // allow gif decoding
 	"image/jpeg"
 	"image/png"
@@ -158,6 +152,8 @@ type Convertor struct {
 	OnProgress func()
 	// Compress function
 	OnCompress func()
+	// Cancel function
+	OnCancel func()
 }
 
 // File type.
@@ -199,7 +195,7 @@ func New(o Options) *Convertor {
 }
 
 // convertDocument converts PDF/EPUB document to CBZ.
-func (c *Convertor) convertDocument(fileName string) error {
+func (c *Convertor) convertDocument(ctx context.Context, fileName string) error {
 	var err error
 
 	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
@@ -221,10 +217,14 @@ func (c *Convertor) convertDocument(fileName string) error {
 		c.OnStart()
 	}
 
-	eg, ctx := errgroup.WithContext(context.Background())
+	eg, ctx := errgroup.WithContext(ctx)
 	eg.SetLimit(runtime.NumCPU() + 1)
 
 	for n := 0; n < c.Ncontents; n++ {
+		if ctx.Err() != nil {
+			return fmt.Errorf("convertDocument: %w", ctx.Err())
+		}
+
 		img, err := doc.Image(n)
 		if err != nil {
 			return fmt.Errorf("convertDocument: %w", err)
@@ -248,7 +248,7 @@ func (c *Convertor) convertDocument(fileName string) error {
 }
 
 // convertArchive converts archive to CBZ.
-func (c *Convertor) convertArchive(fileName string) error {
+func (c *Convertor) convertArchive(ctx context.Context, fileName string) error {
 	var err error
 
 	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
@@ -261,7 +261,7 @@ func (c *Convertor) convertArchive(fileName string) error {
 		return fmt.Errorf("convertArchive: %w", err)
 	}
 
-	images := c.imagesFromSlice(contents)
+	images := imagesFromSlice(contents)
 
 	c.Ncontents = len(images)
 	c.CurrContent = 0
@@ -278,10 +278,14 @@ func (c *Convertor) convertArchive(fileName string) error {
 	}
 	defer archive.Close()
 
-	eg, ctx := errgroup.WithContext(context.Background())
+	eg, ctx := errgroup.WithContext(ctx)
 	eg.SetLimit(runtime.NumCPU() + 1)
 
 	for {
+		if ctx.Err() != nil {
+			return fmt.Errorf("convertArchive: %w", ctx.Err())
+		}
+
 		err := archive.Entry()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
@@ -298,9 +302,17 @@ func (c *Convertor) convertArchive(fileName string) error {
 
 		pathName := archive.Name()
 
-		if c.isImage(pathName) {
+		if isImage(pathName) {
 			if c.Opts.NoConvert {
-				if err = c.copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
+				if err = copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
+					return fmt.Errorf("convertArchive: %w", err)
+				}
+
+				continue
+			}
+
+			if cover == pathName && c.Opts.NoCover {
+				if err = copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
@@ -308,7 +320,7 @@ func (c *Convertor) convertArchive(fileName string) error {
 			}
 
 			var img image.Image
-			img, err = c.imageDecode(bytes.NewReader(data), pathName)
+			img, err = c.imageDecode(bytes.NewReader(data))
 			if err != nil {
 				e := err
 				img, err = c.imDecode(bytes.NewReader(data), pathName)
@@ -317,18 +329,8 @@ func (c *Convertor) convertArchive(fileName string) error {
 				}
 			}
 
-			if cover == pathName && c.Opts.NoCover {
-				img = c.imageTransform(img)
-				if err = c.imageEncode(img, filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
-					return fmt.Errorf("convertArchive: %w", err)
-				}
-
-				continue
-			}
-
-			if c.Opts.NoRGB && !c.isGrayScale(img) {
-				img = c.imageTransform(img)
-				if err = c.imageEncode(img, filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
+			if c.Opts.NoRGB && !isGrayScale(img) {
+				if err = copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
@@ -341,7 +343,7 @@ func (c *Convertor) convertArchive(fileName string) error {
 				})
 			}
 		} else if !c.Opts.NoNonImage {
-			if err = c.copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
+			if err = copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
 				return fmt.Errorf("convertArchive: %w", err)
 			}
 		}
@@ -356,7 +358,7 @@ func (c *Convertor) convertArchive(fileName string) error {
 }
 
 // convertDirectory converts directory to CBZ.
-func (c *Convertor) convertDirectory(dirPath string) error {
+func (c *Convertor) convertDirectory(ctx context.Context, dirPath string) error {
 	var err error
 
 	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
@@ -364,12 +366,12 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 		return fmt.Errorf("convertDirectory: %w", err)
 	}
 
-	contents, err := c.imagesFromPath(dirPath)
+	contents, err := imagesFromPath(dirPath)
 	if err != nil {
 		return fmt.Errorf("convertDirectory: %w", err)
 	}
 
-	images := c.imagesFromSlice(contents)
+	images := imagesFromSlice(contents)
 	c.Ncontents = len(images)
 	c.CurrContent = 0
 
@@ -377,17 +379,21 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 		c.OnStart()
 	}
 
-	eg, ctx := errgroup.WithContext(context.Background())
+	eg, ctx := errgroup.WithContext(ctx)
 	eg.SetLimit(runtime.NumCPU() + 1)
 
 	for index, img := range contents {
+		if ctx.Err() != nil {
+			return fmt.Errorf("convertDirectory: %w", ctx.Err())
+		}
+
 		file, err := os.Open(img)
 		if err != nil {
 			return fmt.Errorf("convertDirectory: %w", err)
 		}
 
-		if c.isNonImage(img) && !c.Opts.NoNonImage {
-			if err = c.copyFile(file, filepath.Join(c.Workdir, filepath.Base(img))); err != nil {
+		if isNonImage(img) && !c.Opts.NoNonImage {
+			if err = copyFile(file, filepath.Join(c.Workdir, filepath.Base(img))); err != nil {
 				return fmt.Errorf("convertDirectory: %w", err)
 			}
 
@@ -396,9 +402,9 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 			}
 
 			continue
-		} else if c.isImage(img) {
+		} else if isImage(img) {
 			if c.Opts.NoConvert {
-				if err = c.copyFile(file, filepath.Join(c.Workdir, filepath.Base(img))); err != nil {
+				if err = copyFile(file, filepath.Join(c.Workdir, filepath.Base(img))); err != nil {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
@@ -410,7 +416,7 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 			}
 
 			var i image.Image
-			i, err = c.imageDecode(file, img)
+			i, err = c.imageDecode(file)
 			if err != nil {
 				e := err
 				_, err = file.Seek(0, io.SeekStart)
@@ -424,9 +430,8 @@ func (c *Convertor) convertDirectory(dirPath string) error {
 				}
 			}
 
-			if c.Opts.NoRGB && !c.isGrayScale(i) {
-				i = c.imageTransform(i)
-				if err = c.imageEncode(i, filepath.Join(c.Workdir, filepath.Base(img))); err != nil {
+			if c.Opts.NoRGB && !isGrayScale(i) {
+				if err = copyFile(file, filepath.Join(c.Workdir, filepath.Base(img))); err != nil {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
@@ -474,7 +479,7 @@ func (c *Convertor) imageConvert(ctx context.Context, img image.Image, index int
 
 	var fileName string
 	if pathName != "" {
-		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%s.%s", c.baseNoExt(pathName), c.Opts.Format))
+		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%s.%s", baseNoExt(pathName), c.Opts.Format))
 	} else {
 		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%03d.%s", index, c.Opts.Format))
 	}
@@ -485,17 +490,23 @@ func (c *Convertor) imageConvert(ctx context.Context, img image.Image, index int
 		c.Opts.LevelsOutMin != 0 || c.Opts.LevelsOutMax != 255 {
 		img, err = c.imageLevel(img)
 		if err != nil {
-			return err
+			return fmt.Errorf("imageConvert: %w", err)
 		}
 	}
 
+	w, err := os.Create(fileName)
+	if err != nil {
+		return fmt.Errorf("imageConvert: %w", err)
+	}
+	defer w.Close()
+
 	switch c.Opts.Format {
 	case "jpeg", "png", "tiff", "webp":
-		if err := c.imageEncode(img, fileName); err != nil {
+		if err := c.imageEncode(img, w); err != nil {
 			return fmt.Errorf("imageConvert: %w", err)
 		}
 	case "bmp", "avif", "jxl":
-		if err := c.imEncode(img, fileName); err != nil {
+		if err := c.imEncode(img, w); err != nil {
 			return fmt.Errorf("imageConvert: %w", err)
 		}
 	}
@@ -571,10 +582,10 @@ func (c *Convertor) imageLevel(img image.Image) (image.Image, error) {
 	blob := mw.GetImageBlob()
 
 	var i image.Image
-	i, err = c.imageDecode(bytes.NewReader(blob), "levels")
+	i, err = c.imageDecode(bytes.NewReader(blob))
 	if err != nil {
 		e := err
-		i, err = c.imDecode(bytes.NewReader(blob), "levels")
+		i, err = c.imDecode(bytes.NewReader(blob), "")
 		if err != nil {
 			return nil, fmt.Errorf("imageLevel: %w: %w", e, err)
 		}
@@ -584,10 +595,10 @@ func (c *Convertor) imageLevel(img image.Image) (image.Image, error) {
 }
 
 // imageDecode decodes image from reader.
-func (c *Convertor) imageDecode(reader io.Reader, fileName string) (image.Image, error) {
+func (c *Convertor) imageDecode(reader io.Reader) (image.Image, error) {
 	img, _, err := image.Decode(reader)
 	if err != nil {
-		return img, fmt.Errorf("imageDecode: %s: %w", fileName, err)
+		return img, fmt.Errorf("imageDecode: %w", err)
 	}
 
 	return img, nil
@@ -599,11 +610,8 @@ func (c *Convertor) imDecode(reader io.Reader, fileName string) (image.Image, er
 	defer mw.Destroy()
 
 	var img image.Image
-	var err error
-	var data []byte
-	var out interface{}
 
-	data, err = io.ReadAll(reader)
+	b, err := io.ReadAll(reader)
 	if err != nil {
 		return img, fmt.Errorf("imDecode: %w", err)
 	}
@@ -612,14 +620,14 @@ func (c *Convertor) imDecode(reader io.Reader, fileName string) (image.Image, er
 		return img, fmt.Errorf("imDecode: %w", err)
 	}
 
-	if err = mw.ReadImageBlob(data); err != nil {
+	if err = mw.ReadImageBlob(b); err != nil {
 		return img, fmt.Errorf("imDecode: %w", err)
 	}
 
 	w := mw.GetImageWidth()
 	h := mw.GetImageHeight()
 
-	out, err = mw.ExportImagePixels(0, 0, w, h, "RGBA", imagick.PIXEL_CHAR)
+	out, err := mw.ExportImagePixels(0, 0, w, h, "RGBA", imagick.PIXEL_CHAR)
 	if err != nil {
 		return img, fmt.Errorf("imDecode: %w", err)
 	}
@@ -627,8 +635,7 @@ func (c *Convertor) imDecode(reader io.Reader, fileName string) (image.Image, er
 	data, ok := out.([]byte)
 
 	if ok {
-		b := image.Rect(0, 0, int(w), int(h))
-		rgba := image.NewRGBA(b)
+		rgba := image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
 		rgba.Pix = data
 		img = rgba
 	}
@@ -637,22 +644,18 @@ func (c *Convertor) imDecode(reader io.Reader, fileName string) (image.Image, er
 }
 
 // imageEncode encodes image to file.
-func (c *Convertor) imageEncode(img image.Image, fileName string) error {
-	file, err := os.Create(fileName)
-	if err != nil {
-		return fmt.Errorf("imageEncode: %w", err)
-	}
-	defer file.Close()
+func (c *Convertor) imageEncode(img image.Image, w io.Writer) error {
+	var err error
 
-	switch filepath.Ext(fileName) {
-	case ".png":
-		err = png.Encode(file, img)
-	case ".tif", ".tiff":
-		err = tiff.Encode(file, img, &tiff.Options{Compression: tiff.Uncompressed})
-	case ".jpg", ".jpeg":
-		err = jpeg.Encode(file, img, &jpeg.Options{Quality: c.Opts.Quality})
-	case ".webp":
-		err = webp.Encode(file, img, &webp.Options{Quality: float32(c.Opts.Quality)})
+	switch c.Opts.Format {
+	case "png":
+		err = png.Encode(w, img)
+	case "tiff":
+		err = tiff.Encode(w, img, &tiff.Options{Compression: tiff.Uncompressed})
+	case "jpeg":
+		err = jpeg.Encode(w, img, &jpeg.Options{Quality: c.Opts.Quality})
+	case "webp":
+		err = webp.Encode(w, img, &webp.Options{Quality: float32(c.Opts.Quality)})
 	}
 
 	if err != nil {
@@ -663,26 +666,32 @@ func (c *Convertor) imageEncode(img image.Image, fileName string) error {
 }
 
 // imEncode encodes image to file (ImageMagick).
-func (c *Convertor) imEncode(i image.Image, fileName string) error {
+func (c *Convertor) imEncode(i image.Image, w io.Writer) error {
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
-	rgba := imageToRGBA(i)
 	if err := mw.ConstituteImage(uint(i.Bounds().Dx()), uint(i.Bounds().Dy()),
-		"RGBA", imagick.PIXEL_CHAR, rgba.Pix); err != nil {
+		"RGBA", imagick.PIXEL_CHAR, imageToRGBA(i).Pix); err != nil {
 		return fmt.Errorf("imEncode: %w", err)
 	}
 
-	switch filepath.Ext(fileName) {
-	case ".png":
+	switch c.Opts.Format {
+	case "png":
 		if err := mw.SetImageFormat("PNG"); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
-	case ".tif", ".tiff":
+	case "tiff":
 		if err := mw.SetImageFormat("TIFF"); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
-	case ".bmp":
+	case "jpeg":
+		if err := mw.SetImageFormat("JPEG"); err != nil {
+			return fmt.Errorf("imEncode: %w", err)
+		}
+		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
+			return fmt.Errorf("imEncode: %w", err)
+		}
+	case "bmp":
 		pw := imagick.NewPixelWand()
 		pw.SetColor("black")
 		defer pw.Destroy()
@@ -708,21 +717,14 @@ func (c *Convertor) imEncode(i image.Image, fileName string) error {
 		if err := mw.QuantizeImage(16, mw.GetImageColorspace(), 1, imagick.DITHER_METHOD_NO, true); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
-	case ".jpg", ".jpeg":
-		if err := mw.SetImageFormat("JPEG"); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-	case ".avif":
+	case "avif":
 		if err := mw.SetImageFormat("AVIF"); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
 		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
-	case ".jxl":
+	case "jxl":
 		if err := mw.SetImageFormat("JXL"); err != nil {
 			return fmt.Errorf("imEncode: %w", err)
 		}
@@ -731,418 +733,9 @@ func (c *Convertor) imEncode(i image.Image, fileName string) error {
 		}
 	}
 
-	if err := mw.WriteImage(fileName); err != nil {
+	_, err := w.Write(mw.GetImageBlob())
+	if err != nil {
 		return fmt.Errorf("imEncode: %w", err)
-	}
-
-	return nil
-}
-
-// archiveSave saves workdir to CBZ archive.
-func (c *Convertor) archiveSave(fileName string) error {
-	if c.Opts.Archive == "zip" {
-		return c.archiveSaveZip(fileName)
-	} else if c.Opts.Archive == "tar" {
-		return c.archiveSaveTar(fileName)
-	}
-
-	return nil
-}
-
-// archiveSaveZip saves workdir to CBZ archive.
-func (c *Convertor) archiveSaveZip(fileName string) error {
-	if c.OnCompress != nil {
-		c.OnCompress()
-	}
-
-	var zipName string
-	if c.Opts.Recursive {
-		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Dir(fileName)), 0755)
-		if err != nil {
-			return fmt.Errorf("archiveSaveZip: %w", err)
-		}
-
-		zipName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%s%s.cbz", c.baseNoExt(fileName), c.Opts.Suffix))
-	} else {
-		zipName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s%s.cbz", c.baseNoExt(fileName), c.Opts.Suffix))
-	}
-
-	zipFile, err := os.Create(zipName)
-	if err != nil {
-		return fmt.Errorf("archiveSaveZip: %w", err)
-	}
-
-	z := zip.NewWriter(zipFile)
-
-	files, err := os.ReadDir(c.Workdir)
-	if err != nil {
-		return fmt.Errorf("archiveSaveZip: %w", err)
-	}
-
-	for _, file := range files {
-		r, err := os.ReadFile(filepath.Join(c.Workdir, file.Name()))
-		if err != nil {
-			return fmt.Errorf("archiveSaveZip: %w", err)
-		}
-
-		info, err := file.Info()
-		if err != nil {
-			return fmt.Errorf("archiveSaveZip: %w", err)
-		}
-
-		zipInfo, err := zip.FileInfoHeader(info)
-		if err != nil {
-			return fmt.Errorf("archiveSaveZip: %w", err)
-		}
-
-		zipInfo.Method = zip.Deflate
-		w, err := z.CreateHeader(zipInfo)
-		if err != nil {
-			return fmt.Errorf("archiveSaveZip: %w", err)
-		}
-
-		_, err = w.Write(r)
-		if err != nil {
-			return fmt.Errorf("archiveSaveZip: %w", err)
-		}
-	}
-
-	if err = z.Close(); err != nil {
-		return fmt.Errorf("archiveSaveZip: %w", err)
-	}
-
-	if err = zipFile.Close(); err != nil {
-		return fmt.Errorf("archiveSaveZip: %w", err)
-	}
-
-	err = os.RemoveAll(c.Workdir)
-	if err != nil {
-		return fmt.Errorf("archiveSaveZip: %w", err)
-	}
-
-	return nil
-}
-
-// archiveSaveTar saves workdir to CBT archive.
-func (c *Convertor) archiveSaveTar(fileName string) error {
-	if c.OnCompress != nil {
-		c.OnCompress()
-	}
-
-	var tarName string
-	if c.Opts.Recursive {
-		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Dir(fileName)), 0755)
-		if err != nil {
-			return fmt.Errorf("archiveSaveTar: %w", err)
-		}
-
-		tarName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%s%s.cbt", c.baseNoExt(fileName), c.Opts.Suffix))
-	} else {
-		tarName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s%s.cbt", c.baseNoExt(fileName), c.Opts.Suffix))
-	}
-
-	tarFile, err := os.Create(tarName)
-	if err != nil {
-		return fmt.Errorf("archiveSaveTar: %w", err)
-	}
-
-	tw := tar.NewWriter(tarFile)
-
-	files, err := os.ReadDir(c.Workdir)
-	if err != nil {
-		return fmt.Errorf("archiveSaveTar: %w", err)
-	}
-
-	for _, file := range files {
-		r, err := os.ReadFile(filepath.Join(c.Workdir, file.Name()))
-		if err != nil {
-			return fmt.Errorf("archiveSaveTar: %w", err)
-		}
-
-		info, err := file.Info()
-		if err != nil {
-			return fmt.Errorf("archiveSaveTar: %w", err)
-		}
-
-		header, err := tar.FileInfoHeader(info, info.Name())
-		if err != nil {
-			return fmt.Errorf("archiveSaveTar: %w", err)
-		}
-
-		err = tw.WriteHeader(header)
-		if err != nil {
-			return fmt.Errorf("archiveSaveTar: %w", err)
-		}
-
-		_, err = tw.Write(r)
-		if err != nil {
-			return fmt.Errorf("archiveSaveTar: %w", err)
-		}
-	}
-
-	if err = tw.Close(); err != nil {
-		return fmt.Errorf("archiveSaveTar: %w", err)
-	}
-
-	if err = tarFile.Close(); err != nil {
-		return fmt.Errorf("archiveSaveTar: %w", err)
-	}
-
-	err = os.RemoveAll(c.Workdir)
-	if err != nil {
-		return fmt.Errorf("archiveSaveTar: %w", err)
-	}
-
-	return nil
-}
-
-// archiveList lists contents of archive.
-func (c *Convertor) archiveList(fileName string) ([]string, error) {
-	var contents []string
-
-	archive, err := unarr.NewArchive(fileName)
-	if err != nil {
-		return contents, fmt.Errorf("archiveList: %w", err)
-	}
-	defer archive.Close()
-
-	contents, err = archive.List()
-	if err != nil {
-		return contents, fmt.Errorf("archiveList: %w", err)
-	}
-
-	return contents, nil
-}
-
-// archiveComment returns ZIP comment.
-func (c *Convertor) archiveComment(fileName string) (string, error) {
-	zr, err := zip.OpenReader(fileName)
-	if err != nil {
-		return "", fmt.Errorf("archiveComment: %w", err)
-	}
-	defer zr.Close()
-
-	return zr.Comment, nil
-}
-
-// archiveSetComment sets ZIP comment.
-func (c *Convertor) archiveSetComment(fileName, commentBody string) error {
-	zr, err := zip.OpenReader(fileName)
-	if err != nil {
-		return fmt.Errorf("archiveSetComment: %w", err)
-	}
-	defer zr.Close()
-
-	zf, err := os.CreateTemp(os.TempDir(), "cbc")
-	if err != nil {
-		return fmt.Errorf("archiveSetComment: %w", err)
-	}
-
-	tmpName := zf.Name()
-	defer os.Remove(tmpName)
-
-	zw := zip.NewWriter(zf)
-	err = zw.SetComment(commentBody)
-	if err != nil {
-		return fmt.Errorf("archiveSetComment: %w", err)
-	}
-
-	for _, item := range zr.File {
-		ir, err := item.OpenRaw()
-		if err != nil {
-			return fmt.Errorf("archiveSetComment: %w", err)
-		}
-
-		item := item
-
-		it, err := zw.CreateRaw(&item.FileHeader)
-		if err != nil {
-			return fmt.Errorf("archiveSetComment: %w", err)
-		}
-
-		_, err = io.Copy(it, ir)
-		if err != nil {
-			return fmt.Errorf("archiveSetComment: %w", err)
-		}
-	}
-
-	err = zw.Close()
-	if err != nil {
-		return fmt.Errorf("archiveSetComment: %w", err)
-	}
-
-	err = zf.Close()
-	if err != nil {
-		return fmt.Errorf("archiveSetComment: %w", err)
-	}
-
-	data, err := os.ReadFile(tmpName)
-	if err != nil {
-		return fmt.Errorf("archiveSetComment: %w", err)
-	}
-
-	err = os.WriteFile(fileName, data, 0644)
-	if err != nil {
-		return fmt.Errorf("archiveSetComment: %w", err)
-	}
-
-	return nil
-}
-
-// archiveFileAdd adds file to archive.
-func (c *Convertor) archiveFileAdd(fileName, newFileName string) error {
-	zr, err := zip.OpenReader(fileName)
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-	defer zr.Close()
-
-	zf, err := os.CreateTemp(os.TempDir(), "cbc")
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-
-	tmpName := zf.Name()
-	defer os.Remove(tmpName)
-
-	zw := zip.NewWriter(zf)
-
-	for _, item := range zr.File {
-		if item.Name == newFileName {
-			continue
-		}
-
-		ir, err := item.OpenRaw()
-		if err != nil {
-			return fmt.Errorf("archiveFileAdd: %w", err)
-		}
-
-		item := item
-
-		it, err := zw.CreateRaw(&item.FileHeader)
-		if err != nil {
-			return fmt.Errorf("archiveFileAdd: %w", err)
-		}
-
-		_, err = io.Copy(it, ir)
-		if err != nil {
-			return fmt.Errorf("archiveFileAdd: %w", err)
-		}
-	}
-
-	info, err := os.Stat(newFileName)
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-
-	newData, err := os.ReadFile(newFileName)
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-
-	zipInfo, err := zip.FileInfoHeader(info)
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-
-	zipInfo.Method = zip.Deflate
-	w, err := zw.CreateHeader(zipInfo)
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-
-	_, err = w.Write(newData)
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-
-	err = zw.Close()
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-
-	err = zf.Close()
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-
-	data, err := os.ReadFile(tmpName)
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-
-	err = os.WriteFile(fileName, data, 0644)
-	if err != nil {
-		return fmt.Errorf("archiveFileAdd: %w", err)
-	}
-
-	return nil
-}
-
-// archiveFileRemove removes files from archive.
-func (c *Convertor) archiveFileRemove(fileName, pattern string) error {
-	zr, err := zip.OpenReader(fileName)
-	if err != nil {
-		return fmt.Errorf("archiveFileRemove: %w", err)
-	}
-	defer zr.Close()
-
-	zf, err := os.CreateTemp(os.TempDir(), "cbc")
-	if err != nil {
-		return fmt.Errorf("archiveFileRemove: %w", err)
-	}
-
-	tmpName := zf.Name()
-	defer os.Remove(tmpName)
-
-	zw := zip.NewWriter(zf)
-
-	for _, item := range zr.File {
-		matched, err := filepath.Match(pattern, item.Name)
-		if err != nil {
-			return fmt.Errorf("archiveFileRemove: %w", err)
-		}
-
-		if matched {
-			continue
-		}
-
-		ir, err := item.OpenRaw()
-		if err != nil {
-			return fmt.Errorf("archiveFileRemove: %w", err)
-		}
-
-		item := item
-
-		it, err := zw.CreateRaw(&item.FileHeader)
-		if err != nil {
-			return fmt.Errorf("archiveFileRemove: %w", err)
-		}
-
-		_, err = io.Copy(it, ir)
-		if err != nil {
-			return fmt.Errorf("archiveFileRemove: %w", err)
-		}
-	}
-
-	err = zw.Close()
-	if err != nil {
-		return fmt.Errorf("archiveFileRemove: %w", err)
-	}
-
-	err = zf.Close()
-	if err != nil {
-		return fmt.Errorf("archiveFileRemove: %w", err)
-	}
-
-	data, err := os.ReadFile(tmpName)
-	if err != nil {
-		return fmt.Errorf("archiveFileRemove: %w", err)
-	}
-
-	err = os.WriteFile(fileName, data, 0644)
-	if err != nil {
-		return fmt.Errorf("archiveFileRemove: %w", err)
 	}
 
 	return nil
@@ -1158,7 +751,7 @@ func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
 	}
 
 	for _, ct := range contents {
-		if c.isImage(ct) {
+		if isImage(ct) {
 			images = append(images, ct)
 		}
 	}
@@ -1181,7 +774,7 @@ func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
 	}
 
 	var img image.Image
-	img, err = c.imageDecode(bytes.NewReader(data), cover)
+	img, err = c.imageDecode(bytes.NewReader(data))
 	if err != nil {
 		e := err
 		img, err = c.imDecode(bytes.NewReader(data), cover)
@@ -1199,7 +792,6 @@ func (c *Convertor) coverDocument(fileName string) (image.Image, error) {
 	if err != nil {
 		return nil, fmt.Errorf("coverDocument: %w", err)
 	}
-
 	defer doc.Close()
 
 	img, err := doc.Image(0)
@@ -1212,12 +804,12 @@ func (c *Convertor) coverDocument(fileName string) (image.Image, error) {
 
 // coverDirectory extracts cover from directory.
 func (c *Convertor) coverDirectory(dir string) (image.Image, error) {
-	contents, err := c.imagesFromPath(dir)
+	contents, err := imagesFromPath(dir)
 	if err != nil {
 		return nil, fmt.Errorf("coverDirectory: %w", err)
 	}
 
-	images := c.imagesFromSlice(contents)
+	images := imagesFromSlice(contents)
 	cover := c.coverName(images)
 
 	file, err := os.Open(cover)
@@ -1227,7 +819,7 @@ func (c *Convertor) coverDirectory(dir string) (image.Image, error) {
 	defer file.Close()
 
 	var img image.Image
-	img, err = c.imageDecode(file, cover)
+	img, err = c.imageDecode(file)
 	if err != nil {
 		e := err
 		_, err = file.Seek(0, io.SeekStart)
@@ -1254,7 +846,7 @@ func (c *Convertor) coverName(images []string) string {
 	for idx, img := range images {
 		img = strings.ToLower(img)
 		lower = append(lower, img)
-		ext := c.baseNoExt(img)
+		ext := baseNoExt(img)
 
 		if strings.HasPrefix(img, "cover") || strings.HasPrefix(img, "front") ||
 			strings.HasSuffix(ext, "cover") || strings.HasSuffix(ext, "front") {
@@ -1283,9 +875,9 @@ func (c *Convertor) coverImage(fileName string, fileInfo os.FileInfo) (image.Ima
 	switch {
 	case fileInfo.IsDir():
 		cover, err = c.coverDirectory(fileName)
-	case c.isDocument(fileName):
+	case isDocument(fileName):
 		cover, err = c.coverDocument(fileName)
-	case c.isArchive(fileName):
+	case isArchive(fileName):
 		cover, err = c.coverArchive(fileName)
 	}
 
@@ -1300,185 +892,6 @@ func (c *Convertor) coverImage(fileName string, fileInfo os.FileInfo) (image.Ima
 	return cover, nil
 }
 
-// imagesFromPath returns list of found image files for given directory.
-func (c *Convertor) imagesFromPath(path string) ([]string, error) {
-	var images []string
-
-	walkFiles := func(fp string, f os.FileInfo, err error) error {
-		if !f.IsDir() && f.Mode()&os.ModeType == 0 {
-			if f.Size() > 0 && (c.isImage(fp) || c.isNonImage(fp)) {
-				images = append(images, fp)
-			}
-		}
-
-		return nil
-	}
-
-	f, err := filepath.Abs(path)
-	if err != nil {
-		return images, fmt.Errorf("imagesFromPath: %w", err)
-	}
-
-	stat, err := os.Stat(f)
-	if err != nil {
-		return images, fmt.Errorf("imagesFromPath: %w", err)
-	}
-
-	if !stat.IsDir() && stat.Mode()&os.ModeType == 0 {
-		if c.isImage(f) {
-			images = append(images, f)
-		}
-	} else {
-		err = filepath.Walk(f, walkFiles)
-		if err != nil {
-			return images, fmt.Errorf("imagesFromPath: %w", err)
-		}
-	}
-
-	return images, nil
-}
-
-// imagesFromSlice returns list of found image files for given slice of files.
-func (c *Convertor) imagesFromSlice(files []string) []string {
-	var images []string
-
-	for _, f := range files {
-		if c.isImage(f) {
-			images = append(images, f)
-		}
-	}
-
-	return images
-}
-
-// imageToRGBA converts an image.Image to *image.RGBA.
-func imageToRGBA(src image.Image) *image.RGBA {
-	if dst, ok := src.(*image.RGBA); ok {
-		return dst
-	}
-
-	b := src.Bounds()
-	dst := image.NewRGBA(b)
-	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
-
-	return dst
-}
-
-// imageToGray converts an image.Image to *image.Gray.
-func imageToGray(src image.Image) *image.Gray {
-	if dst, ok := src.(*image.Gray); ok {
-		return dst
-	}
-
-	b := src.Bounds()
-	dst := image.NewGray(b)
-	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
-
-	return dst
-}
-
-// isArchive checks if file is archive.
-func (c *Convertor) isArchive(f string) bool {
-	var types = []string{".rar", ".zip", ".7z", ".tar", ".cbr", ".cbz", ".cb7", ".cbt"}
-	for _, t := range types {
-		if strings.ToLower(filepath.Ext(f)) == t {
-			return true
-		}
-	}
-
-	return false
-}
-
-// isDocument checks if file is document.
-func (c *Convertor) isDocument(f string) bool {
-	var types = []string{".pdf", ".xps", ".epub", ".mobi"}
-	for _, t := range types {
-		if strings.ToLower(filepath.Ext(f)) == t {
-			return true
-		}
-	}
-
-	return false
-}
-
-// isImage checks if file is image.
-func (c *Convertor) isImage(f string) bool {
-	var types = []string{".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".webp", ".avif", ".jxl"}
-	for _, t := range types {
-		if strings.ToLower(filepath.Ext(f)) == t {
-			return true
-		}
-	}
-
-	return false
-}
-
-// isNonImage checks for allowed files in archive.
-func (c *Convertor) isNonImage(f string) bool {
-	var types = []string{".nfo", ".xml", ".txt"}
-	for _, t := range types {
-		if strings.ToLower(filepath.Ext(f)) == t {
-			return true
-		}
-	}
-
-	return false
-}
-
-// isSize checks size of file.
-func (c *Convertor) isSize(size int64) bool {
-	if c.Opts.Size > 0 {
-		if size < int64(c.Opts.Size)*(1024*1024) {
-			return false
-		}
-	}
-
-	return true
-}
-
-// isGrayScale checks if image is grayscale.
-func (c *Convertor) isGrayScale(img image.Image) bool {
-	model := img.ColorModel()
-	if model == color.GrayModel || model == color.Gray16Model {
-		return true
-	}
-
-	return false
-}
-
-// baseNoExt returns base name without extension.
-func (c *Convertor) baseNoExt(filename string) string {
-	return strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))
-}
-
-// tempName generates a temporary name.
-func (c *Convertor) tempName(prefix, suffix string) string {
-	randBytes := make([]byte, 16)
-	_, _ = rand.Read(randBytes)
-	return filepath.Join(os.TempDir(), prefix+hex.EncodeToString(randBytes)+suffix)
-}
-
-// copyFile copies reader to file.
-func (c *Convertor) copyFile(reader io.Reader, filename string) error {
-	err := os.MkdirAll(filepath.Dir(filename), 0755)
-	if err != nil {
-		return fmt.Errorf("copyFile: %w", err)
-	}
-
-	file, err := os.Create(filename)
-	if err != nil {
-		return fmt.Errorf("copyFile: %w", err)
-	}
-	defer file.Close()
-
-	_, err = io.Copy(file, reader)
-	if err != nil {
-		return fmt.Errorf("copyFile: %w", err)
-	}
-
-	return nil
-}
-
 // Initialize inits ImageMagick.
 func (c *Convertor) Initialize() {
 	imagick.Initialize()
@@ -1487,6 +900,13 @@ func (c *Convertor) Initialize() {
 // Terminate terminates ImageMagick.
 func (c *Convertor) Terminate() {
 	imagick.Terminate()
+}
+
+// Cancel cancels the operation.
+func (c *Convertor) Cancel() {
+	if c.OnCancel != nil {
+		c.OnCancel()
+	}
 }
 
 // Files returns list of found comic files.
@@ -1506,8 +926,8 @@ func (c *Convertor) Files(args []string) ([]File, error) {
 		if f.IsDir() {
 			return nil
 		}
-		if c.isArchive(fp) || c.isDocument(fp) {
-			if c.isSize(f.Size()) {
+		if isArchive(fp) || isDocument(fp) {
+			if isSize(int64(c.Opts.Size), f.Size()) {
 				files = append(files, toFile(fp, f))
 			}
 		}
@@ -1524,7 +944,7 @@ func (c *Convertor) Files(args []string) ([]File, error) {
 
 			count := 0
 			for _, fn := range fs {
-				if !fn.IsDir() && c.isImage(fn.Name()) {
+				if !fn.IsDir() && isImage(fn.Name()) {
 					count++
 				}
 			}
@@ -1549,8 +969,8 @@ func (c *Convertor) Files(args []string) ([]File, error) {
 		}
 
 		if !stat.IsDir() {
-			if c.isArchive(path) || c.isDocument(path) {
-				if c.isSize(stat.Size()) {
+			if isArchive(path) || isDocument(path) {
+				if isSize(int64(c.Opts.Size), stat.Size()) {
 					files = append(files, toFile(path, stat))
 				}
 			}
@@ -1566,12 +986,12 @@ func (c *Convertor) Files(args []string) ([]File, error) {
 				}
 
 				for _, f := range fs {
-					if c.isArchive(f.Name()) || c.isDocument(f.Name()) {
+					if isArchive(f.Name()) || isDocument(f.Name()) {
 						info, err := f.Info()
 						if err != nil {
 							return files, fmt.Errorf("%s: %w", arg, err)
 						}
-						if c.isSize(info.Size()) {
+						if isSize(int64(c.Opts.Size), info.Size()) {
 							files = append(files, toFile(filepath.Join(path, f.Name()), info))
 						}
 					}
@@ -1620,18 +1040,24 @@ func (c *Convertor) Cover(fileName string, fileInfo os.FileInfo) error {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
 
-		fName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%s.%s", c.baseNoExt(fileName), c.Opts.Format))
+		fName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%s.%s", baseNoExt(fileName), c.Opts.Format))
 	} else {
-		fName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s.%s", c.baseNoExt(fileName), c.Opts.Format))
+		fName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s.%s", baseNoExt(fileName), c.Opts.Format))
 	}
+
+	w, err := os.Create(fName)
+	if err != nil {
+		return fmt.Errorf("imageConvert: %w", err)
+	}
+	defer w.Close()
 
 	switch c.Opts.Format {
 	case "jpeg", "png", "tiff", "webp":
-		if err := c.imageEncode(cover, fName); err != nil {
+		if err := c.imageEncode(cover, w); err != nil {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
 	case "bmp", "avif", "jxl":
-		if err := c.imEncode(cover, fName); err != nil {
+		if err := c.imEncode(cover, w); err != nil {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
 	}
@@ -1662,8 +1088,7 @@ func (c *Convertor) Thumbnail(fileName string, fileInfo os.FileInfo) error {
 	defer mw.Destroy()
 
 	rgba := imageToRGBA(cover)
-	if err := mw.ConstituteImage(uint(cover.Bounds().Dx()), uint(cover.Bounds().Dy()),
-		"RGBA", imagick.PIXEL_CHAR, rgba.Pix); err != nil {
+	if err := mw.ConstituteImage(uint(cover.Bounds().Dx()), uint(cover.Bounds().Dy()), "RGBA", imagick.PIXEL_CHAR, rgba.Pix); err != nil {
 		return fmt.Errorf("%s: %w", fileName, err)
 	}
 
@@ -1730,7 +1155,7 @@ func (c *Convertor) Meta(fileName string) (any, error) {
 		}
 
 		for _, ct := range contents {
-			if c.isImage(ct) {
+			if isImage(ct) {
 				images = append(images, ct)
 			}
 		}
@@ -1782,52 +1207,37 @@ func (c *Convertor) Preview(fileName string, fileInfo os.FileInfo, width, height
 		}
 	}
 
-	tmpName := c.tempName("cbc", "."+c.Opts.Format)
+	var w bytes.Buffer
 
 	switch c.Opts.Format {
 	case "jpeg", "png", "tiff", "webp":
-		if err := c.imageEncode(i, tmpName); err != nil {
+		if err := c.imageEncode(i, &w); err != nil {
 			return img, fmt.Errorf("%s: %w", fileName, err)
 		}
 	case "bmp", "avif", "jxl":
-		if err := c.imEncode(i, tmpName); err != nil {
+		if err := c.imEncode(i, &w); err != nil {
 			return img, fmt.Errorf("%s: %w", fileName, err)
 		}
-	}
-
-	stat, err := os.Stat(tmpName)
-	if err != nil {
-		return img, fmt.Errorf("%s: %w", fileName, err)
 	}
 
 	img.Width = i.Bounds().Dx()
 	img.Height = i.Bounds().Dy()
-	img.SizeHuman = humanize.IBytes(uint64(stat.Size()))
+	img.SizeHuman = humanize.IBytes(uint64(len(w.Bytes())))
 
-	f, err := os.Open(tmpName)
-	if err != nil {
-		return img, fmt.Errorf("%s: %w", fileName, err)
-	}
+	r := bytes.NewReader(w.Bytes())
 
-	defer os.Remove(tmpName)
-
-	dec, err := c.imageDecode(f, tmpName)
+	dec, err := c.imageDecode(r)
 	if err != nil {
 		e := err
-		_, err = f.Seek(0, io.SeekStart)
+		_, err = r.Seek(0, io.SeekStart)
 		if err != nil {
-			return img, fmt.Errorf("%s: %w: %w", tmpName, e, err)
+			return img, fmt.Errorf("%s: %w: %w", fileName, e, err)
 		}
 
-		dec, err = c.imDecode(f, tmpName)
+		dec, err = c.imDecode(r, "cbc."+c.Opts.Format)
 		if err != nil {
-			return img, fmt.Errorf("%s: %w: %w", tmpName, e, err)
+			return img, fmt.Errorf("%s: %w: %w", fileName, e, err)
 		}
-	}
-
-	err = f.Close()
-	if err != nil {
-		return img, fmt.Errorf("%s: %w", fileName, err)
 	}
 
 	if width != 0 && height != 0 {
@@ -1843,17 +1253,22 @@ func (c *Convertor) Preview(fileName string, fileInfo os.FileInfo, width, height
 func (c *Convertor) Convert(fileName string, fileInfo os.FileInfo) error {
 	c.CurrFile++
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	c.OnCancel = cancel
+
 	switch {
 	case fileInfo.IsDir():
-		if err := c.convertDirectory(fileName); err != nil {
+		if err := c.convertDirectory(ctx, fileName); err != nil {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
-	case c.isDocument(fileName):
-		if err := c.convertDocument(fileName); err != nil {
+	case isDocument(fileName):
+		if err := c.convertDocument(ctx, fileName); err != nil {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
-	case c.isArchive(fileName):
-		if err := c.convertArchive(fileName); err != nil {
+	case isArchive(fileName):
+		if err := c.convertArchive(ctx, fileName); err != nil {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
 	}
@@ -1861,6 +1276,8 @@ func (c *Convertor) Convert(fileName string, fileInfo os.FileInfo) error {
 	if err := c.archiveSave(fileName); err != nil {
 		return fmt.Errorf("%s: %w", fileName, err)
 	}
+
+	c.OnCancel = nil
 
 	return nil
 }

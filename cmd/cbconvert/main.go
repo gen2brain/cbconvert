@@ -58,7 +58,6 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		for range c {
-			fmt.Println("\naborting")
 			if err := os.RemoveAll(conv.Workdir); err != nil {
 				fmt.Println(err)
 			}
@@ -114,7 +113,7 @@ func main() {
 
 	conv.OnCompress = func() {
 		if !opts.Quiet {
-			_, _ = fmt.Fprintf(os.Stderr, "Compressing %d of %d...\r", conv.CurrFile, conv.Nfiles)
+			fmt.Fprintf(os.Stderr, "Compressing %d of %d...\r", conv.CurrFile, conv.Nfiles)
 		}
 	}
 
@@ -156,7 +155,7 @@ func main() {
 		}
 	}
 
-	_, _ = fmt.Fprintf(os.Stderr, "\r")
+	fmt.Fprintf(os.Stderr, "\r")
 }
 
 // parseFlags parses command line flags.
@@ -228,34 +227,34 @@ func parseFlags() (cbconvert.Options, []string) {
 	flag.NewFlagSet("version", flag.ExitOnError)
 
 	flag.Usage = func() {
-		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
-		_, _ = fmt.Fprintf(os.Stderr, "\nCommands:\n")
-		_, _ = fmt.Fprintf(os.Stderr, "\n  convert\n    \tConvert archive or document\n\n")
+		fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
+		fmt.Fprintf(os.Stderr, "\nCommands:\n")
+		fmt.Fprintf(os.Stderr, "\n  convert\n    \tConvert archive or document\n\n")
 		convert.VisitAll(func(f *flag.Flag) {
-			_, _ = fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
-			_, _ = fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
+			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
+			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		})
-		_, _ = fmt.Fprintf(os.Stderr, "\n  cover\n    \tExtract cover\n\n")
+		fmt.Fprintf(os.Stderr, "\n  cover\n    \tExtract cover\n\n")
 		cover.VisitAll(func(f *flag.Flag) {
-			_, _ = fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
-			_, _ = fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
+			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
+			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		})
-		_, _ = fmt.Fprintf(os.Stderr, "\n  thumbnail\n    \tExtract cover thumbnail (freedesktop spec.)\n\n")
+		fmt.Fprintf(os.Stderr, "\n  thumbnail\n    \tExtract cover thumbnail (freedesktop spec.)\n\n")
 		thumbnail.VisitAll(func(f *flag.Flag) {
-			_, _ = fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
-			_, _ = fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
+			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
+			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		})
-		_, _ = fmt.Fprintf(os.Stderr, "\n  meta\n    \tCBZ metadata\n\n")
+		fmt.Fprintf(os.Stderr, "\n  meta\n    \tCBZ metadata\n\n")
 		meta.VisitAll(func(f *flag.Flag) {
-			_, _ = fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
-			_, _ = fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
+			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
+			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		})
-		_, _ = fmt.Fprintf(os.Stderr, "\n  version\n    \tPrint version\n\n")
+		fmt.Fprintf(os.Stderr, "\n  version\n    \tPrint version\n\n")
 	}
 
 	if len(os.Args) < 2 {
 		flag.Usage()
-		_, _ = fmt.Fprintf(os.Stderr, "no command\n")
+		fmt.Fprintf(os.Stderr, "no command\n")
 		os.Exit(1)
 	}
 
