@@ -5,7 +5,7 @@ sdk: org.freedesktop.Sdk
 sdk-extensions:
     - org.freedesktop.Sdk.Extension.golang
 
-command: cbconvert-gui
+command: cbconvert
 
 finish-args:
   - --share=ipc
@@ -47,7 +47,7 @@ modules:
         sha256: 7a4c6077f45180926583e2087571371bdd9cb21b6e6fada85a6fbd544f26a0e2
 
   - name: highway
-    buildsystem: cmake
+    buildsystem: cmake-ninja
     config-opts:
       - -DBUILD_SHARED_LIBS=ON
       - -DHWY_ENABLE_TESTS=OFF
@@ -59,7 +59,7 @@ modules:
         sha256: 5434488108186c170a5e2fca5e3c9b6ef59a1caa4d520b008a9b8be6b8abe6c5
 
   - name: libjxl
-    buildsystem: cmake
+    buildsystem: cmake-ninja
     config-opts:
       - -DBUILD_SHARED_LIBS=ON
       - -DJPEGXL_ENABLE_BENCHMARK=OFF
@@ -154,14 +154,14 @@ modules:
     buildsystem: simple
     build-commands:
       - cp cmd/cbconvert-gui/dist/linux/flatpak/modules.txt cmd/cbconvert-gui/vendor/
-      - cd cmd/cbconvert-gui && $GOROOT/bin/go build -mod=vendor -trimpath -tags "extlib portal" -ldflags "-s -w -X main.appVersion=1.0.1"
-      - install -Dm00755 cmd/cbconvert-gui/cbconvert-gui $FLATPAK_DEST/bin/cbconvert-gui
+      - cd cmd/cbconvert-gui && $GOROOT/bin/go build -mod=vendor -trimpath -tags "extlib portal" -ldflags "-s -w -X main.appVersion=1.0.2"
+      - install -Dm00755 cmd/cbconvert-gui/cbconvert-gui $FLATPAK_DEST/bin/cbconvert
       - install -Dm00644 cmd/cbconvert-gui/dist/linux/cbconvert.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png
       - install -Dm00644 cmd/cbconvert-gui/dist/linux/flatpak/$FLATPAK_ID.desktop $FLATPAK_DEST/share/applications/$FLATPAK_ID.desktop
       - install -Dm00644 cmd/cbconvert-gui/dist/linux/flatpak/$FLATPAK_ID.metainfo.xml $FLATPAK_DEST/share/metainfo/$FLATPAK_ID.metainfo.xml
     sources:
       - type: archive
-        url: https://github.com/gen2brain/cbconvert/archive/refs/tags/v1.0.1.tar.gz
+        url: https://github.com/gen2brain/cbconvert/archive/refs/tags/v1.0.2.tar.gz
         sha256: 34964e24fb8a81e6a2b7e556de8aa28d5b5fbd5698157f67fb5e7e9ee02330cc
 
       - type: archive

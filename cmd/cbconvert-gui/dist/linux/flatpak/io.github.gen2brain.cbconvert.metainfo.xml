@@ -30,6 +30,14 @@
   <url type="bugtracker">https://github.com/gen2brain/cbconvert/issues</url>
 
   <releases>
+    <release version="1.0.2" date="2023-09-14" type="stable">
+      <description>
+        <ul>
+            <li>Change flatpak exec/command name to cbconvert</li>
+        </ul>
+      </description>
+      <url type="details">https://github.com/gen2brain/cbconvert/releases/tag/v1.0.2</url>
+    </release>
     <release version="1.0.1" date="2023-09-14" type="stable">
       <description>
         <ul>
