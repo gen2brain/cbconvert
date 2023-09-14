@@ -162,13 +162,13 @@ modules:
     sources:
       - type: archive
         url: https://github.com/gen2brain/cbconvert/archive/refs/tags/v1.0.0.tar.gz
-        sha256: d628bb06020f50e57c879794652c1533eee18814e3b9a223cdb11ed9fe88bc01
+        sha256: 57e94c9e05ed48353f743c9944bc1b3f3e2ada19a1c1405d42708104c4116bc7
 
       - type: archive
         url: https://proxy.golang.org/github.com/gen2brain/cbconvert/@v/v1.0.0.zip
         strip-components: 3
         dest: cmd/cbconvert-gui/vendor/github.com/gen2brain/cbconvert
-        sha256: d628bb06020f50e57c879794652c1533eee18814e3b9a223cdb11ed9fe88bc01
+        sha256: 116e440f681fb109a2a51b2ae0888435b3702291e71e26ba79da313c070ec13c
 
       - type: archive
         url: https://proxy.golang.org/github.com/chai2010/webp/@v/v1.1.1.zip
