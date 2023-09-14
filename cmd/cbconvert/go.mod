@@ -3,7 +3,7 @@ module github.com/gen2brain/cbconvert/cmd/cbconvert
 go 1.21
 
 require (
-	github.com/gen2brain/cbconvert v0.0.0-20230913111409-788a9d3bd5b1
+	github.com/gen2brain/cbconvert v0.0.0-20230914012707-e14aa6baabb7
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/spf13/pflag v1.0.5
 )
