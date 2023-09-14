@@ -154,21 +154,21 @@ modules:
     buildsystem: simple
     build-commands:
       - cp cmd/cbconvert-gui/dist/linux/flatpak/modules.txt cmd/cbconvert-gui/vendor/
-      - cd cmd/cbconvert-gui && $GOROOT/bin/go build -mod=vendor -trimpath -tags "extlib portal" -ldflags "-s -w -X main.appVersion=1.0.0"
+      - cd cmd/cbconvert-gui && $GOROOT/bin/go build -mod=vendor -trimpath -tags "extlib portal" -ldflags "-s -w -X main.appVersion=1.0.1"
       - install -Dm00755 cmd/cbconvert-gui/cbconvert-gui $FLATPAK_DEST/bin/cbconvert-gui
       - install -Dm00644 cmd/cbconvert-gui/dist/linux/cbconvert.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png
       - install -Dm00644 cmd/cbconvert-gui/dist/linux/flatpak/$FLATPAK_ID.desktop $FLATPAK_DEST/share/applications/$FLATPAK_ID.desktop
       - install -Dm00644 cmd/cbconvert-gui/dist/linux/flatpak/$FLATPAK_ID.metainfo.xml $FLATPAK_DEST/share/metainfo/$FLATPAK_ID.metainfo.xml
     sources:
       - type: archive
-        url: https://github.com/gen2brain/cbconvert/archive/refs/tags/v1.0.0.tar.gz
-        sha256: 57e94c9e05ed48353f743c9944bc1b3f3e2ada19a1c1405d42708104c4116bc7
+        url: https://github.com/gen2brain/cbconvert/archive/refs/tags/v1.0.1.tar.gz
+        sha256: 2ba51b3ef9cddeed8a64da34ee2d7a6cb931e50fb6f9c944c13c59cbcc5f33e2
 
       - type: archive
-        url: https://proxy.golang.org/github.com/gen2brain/cbconvert/@v/v1.0.0.zip
+        url: https://proxy.golang.org/github.com/gen2brain/cbconvert/@v/v1.0.1.zip
         strip-components: 3
         dest: cmd/cbconvert-gui/vendor/github.com/gen2brain/cbconvert
-        sha256: 116e440f681fb109a2a51b2ae0888435b3702291e71e26ba79da313c070ec13c
+        sha256: 57e0052fb89a7361e44f844dca0177f31935776f75ff799a3cc233e2260ef055
 
       - type: archive
         url: https://proxy.golang.org/github.com/chai2010/webp/@v/v1.1.1.zip

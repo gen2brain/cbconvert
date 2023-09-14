@@ -10,7 +10,7 @@ github.com/dustin/go-humanize
 # github.com/fvbommel/sortorder v1.1.0
 ## explicit; go 1.13
 github.com/fvbommel/sortorder
-# github.com/gen2brain/cbconvert v0.0.0-20230913113913-6400ae14d89a
+# github.com/gen2brain/cbconvert v1.0.0
 ## explicit; go 1.21
 github.com/gen2brain/cbconvert
 # github.com/gen2brain/go-fitz v1.23.1
