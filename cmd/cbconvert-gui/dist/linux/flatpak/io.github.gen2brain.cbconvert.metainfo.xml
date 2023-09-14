@@ -30,11 +30,19 @@
   <url type="bugtracker">https://github.com/gen2brain/cbconvert/issues</url>
 
   <releases>
+    <release version="1.0.1" date="2023-09-14" type="stable">
+      <description>
+        <ul>
+          <li>Add flatpak manifest</li>
+        </ul>
+      </description>
+      <url type="details">https://github.com/gen2brain/cbconvert/releases/tag/v1.0.1</url>
+    </release>
     <release version="1.0.0" date="2023-09-14" type="stable">
       <description>
         <ul>
-          <li>Added new GUI</li>
-          <li>Added support for JPEG XL</li>
+          <li>Add GUI</li>
+          <li>Add support for JPEG XL</li>
         </ul>
       </description>
       <url type="details">https://github.com/gen2brain/cbconvert/releases/tag/v1.0.0</url>
