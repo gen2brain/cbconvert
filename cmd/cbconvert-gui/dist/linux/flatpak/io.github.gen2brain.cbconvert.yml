@@ -24,7 +24,10 @@ cleanup:
   - '/lib/cmake'
   - '/lib/pkgconfig'
   - '/lib/ImageMagick*'
-  - '/share'
+  - '/share/ImageMagick*'
+  - '/share/doc'
+  - '/share/man'
+  - '/share/thumbnailers'
 
 modules:
 
