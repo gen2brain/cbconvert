@@ -5,7 +5,7 @@ MINGW_x86_64="/usr/x86_64-w64-mingw32"
 MACOS_x86_64="/usr/x86_64-apple-darwin"
 MACOS_aarch64="/usr/aarch64-apple-darwin"
 
-VERSION="$(git --git-dir ../../.git describe --tags --abbrev=0 2>/dev/null || echo '0.0.0')"
+VERSION="$(git --git-dir ../../.git describe --tags --abbrev=0 2>/dev/null || echo '1.0.0')"
 
 BUILDDIR="cbconvert-${VERSION}"
 
