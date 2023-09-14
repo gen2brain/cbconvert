@@ -6,11 +6,15 @@ CBconvert is a [Comic Book](http://en.wikipedia.org/wiki/Comic_Book_Archive_file
 
 It can convert comics to different formats to fit your various devices.
 
+<img src="cmd/cbconvert-gui/screenshots/linux-01.jpg" width="700" alt="screenshot" />
+
+See more [screnshots](https://github.com/gen2brain/cbconvert/blob/master/cmd/cbconvert-gui/screenshots/).
+
 ### Features
 
 * reads CBR (RAR), CBZ (ZIP), CB7 (7Z), CBT (TAR), PDF, XPS, EPUB, MOBI and plain directory
-* saves processed comics in ZIP archive format or TAR
-* images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL, or 4-Bit BMP (16 colors) file format
+* saves processed files in ZIP archive format or TAR
+* images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL, or 4-Bit BMP (16 colors) image format
 * rotate, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images
 * resize filters (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
 * export covers from comics
@@ -18,26 +22,25 @@ It can convert comics to different formats to fit your various devices.
 
 ### Download
 
-* [Windows x86_64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-0.9.1-windows-x86_64.zip)
-* [Linux x86_64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-0.9.1-linux-x86_64.tar.gz)
-* [Linux aarch64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-0.9.1-linux-aarch64.tar.gz)
-* [macOS x86_64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-0.9.1-darwin-x86_64.zip)
-* [macOS aarch64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-0.9.1-darwin-aarch64.zip)
+* [Windows x86_64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-1.0.0-windows-x86_64.zip)
+* [Linux x86_64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-1.0.0-linux-x86_64.tar.gz)
+* [macOS x86_64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-1.0.0-darwin-x86_64.zip)
+* [macOS aarch64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-1.0.0-darwin-aarch64.zip)
 
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 
-Copy cbconvert cli binary to your PATH and create file ~/.local/share/thumbnailers/cbconvert.thumbnailer:
+Copy `cbconvert` cli binary to your PATH and create file `~/.local/share/thumbnailers/cbconvert.thumbnailer`:
 
 ```
 [Thumbnailer Entry]
 TryExec=cbconvert
 Exec=cbconvert thumbnail --quiet --width %s --outfile %o %i
-MimeType=application/pdf;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;application/x-mobipocket-ebook;
+MimeType=application/pdf;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;application/x-mobipocket-ebook;application/vnd.ms-xpsdocument;
 ```
 
 This is what it looks like in the PCManFM file manager:
 
-![thumbnails](https://bit.ly/3BaTvTV)
+<img src="cmd/cbconvert/screenshots/thumbnails.jpg" width="700" alt="thumbnails" />
 
 
 ### Using command line app
@@ -199,3 +202,7 @@ This table maps quality settings for JPEG to the respective AVIF and WEBP qualit
 Install ImageMagick7 (with libheif/libjxl support) and MuPDF libraries and headers and then install to GOBIN:
 
 `go install -tags extlib github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
+
+For GUI app, check [IUP requirements](https://github.com/gen2brain/iup-go), and then install:
+
+`go install -tags extlib github.com/gen2brain/cbconvert/cmd/cbconvert-gui@latest`

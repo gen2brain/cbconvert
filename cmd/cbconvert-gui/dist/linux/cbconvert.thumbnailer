@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=cbconvert
+Exec=cbconvert thumbnail --quiet --width %s --outfile %o %i
+MimeType=application/pdf;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;application/x-mobipocket-ebook;application/vnd.ms-xpsdocument;

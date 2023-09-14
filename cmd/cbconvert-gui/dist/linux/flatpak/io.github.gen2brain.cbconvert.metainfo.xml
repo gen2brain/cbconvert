@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.gen2brain.cbconvert</id>
+  
+  <name>CBconvert</name>
+  <developer_name>Milan Nikolic</developer_name>
+  <summary>A Comic Book converter</summary>
+  
+  <metadata_license>MIT</metadata_license>
+  <project_license>GPL-3</project_license>
+
+  <description>
+    <p>
+      A comic book converter with support for .cb*, .pdf, .xps, .epub, .mobi and directories.
+      Images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL or 4-Bit BMP (16 colors) file format.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">io.github.gen2brain.cbconvert.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/gen2brain/cbconvert/main/cmd/cbconvert-gui/screenshots/linux-02.jpg</image>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/gen2brain/cbconvert/main/cmd/cbconvert-gui/screenshots/linux-01.jpg</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://github.com/gen2brain/cbconvert</url>
+  <url type="bugtracker">https://github.com/gen2brain/cbconvert/issues</url>
+
+  <releases>
+    <release version="1.0.0" date="2023-09-14" type="stable">
+      <description>
+        <ul>
+          <li>Added new GUI</li>
+          <li>Added support for JPEG XL</li>
+        </ul>
+      </description>
+      <url type="details">https://github.com/gen2brain/cbconvert/releases/tag/v1.0.0</url>
+    </release>
+  </releases>
+
+</component>
