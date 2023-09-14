@@ -162,13 +162,7 @@ modules:
     sources:
       - type: archive
         url: https://github.com/gen2brain/cbconvert/archive/refs/tags/v1.0.1.tar.gz
-        sha256: 2ba51b3ef9cddeed8a64da34ee2d7a6cb931e50fb6f9c944c13c59cbcc5f33e2
-
-      - type: archive
-        url: https://proxy.golang.org/github.com/gen2brain/cbconvert/@v/v1.0.1.zip
-        strip-components: 3
-        dest: cmd/cbconvert-gui/vendor/github.com/gen2brain/cbconvert
-        sha256: 57e0052fb89a7361e44f844dca0177f31935776f75ff799a3cc233e2260ef055
+        sha256: 34964e24fb8a81e6a2b7e556de8aa28d5b5fbd5698157f67fb5e7e9ee02330cc
 
       - type: archive
         url: https://proxy.golang.org/github.com/chai2010/webp/@v/v1.1.1.zip
@@ -367,3 +361,9 @@ modules:
         strip-components: 3
         dest: cmd/cbconvert-gui/vendor/gopkg.in/gographics/imagick.v3
         sha256: ae0a425a2ffcbe92447c5da005deff2c0aac1e25995c443b86ae4bd48861d9e1
+
+      - type: archive
+        url: https://proxy.golang.org/github.com/gen2brain/cbconvert/@v/v1.0.0.zip
+        strip-components: 3
+        dest: cmd/cbconvert-gui/vendor/github.com/gen2brain/cbconvert
+        sha256: 116e440f681fb109a2a51b2ae0888435b3702291e71e26ba79da313c070ec13c
