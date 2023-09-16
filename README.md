@@ -27,6 +27,8 @@ See more [screnshots](https://github.com/gen2brain/cbconvert/blob/master/cmd/cbc
 * [macOS x86_64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-1.0.0-darwin-x86_64.zip)
 * [macOS aarch64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-1.0.0-darwin-aarch64.zip)
 
+[![flathub](https://dl.flathub.org/assets/badges/flathub-badge-en.png)](https://flathub.org/apps/io.github.gen2brain.cbconvert)
+
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 
 Copy `cbconvert` cli binary to your PATH and create file `~/.local/share/thumbnailers/cbconvert.thumbnailer`:
