@@ -8,7 +8,7 @@ It can convert comics to different formats to fit your various devices.
 
 <img src="cmd/cbconvert-gui/screenshots/linux-01.jpg" width="700" alt="screenshot" />
 
-See more [screnshots](https://github.com/gen2brain/cbconvert/blob/master/cmd/cbconvert-gui/screenshots/).
+See more [screenshots](https://github.com/gen2brain/cbconvert/blob/master/cmd/cbconvert-gui/screenshots/).
 
 ### Features
 
