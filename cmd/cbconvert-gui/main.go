@@ -680,7 +680,7 @@ func status() iup.Ihandle {
 			SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(func(ih iup.Ihandle, s string, i int, p any) int {
 				switch s {
 				case "convert":
-					conv := p.(*cbconvert.Convertor)
+					conv := p.(*cbconvert.Converter)
 					ih.SetAttributes("VALUE=0, VISIBLE=YES")
 					ih.SetAttribute("MAX", conv.Ncontents)
 
@@ -694,7 +694,7 @@ func status() iup.Ihandle {
 
 					iup.Refresh(iup.GetHandle("StatusBar"))
 				case "start":
-					conv := p.(*cbconvert.Convertor)
+					conv := p.(*cbconvert.Converter)
 					ih.SetAttributes("VALUE=0, VISIBLE=YES")
 					ih.SetAttribute("MAX", conv.Nfiles)
 
@@ -704,13 +704,13 @@ func status() iup.Ihandle {
 
 					iup.GetHandle("LabelStatus2").SetAttributes("VISIBLE=YES")
 				case "progress":
-					conv := p.(*cbconvert.Convertor)
+					conv := p.(*cbconvert.Converter)
 					ih.SetAttribute("VALUE", conv.CurrContent)
 					iup.GetHandle("LabelStatus2").SetAttribute("TITLE", fmt.Sprintf("(%03d/%03d)", conv.CurrContent, conv.Ncontents))
 
 					iup.Refresh(iup.GetHandle("StatusBar"))
 				case "progress2":
-					conv := p.(*cbconvert.Convertor)
+					conv := p.(*cbconvert.Converter)
 					ih.SetAttribute("VALUE", conv.CurrFile)
 					iup.GetHandle("LabelStatus2").SetAttribute("TITLE", fmt.Sprintf("(%03d/%03d)", conv.CurrFile, conv.Nfiles))
 
@@ -857,7 +857,7 @@ func onThumbnail(ih iup.Ihandle) int {
 
 	iup.PostMessage(iup.GetHandle("ProgressBar"), "start", 0, conv)
 
-	go func(c *cbconvert.Convertor) {
+	go func(c *cbconvert.Converter) {
 		c.Initialize()
 		defer c.Terminate()
 
@@ -903,7 +903,7 @@ func onCover(ih iup.Ihandle) int {
 
 	iup.PostMessage(iup.GetHandle("ProgressBar"), "start", 0, conv)
 
-	go func(c *cbconvert.Convertor) {
+	go func(c *cbconvert.Converter) {
 		c.Initialize()
 		defer c.Terminate()
 
@@ -952,7 +952,7 @@ func onConvert(ih iup.Ihandle) int {
 		return iup.DEFAULT
 	}))
 
-	go func(c *cbconvert.Convertor) {
+	go func(c *cbconvert.Converter) {
 		c.Initialize()
 		defer c.Terminate()
 

@@ -12,7 +12,7 @@ import (
 )
 
 // archiveSave saves workdir to CBZ archive.
-func (c *Convertor) archiveSave(fileName string) error {
+func (c *Converter) archiveSave(fileName string) error {
 	if c.Opts.Archive == "zip" {
 		return c.archiveSaveZip(fileName)
 	} else if c.Opts.Archive == "tar" {
@@ -23,7 +23,7 @@ func (c *Convertor) archiveSave(fileName string) error {
 }
 
 // archiveSaveZip saves workdir to CBZ archive.
-func (c *Convertor) archiveSaveZip(fileName string) error {
+func (c *Converter) archiveSaveZip(fileName string) error {
 	if c.OnCompress != nil {
 		c.OnCompress()
 	}
@@ -97,7 +97,7 @@ func (c *Convertor) archiveSaveZip(fileName string) error {
 }
 
 // archiveSaveTar saves workdir to CBT archive.
-func (c *Convertor) archiveSaveTar(fileName string) error {
+func (c *Converter) archiveSaveTar(fileName string) error {
 	if c.OnCompress != nil {
 		c.OnCompress()
 	}
@@ -170,7 +170,7 @@ func (c *Convertor) archiveSaveTar(fileName string) error {
 }
 
 // archiveList lists contents of archive.
-func (c *Convertor) archiveList(fileName string) ([]string, error) {
+func (c *Converter) archiveList(fileName string) ([]string, error) {
 	var contents []string
 
 	archive, err := unarr.NewArchive(fileName)
@@ -188,7 +188,7 @@ func (c *Convertor) archiveList(fileName string) ([]string, error) {
 }
 
 // archiveComment returns ZIP comment.
-func (c *Convertor) archiveComment(fileName string) (string, error) {
+func (c *Converter) archiveComment(fileName string) (string, error) {
 	zr, err := zip.OpenReader(fileName)
 	if err != nil {
 		return "", fmt.Errorf("archiveComment: %w", err)
@@ -199,7 +199,7 @@ func (c *Convertor) archiveComment(fileName string) (string, error) {
 }
 
 // archiveSetComment sets ZIP comment.
-func (c *Convertor) archiveSetComment(fileName, commentBody string) error {
+func (c *Converter) archiveSetComment(fileName, commentBody string) error {
 	zr, err := zip.OpenReader(fileName)
 	if err != nil {
 		return fmt.Errorf("archiveSetComment: %w", err)
@@ -263,7 +263,7 @@ func (c *Convertor) archiveSetComment(fileName, commentBody string) error {
 }
 
 // archiveFileAdd adds file to archive.
-func (c *Convertor) archiveFileAdd(fileName, newFileName string) error {
+func (c *Converter) archiveFileAdd(fileName, newFileName string) error {
 	zr, err := zip.OpenReader(fileName)
 	if err != nil {
 		return fmt.Errorf("archiveFileAdd: %w", err)
@@ -353,7 +353,7 @@ func (c *Convertor) archiveFileAdd(fileName, newFileName string) error {
 }
 
 // archiveFileRemove removes files from archive.
-func (c *Convertor) archiveFileRemove(fileName, pattern string) error {
+func (c *Converter) archiveFileRemove(fileName, pattern string) error {
 	zr, err := zip.OpenReader(fileName)
 	if err != nil {
 		return fmt.Errorf("archiveFileRemove: %w", err)
