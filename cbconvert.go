@@ -132,8 +132,8 @@ type Options struct {
 	LevelsOutMax int
 }
 
-// Convertor type.
-type Convertor struct {
+// Converter type.
+type Converter struct {
 	// Options struct
 	Opts Options
 	// Current working directory
@@ -186,16 +186,16 @@ func NewOptions() Options {
 	return o
 }
 
-// New returns new convertor.
-func New(o Options) *Convertor {
-	c := &Convertor{}
+// New returns new converter.
+func New(o Options) *Converter {
+	c := &Converter{}
 	c.Opts = o
 
 	return c
 }
 
 // convertDocument converts PDF/EPUB document to CBZ.
-func (c *Convertor) convertDocument(ctx context.Context, fileName string) error {
+func (c *Converter) convertDocument(ctx context.Context, fileName string) error {
 	var err error
 
 	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
@@ -248,7 +248,7 @@ func (c *Convertor) convertDocument(ctx context.Context, fileName string) error 
 }
 
 // convertArchive converts archive to CBZ.
-func (c *Convertor) convertArchive(ctx context.Context, fileName string) error {
+func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 	var err error
 
 	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
@@ -358,7 +358,7 @@ func (c *Convertor) convertArchive(ctx context.Context, fileName string) error {
 }
 
 // convertDirectory converts directory to CBZ.
-func (c *Convertor) convertDirectory(ctx context.Context, dirPath string) error {
+func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error {
 	var err error
 
 	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
@@ -466,7 +466,7 @@ func (c *Convertor) convertDirectory(ctx context.Context, dirPath string) error 
 }
 
 // imageConvert converts image.Image.
-func (c *Convertor) imageConvert(ctx context.Context, img image.Image, index int, pathName string) error {
+func (c *Converter) imageConvert(ctx context.Context, img image.Image, index int, pathName string) error {
 	err := ctx.Err()
 	if err != nil {
 		return fmt.Errorf("imageConvert: %w", err)
@@ -515,7 +515,7 @@ func (c *Convertor) imageConvert(ctx context.Context, img image.Image, index int
 }
 
 // imageTransform transforms image (resize, rotate, brightness, contrast).
-func (c *Convertor) imageTransform(img image.Image) image.Image {
+func (c *Converter) imageTransform(img image.Image) image.Image {
 	var i = img
 
 	if c.Opts.Width > 0 || c.Opts.Height > 0 {
@@ -553,7 +553,7 @@ func (c *Convertor) imageTransform(img image.Image) image.Image {
 }
 
 // imageLevel applies a Photoshop-like levels operation on an image.
-func (c *Convertor) imageLevel(img image.Image) (image.Image, error) {
+func (c *Converter) imageLevel(img image.Image) (image.Image, error) {
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
@@ -595,7 +595,7 @@ func (c *Convertor) imageLevel(img image.Image) (image.Image, error) {
 }
 
 // imageDecode decodes image from reader.
-func (c *Convertor) imageDecode(reader io.Reader) (image.Image, error) {
+func (c *Converter) imageDecode(reader io.Reader) (image.Image, error) {
 	img, _, err := image.Decode(reader)
 	if err != nil {
 		return img, fmt.Errorf("imageDecode: %w", err)
@@ -605,7 +605,7 @@ func (c *Convertor) imageDecode(reader io.Reader) (image.Image, error) {
 }
 
 // imDecode decodes image from reader (ImageMagick).
-func (c *Convertor) imDecode(reader io.Reader, fileName string) (image.Image, error) {
+func (c *Converter) imDecode(reader io.Reader, fileName string) (image.Image, error) {
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
@@ -644,7 +644,7 @@ func (c *Convertor) imDecode(reader io.Reader, fileName string) (image.Image, er
 }
 
 // imageEncode encodes image to file.
-func (c *Convertor) imageEncode(img image.Image, w io.Writer) error {
+func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 	var err error
 
 	switch c.Opts.Format {
@@ -666,7 +666,7 @@ func (c *Convertor) imageEncode(img image.Image, w io.Writer) error {
 }
 
 // imEncode encodes image to file (ImageMagick).
-func (c *Convertor) imEncode(i image.Image, w io.Writer) error {
+func (c *Converter) imEncode(i image.Image, w io.Writer) error {
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
@@ -742,7 +742,7 @@ func (c *Convertor) imEncode(i image.Image, w io.Writer) error {
 }
 
 // coverArchive extracts cover from archive.
-func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
+func (c *Converter) coverArchive(fileName string) (image.Image, error) {
 	var images []string
 
 	contents, err := c.archiveList(fileName)
@@ -787,7 +787,7 @@ func (c *Convertor) coverArchive(fileName string) (image.Image, error) {
 }
 
 // coverDocument extracts cover from document.
-func (c *Convertor) coverDocument(fileName string) (image.Image, error) {
+func (c *Converter) coverDocument(fileName string) (image.Image, error) {
 	doc, err := fitz.New(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("coverDocument: %w", err)
@@ -803,7 +803,7 @@ func (c *Convertor) coverDocument(fileName string) (image.Image, error) {
 }
 
 // coverDirectory extracts cover from directory.
-func (c *Convertor) coverDirectory(dir string) (image.Image, error) {
+func (c *Converter) coverDirectory(dir string) (image.Image, error) {
 	contents, err := imagesFromPath(dir)
 	if err != nil {
 		return nil, fmt.Errorf("coverDirectory: %w", err)
@@ -837,7 +837,7 @@ func (c *Convertor) coverDirectory(dir string) (image.Image, error) {
 }
 
 // coverName returns the filename that is the most likely to be the cover.
-func (c *Convertor) coverName(images []string) string {
+func (c *Converter) coverName(images []string) string {
 	if len(images) == 0 {
 		return ""
 	}
@@ -868,7 +868,7 @@ func (c *Convertor) coverName(images []string) string {
 }
 
 // coverImage returns cover as image.Image.
-func (c *Convertor) coverImage(fileName string, fileInfo os.FileInfo) (image.Image, error) {
+func (c *Converter) coverImage(fileName string, fileInfo os.FileInfo) (image.Image, error) {
 	var err error
 	var cover image.Image
 
@@ -893,24 +893,24 @@ func (c *Convertor) coverImage(fileName string, fileInfo os.FileInfo) (image.Ima
 }
 
 // Initialize inits ImageMagick.
-func (c *Convertor) Initialize() {
+func (c *Converter) Initialize() {
 	imagick.Initialize()
 }
 
 // Terminate terminates ImageMagick.
-func (c *Convertor) Terminate() {
+func (c *Converter) Terminate() {
 	imagick.Terminate()
 }
 
 // Cancel cancels the operation.
-func (c *Convertor) Cancel() {
+func (c *Converter) Cancel() {
 	if c.OnCancel != nil {
 		c.OnCancel()
 	}
 }
 
 // Files returns list of found comic files.
-func (c *Convertor) Files(args []string) ([]File, error) {
+func (c *Converter) Files(args []string) ([]File, error) {
 	var files []File
 
 	toFile := func(fp string, f os.FileInfo) File {
@@ -1017,7 +1017,7 @@ func (c *Convertor) Files(args []string) ([]File, error) {
 }
 
 // Cover extracts cover.
-func (c *Convertor) Cover(fileName string, fileInfo os.FileInfo) error {
+func (c *Converter) Cover(fileName string, fileInfo os.FileInfo) error {
 	c.CurrFile++
 
 	cover, err := c.coverImage(fileName, fileInfo)
@@ -1066,7 +1066,7 @@ func (c *Convertor) Cover(fileName string, fileInfo os.FileInfo) error {
 }
 
 // Thumbnail extracts thumbnail.
-func (c *Convertor) Thumbnail(fileName string, fileInfo os.FileInfo) error {
+func (c *Converter) Thumbnail(fileName string, fileInfo os.FileInfo) error {
 	c.CurrFile++
 
 	cover, err := c.coverImage(fileName, fileInfo)
@@ -1142,7 +1142,7 @@ func (c *Convertor) Thumbnail(fileName string, fileInfo os.FileInfo) error {
 }
 
 // Meta manipulates with CBZ metadata.
-func (c *Convertor) Meta(fileName string) (any, error) {
+func (c *Converter) Meta(fileName string) (any, error) {
 	c.CurrFile++
 
 	switch {
@@ -1189,7 +1189,7 @@ func (c *Convertor) Meta(fileName string) (any, error) {
 }
 
 // Preview returns image preview.
-func (c *Convertor) Preview(fileName string, fileInfo os.FileInfo, width, height int) (Image, error) {
+func (c *Converter) Preview(fileName string, fileInfo os.FileInfo, width, height int) (Image, error) {
 	var img Image
 
 	i, err := c.coverImage(fileName, fileInfo)
@@ -1250,7 +1250,7 @@ func (c *Convertor) Preview(fileName string, fileInfo os.FileInfo, width, height
 }
 
 // Convert converts comic book.
-func (c *Convertor) Convert(fileName string, fileInfo os.FileInfo) error {
+func (c *Converter) Convert(fileName string, fileInfo os.FileInfo) error {
 	c.CurrFile++
 
 	ctx, cancel := context.WithCancel(context.Background())
