@@ -20,7 +20,7 @@ import (
 	"image/jpeg"
 	"image/png"
 
-	"github.com/chai2010/webp"
+	"git.sr.ht/~jackmordaunt/go-libwebp/webp"
 	"golang.org/x/image/tiff"
 
 	"github.com/disintegration/imaging"
@@ -655,7 +655,7 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 	case "jpeg":
 		err = jpeg.Encode(w, img, &jpeg.Options{Quality: c.Opts.Quality})
 	case "webp":
-		err = webp.Encode(w, img, &webp.Options{Quality: float32(c.Opts.Quality)})
+		err = webp.Encode(w, img, webp.Quality(float32(c.Opts.Quality)))
 	}
 
 	if err != nil {
