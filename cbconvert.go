@@ -24,6 +24,7 @@ import (
 	"golang.org/x/image/tiff"
 
 	"github.com/disintegration/imaging"
+	pngstructure "github.com/dsoprea/go-png-image-structure"
 	"github.com/dustin/go-humanize"
 	"github.com/fvbommel/sortorder"
 	"github.com/gen2brain/go-fitz"
@@ -1084,12 +1085,21 @@ func (c *Converter) Thumbnail(fileName string, fileInfo os.FileInfo) error {
 		cover = imaging.Resize(cover, 256, 0, filters[c.Opts.Filter])
 	}
 
-	mw := imagick.NewMagickWand()
-	defer mw.Destroy()
-
-	rgba := imageToRGBA(cover)
-	if err := mw.ConstituteImage(uint(cover.Bounds().Dx()), uint(cover.Bounds().Dy()), "RGBA", imagick.PIXEL_CHAR, rgba.Pix); err != nil {
+	var buf bytes.Buffer
+	err = png.Encode(&buf, cover)
+	if err != nil {
 		return fmt.Errorf("%s: %w", fileName, err)
+	}
+
+	pmp := pngstructure.NewPngMediaParser()
+	csTmp, err := pmp.ParseBytes(buf.Bytes())
+	if err != nil {
+		return fmt.Errorf("%s: %w", fileName, err)
+	}
+
+	cs, ok := csTmp.(*pngstructure.ChunkSlice)
+	if !ok {
+		return fmt.Errorf("%s: type is not ChunkSlice", fileName)
 	}
 
 	var fName string
@@ -1114,26 +1124,42 @@ func (c *Converter) Thumbnail(fileName string, fileInfo os.FileInfo) error {
 		fName = abs
 	}
 
-	if err := mw.SetImageFormat("PNG"); err != nil {
-		return fmt.Errorf("%s: %w", fileName, err)
+	chunks := cs.Chunks()
+	textChunks := []*pngstructure.Chunk{
+		{Type: `tEXt`, Data: []uint8("Software\x00" + "CBconvert")},
+		{Type: `tEXt`, Data: []uint8("Description\x00" + "Thumbnail of " + fileName)},
+		{Type: `tEXt`, Data: []uint8("Thumb::URI\x00" + fURI)},
+		{Type: `tEXt`, Data: []uint8("Thumb::MTime\x00" + strconv.FormatInt(fileInfo.ModTime().Unix(), 10))},
+		{Type: `tEXt`, Data: []uint8("Thumb::Size\x00" + strconv.FormatInt(fileInfo.Size(), 10))},
 	}
-	if err := mw.SetImageProperty("Software", "CBconvert"); err != nil {
-		return fmt.Errorf("%s: %w", fileName, err)
+
+	for _, textChunk := range textChunks {
+		textChunk.Length = uint32(len(textChunk.Data))
+		textChunk.UpdateCrc32()
 	}
-	if err := mw.SetImageProperty("Description", "Thumbnail of "+fileName); err != nil {
-		return fmt.Errorf("%s: %w", fileName, err)
-	}
-	if err := mw.SetImageProperty("Thumb::URI", fURI); err != nil {
-		return fmt.Errorf("%s: %w", fileName, err)
-	}
-	if err := mw.SetImageProperty("Thumb::MTime", strconv.FormatInt(fileInfo.ModTime().Unix(), 10)); err != nil {
-		return fmt.Errorf("%s: %w", fileName, err)
-	}
-	if err := mw.SetImageProperty("Thumb::Size", strconv.FormatInt(fileInfo.Size(), 10)); err != nil {
+
+	chunks = append(
+		chunks[:1],
+		append(
+			textChunks,
+			chunks[1:]...,
+		)...,
+	)
+
+	cs = pngstructure.NewChunkSlice(chunks)
+	err = cs.WriteTo(&buf)
+	if err != nil {
 		return fmt.Errorf("%s: %w", fileName, err)
 	}
 
-	err = mw.WriteImage(fName)
+	f, err := os.Create(fName)
+	if err != nil {
+		return fmt.Errorf("%s: %w", fileName, err)
+	}
+
+	defer f.Close()
+
+	_, err = buf.WriteTo(f)
 	if err != nil {
 		return fmt.Errorf("%s: %w", fileName, err)
 	}
