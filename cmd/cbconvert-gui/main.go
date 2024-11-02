@@ -23,6 +23,9 @@ import (
 //go:embed assets/icon.png
 var appIcon []byte
 
+//go:embed assets/logo.png
+var appLogo []byte
+
 //go:embed assets/loading.gif
 var appLoading []byte
 
@@ -70,6 +73,9 @@ func main() {
 	img, _ := png.Decode(bytes.NewReader(appIcon))
 	iup.ImageFromImage(img).SetHandle("icon")
 
+	logo, _ := png.Decode(bytes.NewReader(appLogo))
+	iup.ImageFromImage(logo).SetHandle("logo")
+
 	dlg := iup.Dialog(layout()).SetAttributes(fmt.Sprintf(`TITLE="CBconvert %s", ICON=icon`, appVersion)).SetHandle("dlg")
 
 	dlg.SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(func(ih iup.Ihandle, s string, i int, p any) int {
@@ -82,7 +88,7 @@ func main() {
 	}))
 
 	dlg.SetCallback("RESIZE_CB", iup.ResizeFunc(func(ih iup.Ihandle, width, height int) int {
-		iup.GetHandle("Preview").SetAttribute("IMAGE", "")
+		iup.GetHandle("Preview").SetAttribute("IMAGE", "logo")
 		iup.Refresh(ih)
 
 		previewPost()
