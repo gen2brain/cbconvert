@@ -24,7 +24,6 @@ import (
 	"github.com/gen2brain/webp"
 	"golang.org/x/image/tiff"
 
-	"github.com/disintegration/imaging"
 	pngstructure "github.com/dsoprea/go-png-image-structure"
 	"github.com/dustin/go-humanize"
 	"github.com/fvbommel/sortorder"
@@ -32,34 +31,6 @@ import (
 	"github.com/gen2brain/go-unarr"
 	"golang.org/x/sync/errgroup"
 )
-
-// Resample filters.
-const (
-	// NearestNeighbor is the fastest resampling filter, no antialiasing.
-	NearestNeighbor int = iota
-	// Box filter (averaging pixels).
-	Box
-	// Linear is the bilinear filter, smooth and reasonably fast.
-	Linear
-	// MitchellNetravali is a smooth bicubic filter.
-	MitchellNetravali
-	// CatmullRom is a sharp bicubic filter.
-	CatmullRom
-	// Gaussian is a blurring filter that uses gaussian function, useful for noise removal.
-	Gaussian
-	// Lanczos is a high-quality resampling filter, it's slower than cubic filters.
-	Lanczos
-)
-
-var filters = map[int]imaging.ResampleFilter{
-	NearestNeighbor:   imaging.NearestNeighbor,
-	Box:               imaging.Box,
-	Linear:            imaging.Linear,
-	MitchellNetravali: imaging.MitchellNetravali,
-	CatmullRom:        imaging.CatmullRom,
-	Gaussian:          imaging.Gaussian,
-	Lanczos:           imaging.Lanczos,
-}
 
 // Options type.
 type Options struct {
@@ -480,29 +451,29 @@ func (c *Converter) imageTransform(img image.Image) image.Image {
 
 	if c.Opts.Width > 0 || c.Opts.Height > 0 {
 		if c.Opts.Fit {
-			i = imaging.Fit(i, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
+			i = fit(i, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
 		} else {
-			i = imaging.Resize(i, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
+			i = resize(i, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
 		}
 	}
 
 	if c.Opts.Rotate > 0 {
 		switch c.Opts.Rotate {
 		case 90:
-			i = imaging.Rotate90(i)
+			i = rotate(i, 90)
 		case 180:
-			i = imaging.Rotate180(i)
+			i = rotate(i, 180)
 		case 270:
-			i = imaging.Rotate270(i)
+			i = rotate(i, 270)
 		}
 	}
 
 	if c.Opts.Brightness != 0 {
-		i = imaging.AdjustBrightness(i, float64(c.Opts.Brightness))
+		i = brightness(i, float64(c.Opts.Brightness))
 	}
 
 	if c.Opts.Contrast != 0 {
-		i = imaging.AdjustContrast(i, float64(c.Opts.Contrast))
+		i = contrast(i, float64(c.Opts.Contrast))
 	}
 
 	if c.Opts.Grayscale {
@@ -811,9 +782,9 @@ func (c *Converter) Cover(fileName string, fileInfo os.FileInfo) error {
 
 	if c.Opts.Width > 0 || c.Opts.Height > 0 {
 		if c.Opts.Fit {
-			cover = imaging.Fit(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
+			cover = fit(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
 		} else {
-			cover = imaging.Resize(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
+			cover = resize(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
 		}
 	}
 
@@ -853,12 +824,12 @@ func (c *Converter) Thumbnail(fileName string, fileInfo os.FileInfo) error {
 
 	if c.Opts.Width > 0 || c.Opts.Height > 0 {
 		if c.Opts.Fit {
-			cover = imaging.Fit(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
+			cover = fit(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
 		} else {
-			cover = imaging.Resize(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
+			cover = resize(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
 		}
 	} else {
-		cover = imaging.Resize(cover, 256, 0, filters[c.Opts.Filter])
+		cover = resize(cover, 256, 0, filters[c.Opts.Filter])
 	}
 
 	var buf bytes.Buffer
@@ -1019,7 +990,7 @@ func (c *Converter) Preview(fileName string, fileInfo os.FileInfo, width, height
 	}
 
 	if width != 0 && height != 0 {
-		dec = imaging.Fit(dec, width, height, filters[c.Opts.Filter])
+		dec = fit(dec, width, height, filters[c.Opts.Filter])
 	}
 
 	img.Image = dec

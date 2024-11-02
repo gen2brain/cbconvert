@@ -3,7 +3,7 @@ module github.com/gen2brain/cbconvert
 go 1.23
 
 require (
-	github.com/disintegration/imaging v1.6.2
+	github.com/anthonynsimon/bild v0.14.0
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fvbommel/sortorder v1.1.0
@@ -17,14 +17,14 @@ require (
 )
 
 require (
-	github.com/dsoprea/go-exif/v2 v2.0.0-20200604193436-ca8584a0e1c4 // indirect
-	github.com/dsoprea/go-logging v0.0.0-20200517223158-a10564966e9d // indirect
-	github.com/dsoprea/go-utility v0.0.0-20200711062821-fab8125e9bdf // indirect
+	github.com/dsoprea/go-exif/v2 v2.0.0-20230826092837-6579e82b732d // indirect
+	github.com/dsoprea/go-logging v0.0.0-20200710184922-b02d349568dd // indirect
+	github.com/dsoprea/go-utility v0.0.0-20221003172846-a3e1774ef349 // indirect
 	github.com/ebitengine/purego v0.8.1 // indirect
-	github.com/go-errors/errors v1.1.1 // indirect
-	github.com/golang/geo v0.0.0-20200319012246-673a6f80352d // indirect
+	github.com/go-errors/errors v1.5.1 // indirect
+	github.com/golang/geo v0.0.0-20230421003525-6adc56603217 // indirect
 	github.com/jupiterrider/ffi v0.2.1 // indirect
 	github.com/tetratelabs/wazero v1.8.1 // indirect
-	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
+	golang.org/x/net v0.30.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

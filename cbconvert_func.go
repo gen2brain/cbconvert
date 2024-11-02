@@ -2,40 +2,11 @@ package cbconvert
 
 import (
 	"fmt"
-	"image"
-	"image/color"
-	"image/draw"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 )
-
-// imageToRGBA converts an image.Image to *image.RGBA.
-func imageToRGBA(src image.Image) *image.RGBA {
-	if dst, ok := src.(*image.RGBA); ok {
-		return dst
-	}
-
-	b := src.Bounds()
-	dst := image.NewRGBA(b)
-	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
-
-	return dst
-}
-
-// imageToGray converts an image.Image to *image.Gray.
-func imageToGray(src image.Image) *image.Gray {
-	if dst, ok := src.(*image.Gray); ok {
-		return dst
-	}
-
-	b := src.Bounds()
-	dst := image.NewGray(b)
-	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
-
-	return dst
-}
 
 // imagesFromPath returns list of found image files for given directory.
 func imagesFromPath(path string) ([]string, error) {
@@ -145,16 +116,6 @@ func isSize(a, b int64) bool {
 	}
 
 	return true
-}
-
-// isGrayScale checks if image is grayscale.
-func isGrayScale(img image.Image) bool {
-	model := img.ColorModel()
-	if model == color.GrayModel || model == color.Gray16Model {
-		return true
-	}
-
-	return false
 }
 
 // baseNoExt returns base name without extension.
