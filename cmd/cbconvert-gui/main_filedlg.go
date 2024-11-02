@@ -24,7 +24,7 @@ func fileDlg(title string, multiple, directory bool) ([]string, error) {
 		dlg.SetAttributes(map[string]string{
 			"DIALOGTYPE":    "OPEN",
 			"MULTIPLEFILES": mf,
-			"EXTFILTER":     "Comic Files|*.rar;*.zip;*.7z;*.tar;*.cbr;*.cbz;*.cb7;*.cbt;*.pdf;*.epub;*.mobi;*.xps|",
+			"EXTFILTER":     "Comic Files|*.rar;*.zip;*.7z;*.tar;*.cbr;*.cbz;*.cb7;*.cbt;*.pdf;*.epub;*.mobi;*.docx;*.pptx|",
 			"FILTER":        "*.cb*", // for Motif
 			"TITLE":         title,
 		})

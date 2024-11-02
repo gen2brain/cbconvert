@@ -57,7 +57,8 @@ func fileDlg(title string, multiple, directory bool) ([]string, error) {
 				Item{0, "*.pdf"},
 				Item{0, "*.epub"},
 				Item{0, "*.mobi"},
-				Item{0, "*.xps"},
+				Item{0, "*.docx"},
+				Item{0, "*.pptx"},
 			},
 		},
 	}
