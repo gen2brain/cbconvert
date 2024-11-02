@@ -22,6 +22,7 @@ import (
 	"github.com/gen2brain/avif"
 	"github.com/gen2brain/jpegxl"
 	"github.com/gen2brain/webp"
+	"github.com/jsummers/gobmp"
 	"golang.org/x/image/tiff"
 
 	pngstructure "github.com/dsoprea/go-png-image-structure"
@@ -510,6 +511,10 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 		err = avif.Encode(w, img, avif.Options{Quality: c.Opts.Quality, Speed: avif.DefaultSpeed})
 	case "jxl":
 		err = jpegxl.Encode(w, img, jpegxl.Options{Quality: c.Opts.Quality, Effort: jpegxl.DefaultEffort})
+	case "bmp":
+		opts := &gobmp.EncoderOptions{}
+		opts.SupportTransparency(false)
+		err = gobmp.EncodeWithOptions(w, imageToPaletted(img), opts)
 	}
 
 	if err != nil {

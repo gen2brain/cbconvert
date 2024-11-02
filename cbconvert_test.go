@@ -18,9 +18,6 @@ func TestConvert(t *testing.T) {
 
 	conv := New(opts)
 
-	conv.Initialize()
-	defer conv.Terminate()
-
 	files, err := conv.Files([]string{"testdata/test", "testdata"})
 	if err != nil {
 		t.Error(err)
@@ -56,9 +53,6 @@ func TestCover(t *testing.T) {
 
 	conv := New(opts)
 
-	conv.Initialize()
-	defer conv.Terminate()
-
 	files, err := conv.Files([]string{"testdata/test.cbt"})
 	if err != nil {
 		t.Error(err)
@@ -87,9 +81,6 @@ func TestThumbnail(t *testing.T) {
 	opts.OutDir = tmpDir
 
 	conv := New(opts)
-
-	conv.Initialize()
-	defer conv.Terminate()
 
 	files, err := conv.Files([]string{"testdata/test.pdf"})
 	if err != nil {

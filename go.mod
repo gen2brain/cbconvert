@@ -12,6 +12,7 @@ require (
 	github.com/gen2brain/go-unarr v0.2.3
 	github.com/gen2brain/jpegxl v0.4.1
 	github.com/gen2brain/webp v0.5.0
+	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25
 	golang.org/x/image v0.21.0
 	golang.org/x/sync v0.8.0
 )

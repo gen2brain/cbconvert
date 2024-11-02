@@ -133,3 +133,31 @@ func isGrayScale(img image.Image) bool {
 
 	return false
 }
+
+var colors16 = []color.Color{
+	color.RGBA{0, 0, 0, 255},
+	color.RGBA{24, 24, 24, 255},
+	color.RGBA{40, 40, 40, 255},
+	color.RGBA{56, 56, 56, 255},
+	color.RGBA{71, 71, 71, 255},
+	color.RGBA{86, 86, 86, 255},
+	color.RGBA{100, 100, 100, 255},
+	color.RGBA{113, 113, 113, 255},
+	color.RGBA{126, 126, 126, 255},
+	color.RGBA{140, 140, 140, 255},
+	color.RGBA{155, 155, 155, 255},
+	color.RGBA{171, 171, 171, 255},
+	color.RGBA{189, 189, 189, 255},
+	color.RGBA{209, 209, 209, 255},
+	color.RGBA{231, 231, 231, 255},
+	color.RGBA{255, 255, 255, 255},
+}
+
+// imageToPaletted converts an image.Image to *image.Paletted using 16-color palette.
+func imageToPaletted(src image.Image) *image.Paletted {
+	b := src.Bounds()
+	dst := image.NewPaletted(b, colors16)
+	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
+
+	return dst
+}
