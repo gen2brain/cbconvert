@@ -191,10 +191,10 @@ This table maps quality settings for JPEG to the respective AVIF and WEBP qualit
 
 ### Compile
 
-Install ImageMagick7 (with libheif/libjxl support) and MuPDF libraries and headers and then install to GOBIN:
+Install to `GOBIN`:
 
-`go install -tags extlib github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
+`go install github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
 
 For GUI app, check [IUP requirements](https://github.com/gen2brain/iup-go), and then install:
 
-`go install -tags extlib github.com/gen2brain/cbconvert/cmd/cbconvert-gui@latest`
+`go install github.com/gen2brain/cbconvert/cmd/cbconvert-gui@latest`

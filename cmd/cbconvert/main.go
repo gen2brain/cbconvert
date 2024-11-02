@@ -72,9 +72,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	conv.Initialize()
-	defer conv.Terminate()
-
 	files, err := conv.Files(args)
 	if err != nil {
 		fmt.Println(err)

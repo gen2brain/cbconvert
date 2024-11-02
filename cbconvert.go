@@ -6,6 +6,10 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	"image"
+	_ "image/gif"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"os"
 	"path/filepath"
@@ -15,12 +19,9 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"image"
-	_ "image/gif" // allow gif decoding
-	"image/jpeg"
-	"image/png"
-
-	"git.sr.ht/~jackmordaunt/go-libwebp/webp"
+	"github.com/gen2brain/avif"
+	"github.com/gen2brain/jpegxl"
+	"github.com/gen2brain/webp"
 	"golang.org/x/image/tiff"
 
 	"github.com/disintegration/imaging"
@@ -30,7 +31,6 @@ import (
 	"github.com/gen2brain/go-fitz"
 	"github.com/gen2brain/go-unarr"
 	"golang.org/x/sync/errgroup"
-	"gopkg.in/gographics/imagick.v3/imagick"
 )
 
 // Resample filters.
@@ -310,11 +310,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 			var img image.Image
 			img, err = c.imageDecode(bytes.NewReader(data))
 			if err != nil {
-				e := err
-				img, err = c.imDecode(bytes.NewReader(data), pathName)
-				if err != nil {
-					return fmt.Errorf("convertArchive: %w: %w", e, err)
-				}
+				return fmt.Errorf("convertArchive: %w", err)
 			}
 
 			if c.Opts.NoRGB && !isGrayScale(img) {
@@ -406,16 +402,7 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 			var i image.Image
 			i, err = c.imageDecode(file)
 			if err != nil {
-				e := err
-				_, err = file.Seek(0, io.SeekStart)
-				if err != nil {
-					return fmt.Errorf("convertDirectory: %w: %w", e, err)
-				}
-
-				i, err = c.imDecode(file, img)
-				if err != nil {
-					return fmt.Errorf("convertDirectory: %w: %w", e, err)
-				}
+				return fmt.Errorf("convertDirectory: %w", err)
 			}
 
 			if c.Opts.NoRGB && !isGrayScale(i) {
@@ -480,15 +467,8 @@ func (c *Converter) imageConvert(ctx context.Context, img image.Image, index int
 	}
 	defer w.Close()
 
-	switch c.Opts.Format {
-	case "jpeg", "png", "tiff", "webp":
-		if err := c.imageEncode(img, w); err != nil {
-			return fmt.Errorf("imageConvert: %w", err)
-		}
-	case "bmp", "avif", "jxl":
-		if err := c.imEncode(img, w); err != nil {
-			return fmt.Errorf("imageConvert: %w", err)
-		}
+	if err := c.imageEncode(img, w); err != nil {
+		return fmt.Errorf("imageConvert: %w", err)
 	}
 
 	return nil
@@ -542,45 +522,6 @@ func (c *Converter) imageDecode(reader io.Reader) (image.Image, error) {
 	return img, nil
 }
 
-// imDecode decodes image from reader (ImageMagick).
-func (c *Converter) imDecode(reader io.Reader, fileName string) (image.Image, error) {
-	mw := imagick.NewMagickWand()
-	defer mw.Destroy()
-
-	var img image.Image
-
-	b, err := io.ReadAll(reader)
-	if err != nil {
-		return img, fmt.Errorf("imDecode: %w", err)
-	}
-
-	if err = mw.SetFilename(fileName); err != nil {
-		return img, fmt.Errorf("imDecode: %w", err)
-	}
-
-	if err = mw.ReadImageBlob(b); err != nil {
-		return img, fmt.Errorf("imDecode: %w", err)
-	}
-
-	w := mw.GetImageWidth()
-	h := mw.GetImageHeight()
-
-	out, err := mw.ExportImagePixels(0, 0, w, h, "RGBA", imagick.PIXEL_CHAR)
-	if err != nil {
-		return img, fmt.Errorf("imDecode: %w", err)
-	}
-
-	data, ok := out.([]byte)
-
-	if ok {
-		rgba := image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
-		rgba.Pix = data
-		img = rgba
-	}
-
-	return img, nil
-}
-
 // imageEncode encodes image to file.
 func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 	var err error
@@ -593,87 +534,15 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 	case "jpeg":
 		err = jpeg.Encode(w, img, &jpeg.Options{Quality: c.Opts.Quality})
 	case "webp":
-		err = webp.Encode(w, img, webp.Quality(float32(c.Opts.Quality)))
+		err = webp.Encode(w, img, webp.Options{Quality: c.Opts.Quality, Method: webp.DefaultMethod})
+	case "avif":
+		err = avif.Encode(w, img, avif.Options{Quality: c.Opts.Quality, Speed: avif.DefaultSpeed})
+	case "jxl":
+		err = jpegxl.Encode(w, img, jpegxl.Options{Quality: c.Opts.Quality, Effort: jpegxl.DefaultEffort})
 	}
 
 	if err != nil {
 		return fmt.Errorf("imageEncode: %w", err)
-	}
-
-	return nil
-}
-
-// imEncode encodes image to file (ImageMagick).
-func (c *Converter) imEncode(i image.Image, w io.Writer) error {
-	mw := imagick.NewMagickWand()
-	defer mw.Destroy()
-
-	if err := mw.ConstituteImage(uint(i.Bounds().Dx()), uint(i.Bounds().Dy()),
-		"RGBA", imagick.PIXEL_CHAR, imageToRGBA(i).Pix); err != nil {
-		return fmt.Errorf("imEncode: %w", err)
-	}
-
-	switch c.Opts.Format {
-	case "png":
-		if err := mw.SetImageFormat("PNG"); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-	case "tiff":
-		if err := mw.SetImageFormat("TIFF"); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-	case "jpeg":
-		if err := mw.SetImageFormat("JPEG"); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-	case "bmp":
-		pw := imagick.NewPixelWand()
-		pw.SetColor("black")
-		defer pw.Destroy()
-
-		if err := mw.SetImageFormat("BMP3"); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.SetImageBackgroundColor(pw); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_REMOVE); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_DEACTIVATE); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.SetImageMatte(false); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.SetImageCompression(imagick.COMPRESSION_NO); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.QuantizeImage(16, mw.GetImageColorspace(), 1, imagick.DITHER_METHOD_NO, true); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-	case "avif":
-		if err := mw.SetImageFormat("AVIF"); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-	case "jxl":
-		if err := mw.SetImageFormat("JXL"); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-		if err := mw.SetImageCompressionQuality(uint(c.Opts.Quality)); err != nil {
-			return fmt.Errorf("imEncode: %w", err)
-		}
-	}
-
-	_, err := w.Write(mw.GetImageBlob())
-	if err != nil {
-		return fmt.Errorf("imEncode: %w", err)
 	}
 
 	return nil
@@ -714,11 +583,7 @@ func (c *Converter) coverArchive(fileName string) (image.Image, error) {
 	var img image.Image
 	img, err = c.imageDecode(bytes.NewReader(data))
 	if err != nil {
-		e := err
-		img, err = c.imDecode(bytes.NewReader(data), cover)
-		if err != nil {
-			return nil, fmt.Errorf("coverArchive: %w: %w", e, err)
-		}
+		return nil, fmt.Errorf("coverArchive: %w", err)
 	}
 
 	return img, nil
@@ -759,16 +624,7 @@ func (c *Converter) coverDirectory(dir string) (image.Image, error) {
 	var img image.Image
 	img, err = c.imageDecode(file)
 	if err != nil {
-		e := err
-		_, err = file.Seek(0, io.SeekStart)
-		if err != nil {
-			return nil, fmt.Errorf("coverDirectory: %w: %w", e, err)
-		}
-
-		img, err = c.imDecode(file, cover)
-		if err != nil {
-			return nil, fmt.Errorf("coverDirectory: %w: %w", e, err)
-		}
+		return nil, fmt.Errorf("coverDirectory: %w", err)
 	}
 
 	return img, nil
@@ -828,16 +684,6 @@ func (c *Converter) coverImage(fileName string, fileInfo os.FileInfo) (image.Ima
 	}
 
 	return cover, nil
-}
-
-// Initialize inits ImageMagick.
-func (c *Converter) Initialize() {
-	imagick.Initialize()
-}
-
-// Terminate terminates ImageMagick.
-func (c *Converter) Terminate() {
-	imagick.Terminate()
 }
 
 // Cancel cancels the operation.
@@ -989,15 +835,8 @@ func (c *Converter) Cover(fileName string, fileInfo os.FileInfo) error {
 	}
 	defer w.Close()
 
-	switch c.Opts.Format {
-	case "jpeg", "png", "tiff", "webp":
-		if err := c.imageEncode(cover, w); err != nil {
-			return fmt.Errorf("%s: %w", fileName, err)
-		}
-	case "bmp", "avif", "jxl":
-		if err := c.imEncode(cover, w); err != nil {
-			return fmt.Errorf("%s: %w", fileName, err)
-		}
+	if err := c.imageEncode(cover, w); err != nil {
+		return fmt.Errorf("%s: %w", fileName, err)
 	}
 
 	return nil
@@ -1164,15 +1003,8 @@ func (c *Converter) Preview(fileName string, fileInfo os.FileInfo, width, height
 
 	var w bytes.Buffer
 
-	switch c.Opts.Format {
-	case "jpeg", "png", "tiff", "webp":
-		if err := c.imageEncode(i, &w); err != nil {
-			return img, fmt.Errorf("%s: %w", fileName, err)
-		}
-	case "bmp", "avif", "jxl":
-		if err := c.imEncode(i, &w); err != nil {
-			return img, fmt.Errorf("%s: %w", fileName, err)
-		}
+	if err := c.imageEncode(i, &w); err != nil {
+		return img, fmt.Errorf("%s: %w", fileName, err)
 	}
 
 	img.Width = i.Bounds().Dx()
@@ -1183,16 +1015,7 @@ func (c *Converter) Preview(fileName string, fileInfo os.FileInfo, width, height
 
 	dec, err := c.imageDecode(r)
 	if err != nil {
-		e := err
-		_, err = r.Seek(0, io.SeekStart)
-		if err != nil {
-			return img, fmt.Errorf("%s: %w: %w", fileName, e, err)
-		}
-
-		dec, err = c.imDecode(r, "cbc."+c.Opts.Format)
-		if err != nil {
-			return img, fmt.Errorf("%s: %w: %w", fileName, e, err)
-		}
+		return img, fmt.Errorf("%s: %w", fileName, err)
 	}
 
 	if width != 0 && height != 0 {

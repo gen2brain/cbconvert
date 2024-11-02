@@ -260,9 +260,6 @@ func previewPost() {
 	go func(opts cbconvert.Options) {
 		conv := cbconvert.New(opts)
 
-		conv.Initialize()
-		defer conv.Terminate()
-
 		file := files[index]
 		img, err := conv.Preview(file.Path, file.Stat, width, height)
 		if err != nil {
@@ -765,9 +762,6 @@ func onThumbnail(ih iup.Ihandle) int {
 	iup.PostMessage(iup.GetHandle("ProgressBar"), "start", 0, conv)
 
 	go func(c *cbconvert.Converter) {
-		c.Initialize()
-		defer c.Terminate()
-
 		for _, file := range files {
 			if canceled {
 				break
@@ -811,9 +805,6 @@ func onCover(ih iup.Ihandle) int {
 	iup.PostMessage(iup.GetHandle("ProgressBar"), "start", 0, conv)
 
 	go func(c *cbconvert.Converter) {
-		c.Initialize()
-		defer c.Terminate()
-
 		for _, file := range files {
 			if canceled {
 				break
@@ -860,9 +851,6 @@ func onConvert(ih iup.Ihandle) int {
 	}))
 
 	go func(c *cbconvert.Converter) {
-		c.Initialize()
-		defer c.Terminate()
-
 		for _, file := range files {
 			if err := c.Convert(file.Path, file.Stat); err != nil {
 				if errors.Is(err, context.Canceled) {
