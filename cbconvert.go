@@ -121,16 +121,6 @@ type Options struct {
 	Size int
 	// Hide console output
 	Quiet bool
-	// Shadow input value
-	LevelsInMin int
-	// Highlight input value
-	LevelsInMax int
-	// Midpoint/gamma
-	LevelsGamma float64
-	// Shadow output value
-	LevelsOutMin int
-	// Highlight output value
-	LevelsOutMax int
 }
 
 // Converter type.
@@ -180,9 +170,6 @@ func NewOptions() Options {
 	o.Archive = "zip"
 	o.Quality = 75
 	o.Filter = 2
-	o.LevelsGamma = 1.0
-	o.LevelsInMax = 255
-	o.LevelsOutMax = 255
 
 	return o
 }
@@ -487,14 +474,6 @@ func (c *Converter) imageConvert(ctx context.Context, img image.Image, index int
 
 	img = c.imageTransform(img)
 
-	if c.Opts.LevelsInMin != 0 || c.Opts.LevelsInMax != 255 || c.Opts.LevelsGamma != 1.0 ||
-		c.Opts.LevelsOutMin != 0 || c.Opts.LevelsOutMax != 255 {
-		img, err = c.imageLevel(img)
-		if err != nil {
-			return fmt.Errorf("imageConvert: %w", err)
-		}
-	}
-
 	w, err := os.Create(fileName)
 	if err != nil {
 		return fmt.Errorf("imageConvert: %w", err)
@@ -551,48 +530,6 @@ func (c *Converter) imageTransform(img image.Image) image.Image {
 	}
 
 	return i
-}
-
-// imageLevel applies a Photoshop-like levels operation on an image.
-func (c *Converter) imageLevel(img image.Image) (image.Image, error) {
-	mw := imagick.NewMagickWand()
-	defer mw.Destroy()
-
-	rgba := imageToRGBA(img)
-	err := mw.ConstituteImage(uint(img.Bounds().Dx()), uint(img.Bounds().Dy()), "RGBA", imagick.PIXEL_CHAR, rgba.Pix)
-	if err != nil {
-		return img, fmt.Errorf("imageLevel: %w", err)
-	}
-
-	_, qrange := imagick.GetQuantumRange()
-	quantumRange := float64(qrange)
-
-	inMin := (quantumRange * float64(c.Opts.LevelsInMin)) / 255
-	inMax := (quantumRange * float64(c.Opts.LevelsInMax)) / 255
-	outMin := (quantumRange * float64(c.Opts.LevelsOutMin)) / 255
-	outMax := (quantumRange * float64(c.Opts.LevelsOutMax)) / 255
-
-	if err := mw.LevelImage(inMin, c.Opts.LevelsGamma, inMax); err != nil {
-		return img, fmt.Errorf("imageLevel: %w", err)
-	}
-
-	if err := mw.LevelImage(-outMin, 1.0, quantumRange+(quantumRange-outMax)); err != nil {
-		return img, fmt.Errorf("imageLevel: %w", err)
-	}
-
-	blob := mw.GetImageBlob()
-
-	var i image.Image
-	i, err = c.imageDecode(bytes.NewReader(blob))
-	if err != nil {
-		e := err
-		i, err = c.imDecode(bytes.NewReader(blob), "")
-		if err != nil {
-			return nil, fmt.Errorf("imageLevel: %w: %w", e, err)
-		}
-	}
-
-	return i, nil
 }
 
 // imageDecode decodes image from reader.
@@ -1224,14 +1161,6 @@ func (c *Converter) Preview(fileName string, fileInfo os.FileInfo, width, height
 	}
 
 	i = c.imageTransform(i)
-
-	if c.Opts.LevelsInMin != 0 || c.Opts.LevelsInMax != 255 || c.Opts.LevelsGamma != 1.0 ||
-		c.Opts.LevelsOutMin != 0 || c.Opts.LevelsOutMax != 255 {
-		i, err = c.imageLevel(i)
-		if err != nil {
-			return img, fmt.Errorf("%s: %w", fileName, err)
-		}
-	}
 
 	var w bytes.Buffer
 

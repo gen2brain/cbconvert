@@ -64,8 +64,8 @@ This is what it looks like in the PCManFM file manager:
             Best fit for required width and height (default "false")
         --format
             Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl (default "jpeg")
-        --archive
-    	    Archive format, valid values are zip, tar (default "zip")
+        --archive
+            Archive format, valid values are zip, tar (default "zip")
         --quality
             Image quality (default "75")
         --filter
@@ -77,7 +77,7 @@ This is what it looks like in the PCManFM file manager:
         --no-nonimage
             Remove non-image files from the archive (default "false")
         --no-convert
-    	    Do not transform or convert images (default "false")
+            Do not transform or convert images (default "false")
         --grayscale
             Convert images to grayscale (monochromatic) (default "false")
         --rotate
@@ -88,16 +88,6 @@ This is what it looks like in the PCManFM file manager:
             Adjust the contrast of the images, must be in the range (-100, 100) (default "0")
         --suffix
             Add suffix to file basename (default "")
-        --levels-inmin
-            Shadow input value (default "0")
-        --levels-gamma
-            Midpoint/Gamma (default "1")
-        --levels-inmax
-            Highlight input value (default "255")
-        --levels-outmin
-            Shadow output value (default "0")
-        --levels-outmax
-            Highlight output value (default "255")
         --outdir
             Output directory (default ".")
         --size
@@ -153,19 +143,19 @@ This is what it looks like in the PCManFM file manager:
         --quiet
             Hide console output (default "false")
 
-      meta
-            CBZ metadata
+      meta
+            CBZ metadata
 
-        --cover
-            Print cover name (default "false")
-        --comment
-            Print zip comment (default "false")
-        --comment-body
-            Set zip comment (default "")
-        --file-add
-            Add file to archive (default "")
-        --file-remove
-            Remove file(s) from archive (glob pattern, i.e. *.xml) (default "")
+        --cover
+            Print cover name (default "false")
+        --comment
+            Print zip comment (default "false")
+        --comment-body
+            Set zip comment (default "")
+        --file-add
+            Add file to archive (default "")
+        --file-remove
+            Remove file(s) from archive (glob pattern, i.e. *.xml) (default "")
 
 ```
 

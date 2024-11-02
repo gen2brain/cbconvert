@@ -120,11 +120,6 @@ func options() cbconvert.Options {
 	opts.Brightness = iup.GetHandle("Brightness").GetInt("VALUE")
 	opts.Contrast = iup.GetHandle("Contrast").GetInt("VALUE")
 	opts.Rotate = iup.GetHandle("Rotate").GetInt("VALUESTRING")
-	opts.LevelsInMin = iup.GetHandle("LevelsInMin").GetInt("VALUE")
-	opts.LevelsInMax = iup.GetHandle("LevelsInMax").GetInt("VALUE")
-	opts.LevelsOutMin = iup.GetHandle("LevelsOutMin").GetInt("VALUE")
-	opts.LevelsOutMax = iup.GetHandle("LevelsOutMax").GetInt("VALUE")
-	opts.LevelsGamma = iup.GetHandle("LevelsGamma").GetDouble("VALUE")
 
 	return opts
 }
@@ -538,94 +533,6 @@ func tabs() iup.Ihandle {
 
 					return iup.DEFAULT
 				})),
-		),
-		iup.Vbox(
-			iup.Label("Input Levels:"),
-			iup.Hbox(
-				iup.Text().SetAttributes(`SPIN=YES, SPINMAX=255, VALUE=0, VISIBLECOLUMNS=3, MASK="/d*"`).
-					SetHandle("LevelsInMin").SetAttribute("TIP", "Min").
-					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-						ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-						return iup.DEFAULT
-					})).
-					SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-						if ih.GetAttribute("MYVALUE") != "" {
-							previewPost()
-						}
-						ih.SetAttribute("MYVALUE", "")
-
-						return iup.DEFAULT
-					})),
-				iup.Fill(),
-				iup.Val("").SetAttributes(`VALUE=1.0, SHOWTICKS=10`).
-					SetHandle("LevelsGamma").SetAttribute("TIP", "Gamma").
-					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-						ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-						return iup.DEFAULT
-					})).
-					SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-						if ih.GetAttribute("MYVALUE") != "" {
-							previewPost()
-						}
-						ih.SetAttribute("MYVALUE", "")
-
-						return iup.DEFAULT
-					})),
-				iup.Fill(),
-				iup.Text().SetAttributes(`SPIN=YES, SPINMAX=255, VALUE=255, VISIBLECOLUMNS=3, MASK="/d*"`).
-					SetHandle("LevelsInMax").SetAttribute("TIP", "Max").
-					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-						ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-						return iup.DEFAULT
-					})).
-					SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-						if ih.GetAttribute("MYVALUE") != "" {
-							previewPost()
-						}
-						ih.SetAttribute("MYVALUE", "")
-
-						return iup.DEFAULT
-					})),
-			).SetAttributes("ALIGNMENT=ACENTER, MAXSIZE=340x"),
-		),
-		iup.Vbox(
-			iup.Label("Output Levels:"),
-			iup.Hbox(
-				iup.Text().SetAttributes(`SPIN=YES, SPINMAX=255, VALUE=0, VISIBLECOLUMNS=3, MASK="/d*"`).
-					SetHandle("LevelsOutMin").SetAttribute("TIP", "Min").
-					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-						ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-						return iup.DEFAULT
-					})).
-					SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-						if ih.GetAttribute("MYVALUE") != "" {
-							previewPost()
-						}
-						ih.SetAttribute("MYVALUE", "")
-
-						return iup.DEFAULT
-					})),
-				iup.Fill(),
-				iup.Text().SetAttributes(`SPIN=YES, SPINMAX=255, VALUE=255, VISIBLECOLUMNS=3, MASK="/d*"`).
-					SetHandle("LevelsOutMax").SetAttribute("TIP", "Max").
-					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-						ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-						return iup.DEFAULT
-					})).
-					SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-						if ih.GetAttribute("MYVALUE") != "" {
-							previewPost()
-						}
-						ih.SetAttribute("MYVALUE", "")
-
-						return iup.DEFAULT
-					})),
-			).SetAttributes("ALIGNMENT=ACENTER, MAXSIZE=340x"),
 		),
 	).SetHandle("VboxTransform").SetAttributes("MARGIN=5x5, GAP=5")
 
