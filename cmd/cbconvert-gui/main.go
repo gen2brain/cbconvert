@@ -34,8 +34,6 @@ var (
 )
 
 func init() {
-	_ = os.Setenv("GDK_BACKEND", "x11")
-
 	if appVersion != "" {
 		return
 	}
