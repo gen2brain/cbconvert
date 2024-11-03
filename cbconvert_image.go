@@ -13,29 +13,29 @@ import (
 // Resample filters.
 const (
 	// NearestNeighbor is the fastest resampling filter, no antialiasing.
-	NearestNeighbor int = iota
+	nearestNeighbor int = iota
 	// Box filter (averaging pixels).
-	Box
+	box
 	// Linear is the bilinear filter, smooth and reasonably fast.
-	Linear
+	linear
 	// MitchellNetravali is a smooth bicubic filter.
-	MitchellNetravali
+	mitchellNetravali
 	// CatmullRom is a sharp bicubic filter.
-	CatmullRom
+	catmullRom
 	// Gaussian is a blurring filter that uses gaussian function, useful for noise removal.
-	Gaussian
+	gaussian
 	// Lanczos is a high-quality resampling filter, it's slower than cubic filters.
-	Lanczos
+	lanczos
 )
 
 var filters = map[int]transform.ResampleFilter{
-	NearestNeighbor:   transform.NearestNeighbor,
-	Box:               transform.Box,
-	Linear:            transform.Linear,
-	MitchellNetravali: transform.MitchellNetravali,
-	CatmullRom:        transform.CatmullRom,
-	Gaussian:          transform.Gaussian,
-	Lanczos:           transform.Lanczos,
+	nearestNeighbor:   transform.NearestNeighbor,
+	box:               transform.Box,
+	linear:            transform.Linear,
+	mitchellNetravali: transform.MitchellNetravali,
+	catmullRom:        transform.CatmullRom,
+	gaussian:          transform.Gaussian,
+	lanczos:           transform.Lanczos,
 }
 
 func resize(img image.Image, width, height int, filter transform.ResampleFilter) *image.RGBA {
@@ -136,20 +136,20 @@ func isGrayScale(img image.Image) bool {
 
 var colors16 = []color.Color{
 	color.RGBA{0, 0, 0, 255},
-	color.RGBA{24, 24, 24, 255},
-	color.RGBA{40, 40, 40, 255},
-	color.RGBA{56, 56, 56, 255},
-	color.RGBA{71, 71, 71, 255},
-	color.RGBA{86, 86, 86, 255},
-	color.RGBA{100, 100, 100, 255},
-	color.RGBA{113, 113, 113, 255},
-	color.RGBA{126, 126, 126, 255},
-	color.RGBA{140, 140, 140, 255},
-	color.RGBA{155, 155, 155, 255},
-	color.RGBA{171, 171, 171, 255},
-	color.RGBA{189, 189, 189, 255},
-	color.RGBA{209, 209, 209, 255},
-	color.RGBA{231, 231, 231, 255},
+	color.RGBA{17, 17, 17, 255},
+	color.RGBA{34, 34, 34, 255},
+	color.RGBA{51, 51, 51, 255},
+	color.RGBA{68, 68, 68, 255},
+	color.RGBA{85, 85, 85, 255},
+	color.RGBA{102, 102, 102, 255},
+	color.RGBA{119, 119, 119, 255},
+	color.RGBA{136, 136, 136, 255},
+	color.RGBA{153, 153, 153, 255},
+	color.RGBA{170, 170, 170, 255},
+	color.RGBA{187, 187, 187, 255},
+	color.RGBA{204, 204, 204, 255},
+	color.RGBA{221, 221, 221, 255},
+	color.RGBA{238, 238, 238, 255},
 	color.RGBA{255, 255, 255, 255},
 }
 
