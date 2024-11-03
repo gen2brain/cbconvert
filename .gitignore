@@ -1,0 +1,5 @@
+cmd/cbconvert-gui/cbconvert-gui
+cmd/cbconvert/cbconvert
+
+.idea
+.vscode
