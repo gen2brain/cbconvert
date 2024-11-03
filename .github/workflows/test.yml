@@ -1,120 +1,21 @@
 on: [push, pull_request]
 name: Test
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: [1.23.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      CGO_ENABLED: 0
     steps:
-
-    - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v1.13
-      with:
-        cmake-version: '3.27.x'
-
-    - name: Update apt-get
-      run: |
-        sudo apt-get update
-
-    - name: Wget libheif
-      uses: wei/wget@v1
-      with:
-        args: https://github.com/strukturag/libheif/releases/download/v1.15.2/libheif-1.15.2.tar.gz
-    - name: Unpack libheif
-      run: |
-        tar -xpf libheif-1.15.2.tar.gz
-    - name: Install libheif dependencies
-      run: |
-        sudo apt-get install libaom-dev -y
-    - name: Configure libheif
-      working-directory: libheif-1.15.2
-      run: |
-        ./configure --prefix=/usr --libdir=/usr/lib/x86_64-linux-gnu --enable-shared --disable-static --disable-libde265 \
-        --disable-dav1d --disable-go --enable-aom --disable-gdk-pixbuf --disable-rav1e --disable-tests --disable-x265 --disable-examples
-    - name: Install libheif
-      working-directory: libheif-1.15.2
-      run: |
-        make -j3 && sudo make install
-
-    - name: Wget lcms2
-      uses: wei/wget@v1
-      with:
-        args: https://github.com/mm2/Little-CMS/releases/download/lcms2.15/lcms2-2.15.tar.gz
-    - name: Unpack lcms2
-      run: |
-        tar -xpf lcms2-2.15.tar.gz
-    - name: Configure lcms2
-      working-directory: lcms2-2.15
-      run: |
-        ./configure --prefix=/usr --libdir=/usr/lib/x86_64-linux-gnu --enable-shared --disable-static
-    - name: Install lcms2
-      working-directory: lcms2-2.15
-      run: |
-        make -j3 && sudo make install
-
-    - name: Wget highway
-      uses: wei/wget@v1
-      with:
-        args: -O highway-1.0.5.tar.gz https://github.com/google/highway/archive/refs/tags/1.0.5.tar.gz
-    - name: Unpack highway
-      run: |
-        tar -xpf highway-1.0.5.tar.gz && mkdir -p highway-1.0.5/build
-    - name: Configure highway
-      working-directory: highway-1.0.5/build
-      run: |
-        cmake -DCMAKE_INSTALL_PREFIX=/usr -DHWY_ENABLE_TESTS=OFF -DHWY_ENABLE_EXAMPLES=OFF -DHWY_WARNINGS_ARE_ERRORS=OFF ../
-    - name: Install highway
-      working-directory: highway-1.0.5/build
-      run: |
-        make -j3 && sudo make install
-
-    - name: Wget libjxl
-      uses: wei/wget@v1
-      with:
-        args: -O libjxl-0.8.2.tar.gz https://github.com/libjxl/libjxl/archive/refs/tags/v0.8.2.tar.gz
-    - name: Unpack libjxl
-      run: |
-        tar -xpf libjxl-0.8.2.tar.gz && mkdir -p libjxl-0.8.2/build
-    - name: Configure libjxl
-      working-directory: libjxl-0.8.2/build
-      run: |
-        cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DJPEGXL_ENABLE_BENCHMARK=OFF \
-        -DJPEGXL_ENABLE_COVERAGE=OFF -DJPEGXL_ENABLE_FUZZERS=OFF -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_WARNINGS_AS_ERRORS=OFF \
-        -DJPEGXL_ENABLE_SKCMS=OFF -DJPEGXL_ENABLE_VIEWERS=OFF -DJPEGXL_ENABLE_PLUGINS=OFF -DJPEGXL_ENABLE_DOXYGEN=OFF \
-        -DJPEGXL_ENABLE_MANPAGES=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DJPEGXL_ENABLE_TCMALLOC=OFF \
-        -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_OPENEXR=OFF -DBUILD_TESTING=OFF \
-        -DJXL_HWY_DISABLED_TARGETS_FORCED=ON -DJPEGXL_FORCE_SYSTEM_BROTLI=ON -DJPEGXL_FORCE_SYSTEM_HWY=ON ../
-    - name: Install libjxl
-      working-directory: libjxl-0.8.2/build
-      run: |
-        make -j3 && sudo make install
-
-    - name: Wget ImageMagick
-      uses: wei/wget@v1
-      with:
-        args: -O ImageMagick-7.1.1-15.tar.gz https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.1-15.tar.gz
-    - name: Unpack ImageMagick
-      run: |
-        tar -xpf ImageMagick-7.1.1-15.tar.gz
-    - name: Configure ImageMagick
-      working-directory: ImageMagick-7.1.1-15
-      run: |
-        ./configure --prefix=/usr --libdir=/usr/lib/x86_64-linux-gnu --enable-shared --disable-static --enable-zero-configuration \
-        --without-frozenpaths --without-utilities --disable-hdri --disable-opencl --without-modules --without-magick-plus-plus --without-perl \
-        --without-bzlib --without-x --without-zip --with-zlib --without-dps --without-djvu --without-autotrace --without-fftw \
-        --without-fpx --without-fontconfig --without-freetype --without-gslib --without-gvc --without-jbig --without-openjp2 \
-        --without-lcms --without-lqr --without-lzma --without-openexr --without-pango --without-raw --without-rsvg --without-wmf \
-        --without-xml --disable-openmp --with-jpeg --with-heic --with-jxl --with-png --with-tiff --with-webp
-    - name: Install ImageMagick
-      working-directory: ImageMagick-7.1.1-15
-      run: |
-        make -j3 && sudo make install
-
-    - name: Install Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.23
-
     - name: Checkout code
-      uses: actions/checkout@v3
-
+      uses: actions/checkout@v4
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
     - name: Test
       run: go test
