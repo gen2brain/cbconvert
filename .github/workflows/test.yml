@@ -19,3 +19,5 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Test
       run: go test
+      env:
+        CGO_ENABLED: 1
