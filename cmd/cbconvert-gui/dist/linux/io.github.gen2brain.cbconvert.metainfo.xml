@@ -3,7 +3,6 @@
   <id>io.github.gen2brain.cbconvert</id>
   
   <name>CBconvert</name>
-  <developer_name>Milan Nikolic</developer_name>
   <summary>A Comic Book converter</summary>
   
   <metadata_license>MIT</metadata_license>
@@ -15,14 +14,21 @@
       Images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL or 4-Bit BMP (16 colors) file format.
     </p>
   </description>
-  
+
+  <developer id="com.github.gen2brain">
+    <name>Milan Nikolic</name>
+  </developer>
+
   <launchable type="desktop-id">io.github.gen2brain.cbconvert.desktop</launchable>
+
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/gen2brain/cbconvert/master/cmd/cbconvert-gui/screenshots/linux-02.jpg</image>
+      <caption>Main window</caption>
+      <image>https://raw.githubusercontent.com/gen2brain/cbconvert/master/cmd/cbconvert-gui/screenshots/linux-01.jpg</image>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/gen2brain/cbconvert/master/cmd/cbconvert-gui/screenshots/linux-01.jpg</image>
+      <caption>Converting</caption>
+      <image>https://raw.githubusercontent.com/gen2brain/cbconvert/master/cmd/cbconvert-gui/screenshots/linux-02.jpg</image>
     </screenshot>
   </screenshots>
 
