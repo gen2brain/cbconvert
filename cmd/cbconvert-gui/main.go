@@ -724,7 +724,11 @@ func onRemove(ih iup.Ihandle) int {
 		return iup.IGNORE
 	}
 
-	files = append(files[:index], files[index+1:]...)
+	if len(files) == 1 {
+		files = make([]cbconvert.File, 0)
+	} else {
+		files = append(files[:index], files[index+1:]...)
+	}
 
 	iup.GetHandle("List").SetAttribute("REMOVEITEM", iup.GetHandle("List").GetAttribute("VALUE"))
 	setActive()
