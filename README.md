@@ -12,10 +12,10 @@ See more [screenshots](https://github.com/gen2brain/cbconvert/blob/master/cmd/cb
 
 ### Features
 
-* reads CBR (RAR), CBZ (ZIP), CB7 (7Z), CBT (TAR), PDF, XPS, EPUB, MOBI and plain directory
+* reads CBR (RAR), CBZ (ZIP), CB7 (7Z), CBT (TAR), PDF, XPS, EPUB, MOBI, DOCX, PPTX and plain directory
 * saves processed files in ZIP archive format or TAR
 * images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL, or 4-Bit BMP (16 colors) image format
-* rotate, adjust brightness/contrast, adjust levels (Photoshop-like) or grayscale images
+* rotate, adjust brightness/contrast or grayscale images
 * resize filters (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
 * export covers from comics
 * create thumbnails from covers by [FreeDesktop](http://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html) specification
@@ -37,7 +37,7 @@ Copy `cbconvert` cli binary to your PATH and create file `~/.local/share/thumbna
 [Thumbnailer Entry]
 TryExec=cbconvert
 Exec=cbconvert thumbnail --quiet --width %s --outfile %o %i
-MimeType=application/pdf;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;application/x-mobipocket-ebook;application/vnd.ms-xpsdocument;
+MimeType=application/pdf;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;application/x-mobipocket-ebook;application/vnd.ms-xpsdocument;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;
 ```
 
 This is what it looks like in the PCManFM file manager:
