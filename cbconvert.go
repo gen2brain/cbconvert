@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"image"
 	_ "image/gif"
-	"image/jpeg"
 	"image/png"
 	"io"
 	"os"
@@ -20,6 +19,7 @@ import (
 	"sync/atomic"
 
 	"github.com/gen2brain/avif"
+	"github.com/gen2brain/jpegli"
 	"github.com/gen2brain/jpegxl"
 	"github.com/gen2brain/webp"
 	"github.com/jsummers/gobmp"
@@ -504,7 +504,13 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 	case "tiff":
 		err = tiff.Encode(w, img, &tiff.Options{Compression: tiff.Uncompressed})
 	case "jpeg":
-		err = jpeg.Encode(w, img, &jpeg.Options{Quality: c.Opts.Quality})
+		opts := &jpegli.EncodingOptions{}
+		opts.Quality = c.Opts.Quality
+		opts.ChromaSubsampling = image.YCbCrSubsampleRatio420
+		opts.ProgressiveLevel = 2
+		opts.AdaptiveQuantization = true
+		opts.DCTMethod = jpegli.DefaultDCTMethod
+		err = jpegli.Encode(w, img, opts)
 	case "webp":
 		err = webp.Encode(w, img, webp.Options{Quality: c.Opts.Quality, Method: webp.DefaultMethod})
 	case "avif":
