@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"runtime/debug"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -130,7 +131,7 @@ func setActive() {
 		iup.GetHandle("Remove").SetAttribute("ACTIVE", "NO")
 		iup.GetHandle("RemoveAll").SetAttribute("ACTIVE", "NO")
 
-		iup.GetHandle("Preview").SetAttribute("IMAGE", "")
+		iup.GetHandle("Preview").SetAttribute("IMAGE", "logo")
 		iup.GetHandle("PreviewInfo").SetAttribute("TITLE", "")
 	} else {
 		if index != -1 {
@@ -289,11 +290,15 @@ func preview() iup.Ihandle {
 					if img.Image != nil {
 						iup.Destroy(iup.GetHandle("cover"))
 						iup.ImageFromImage(img.Image).SetHandle("cover")
+
 						ih.SetAttribute("IMAGE", "cover")
+						iup.GetHandle("PreviewInfo").SetAttribute("TITLE", fmt.Sprintf("%s (%dx%d)", img.SizeHuman, img.Width, img.Height))
+					} else {
+						ih.SetAttribute("IMAGE", "logo")
+						iup.GetHandle("PreviewInfo").SetAttribute("TITLE", "")
 					}
 
 					iup.GetHandle("Loading").SetAttributes("VISIBLE=NO, STOP=YES")
-					iup.GetHandle("PreviewInfo").SetAttribute("TITLE", fmt.Sprintf("%s (%dx%d)", img.SizeHuman, img.Width, img.Height))
 
 					return iup.DEFAULT
 				})),
@@ -721,7 +726,7 @@ func onRemove(ih iup.Ihandle) int {
 	if len(files) == 1 {
 		files = make([]cbconvert.File, 0)
 	} else {
-		files = append(files[:index], files[index+1:]...)
+		files = slices.Delete(files, index, index)
 	}
 
 	iup.GetHandle("List").SetAttribute("REMOVEITEM", iup.GetHandle("List").GetAttribute("VALUE"))
