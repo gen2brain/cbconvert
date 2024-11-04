@@ -20,9 +20,6 @@ import (
 
 //go:generate rsrc --ico dist/windows/icon.ico --arch amd64 -o main_windows_amd64.syso
 
-//go:embed assets/icon.png
-var appIcon []byte
-
 //go:embed assets/logo.png
 var appLogo []byte
 
@@ -70,13 +67,10 @@ func main() {
 	iup.SetGlobal("UTF8MODE", "YES")
 	iup.SetGlobal("UTF8MODE_FILE", "YES")
 
-	img, _ := png.Decode(bytes.NewReader(appIcon))
-	iup.ImageFromImage(img).SetHandle("icon")
+	img, _ := png.Decode(bytes.NewReader(appLogo))
+	iup.ImageFromImage(img).SetHandle("logo")
 
-	logo, _ := png.Decode(bytes.NewReader(appLogo))
-	iup.ImageFromImage(logo).SetHandle("logo")
-
-	dlg := iup.Dialog(layout()).SetAttributes(fmt.Sprintf(`TITLE="CBconvert %s", ICON=icon`, appVersion)).SetHandle("dlg")
+	dlg := iup.Dialog(layout()).SetAttributes(fmt.Sprintf(`TITLE="CBconvert %s", ICON=logo`, appVersion)).SetHandle("dlg")
 
 	dlg.SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(func(ih iup.Ihandle, s string, i int, p any) int {
 		sp := strings.Split(s, ": ")
