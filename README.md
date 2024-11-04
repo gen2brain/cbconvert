@@ -31,7 +31,7 @@ Linux Flatpak is available at [Flathub](https://flathub.org/apps/io.github.gen2b
 Copy `cbconvert` cli binary to your `PATH`, create file `~/.local/share/thumbnailers/cbconvert.thumbnailer`
 and paste content from [thumbnailer](https://github.com/gen2brain/cbconvert/tree/master/cmd/cbconvert-gui/dist/linux/io.github.gen2brain.cbconvert.thumbnailer).
 
-This is what it looks like in the PCManFM file manager:
+This is what it looks like in the `PCManFM` file manager:
 
 <img src="cmd/cbconvert-gui/screenshots/thumbnails.jpg" width="700" alt="thumbnails" />
 
@@ -182,10 +182,10 @@ This table maps quality settings for JPEG to the respective AVIF and WEBP qualit
 
 ### Compile
 
-Install to `GOBIN`:
+Install to `GOBIN` (you can point `GOBIN` to e.g. `/usr/local/bin` or `~/.local/bin`):
 
 `go install github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
 
-For GUI app, check [IUP requirements](https://github.com/gen2brain/iup-go), and then install:
+For GUI app, check [IUP](https://github.com/gen2brain/iup-go) requirements, and then install:
 
 `go install github.com/gen2brain/cbconvert/cmd/cbconvert-gui@latest`
