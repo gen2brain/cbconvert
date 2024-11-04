@@ -5,11 +5,13 @@ import (
 	"context"
 	_ "embed"
 	"errors"
+	"flag"
 	"fmt"
 	"image/gif"
 	"image/png"
 	"net/url"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 	"slices"
 	"strconv"
@@ -62,6 +64,8 @@ func init() {
 }
 
 func main() {
+	parseFlags()
+
 	iup.Open()
 	defer iup.Close()
 
@@ -96,6 +100,27 @@ func main() {
 
 	iup.ShowXY(dlg, iup.CENTER, iup.CENTER)
 	iup.MainLoop()
+}
+
+func parseFlags() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>]\n\n", filepath.Base(os.Args[0]))
+		fmt.Fprintf(os.Stderr, "\nCommands:\n")
+		fmt.Fprintf(os.Stderr, "\n  version\n    \tPrint version\n\n")
+	}
+
+	flag.NewFlagSet("version", flag.ExitOnError)
+	flag.Parse()
+
+	if flag.NArg() >= 1 {
+		if flag.Arg(0) == "version" {
+			fmt.Println(filepath.Base(os.Args[0]), appVersion)
+			os.Exit(0)
+		} else {
+			flag.Usage()
+			os.Exit(1)
+		}
+	}
 }
 
 func options() cbconvert.Options {
