@@ -5,7 +5,6 @@ go 1.23
 require (
 	github.com/gen2brain/cbconvert v1.0.5-0.20241103182231-f57b2598f1f7
 	github.com/schollz/progressbar/v3 v3.13.1
-	github.com/spf13/pflag v1.0.5
 )
 
 require (

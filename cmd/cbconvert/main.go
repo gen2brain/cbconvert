@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/gen2brain/cbconvert"
 	pb "github.com/schollz/progressbar/v3"
-	flag "github.com/spf13/pflag"
 )
 
 var appVersion string
@@ -161,7 +161,6 @@ func parseFlags() (cbconvert.Options, []string) {
 	var args []string
 
 	convert := flag.NewFlagSet("convert", flag.ExitOnError)
-	convert.SortFlags = false
 	convert.IntVar(&opts.Width, "width", 0, "Image width")
 	convert.IntVar(&opts.Height, "height", 0, "Image height")
 	convert.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
@@ -184,7 +183,6 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.BoolVar(&opts.Quiet, "quiet", false, "Hide console output")
 
 	cover := flag.NewFlagSet("cover", flag.ExitOnError)
-	cover.SortFlags = false
 	cover.IntVar(&opts.Width, "width", 0, "Image width")
 	cover.IntVar(&opts.Height, "height", 0, "Image height")
 	cover.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
@@ -197,7 +195,6 @@ func parseFlags() (cbconvert.Options, []string) {
 	cover.BoolVar(&opts.Quiet, "quiet", false, "Hide console output")
 
 	thumbnail := flag.NewFlagSet("thumbnail", flag.ExitOnError)
-	thumbnail.SortFlags = false
 	thumbnail.IntVar(&opts.Width, "width", 0, "Image width")
 	thumbnail.IntVar(&opts.Height, "height", 0, "Image height")
 	thumbnail.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
@@ -209,7 +206,6 @@ func parseFlags() (cbconvert.Options, []string) {
 	thumbnail.BoolVar(&opts.Quiet, "quiet", false, "Hide console output")
 
 	meta := flag.NewFlagSet("meta", flag.ExitOnError)
-	meta.SortFlags = false
 	meta.BoolVar(&opts.Cover, "cover", false, "Print cover name")
 	meta.BoolVar(&opts.Comment, "comment", false, "Print zip comment")
 	meta.StringVar(&opts.CommentBody, "comment-body", "", "Set zip comment")
@@ -222,25 +218,34 @@ func parseFlags() (cbconvert.Options, []string) {
 		fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
 		fmt.Fprintf(os.Stderr, "\nCommands:\n")
 		fmt.Fprintf(os.Stderr, "\n  convert\n    \tConvert archive or document\n\n")
-		convert.VisitAll(func(f *flag.Flag) {
+		order := []string{"width", "height", "fit", "format", "archive", "quality", "filter", "no-cover", "no-rgb",
+			"no-nonimage", "no-convert", "grayscale", "rotate", "brightness", "contrast", "suffix", "outdir", "size", "recursive", "quiet"}
+		for _, name := range order {
+			f := convert.Lookup(name)
 			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
 			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
-		})
+		}
 		fmt.Fprintf(os.Stderr, "\n  cover\n    \tExtract cover\n\n")
-		cover.VisitAll(func(f *flag.Flag) {
+		order = []string{"width", "height", "fit", "format", "quality", "filter", "outdir", "size", "recursive", "quiet"}
+		for _, name := range order {
+			f := cover.Lookup(name)
 			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
 			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
-		})
+		}
 		fmt.Fprintf(os.Stderr, "\n  thumbnail\n    \tExtract cover thumbnail (freedesktop spec.)\n\n")
-		thumbnail.VisitAll(func(f *flag.Flag) {
+		order = []string{"width", "height", "fit", "filter", "outdir", "outfile", "size", "recursive", "quiet"}
+		for _, name := range order {
+			f := thumbnail.Lookup(name)
 			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
 			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
-		})
+		}
 		fmt.Fprintf(os.Stderr, "\n  meta\n    \tCBZ metadata\n\n")
-		meta.VisitAll(func(f *flag.Flag) {
+		order = []string{"cover", "comment", "comment-body", "file-add", "file-remove"}
+		for _, name := range order {
+			f := meta.Lookup(name)
 			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
 			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
-		})
+		}
 		fmt.Fprintf(os.Stderr, "\n  version\n    \tPrint version\n\n")
 	}
 
