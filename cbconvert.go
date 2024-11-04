@@ -191,8 +191,6 @@ func (c *Converter) convertDocument(ctx context.Context, fileName string) error 
 		}
 
 		if img != nil {
-			n := n
-
 			eg.Go(func() error {
 				return c.imageConvert(ctx, img, n, "")
 			})
@@ -394,9 +392,6 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 			}
 
 			if i != nil {
-				index := index
-				img := img
-
 				eg.Go(func() error {
 					return c.imageConvert(ctx, i, index, img)
 				})
@@ -424,11 +419,16 @@ func (c *Converter) imageConvert(ctx context.Context, img image.Image, index int
 		c.OnProgress()
 	}
 
+	ext := c.Opts.Format
+	if ext == "jpeg" {
+		ext = "jpg"
+	}
+
 	var fileName string
 	if pathName != "" {
-		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%s.%s", baseNoExt(pathName), c.Opts.Format))
+		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%s.%s", baseNoExt(pathName), ext))
 	} else {
-		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%03d.%s", index, c.Opts.Format))
+		fileName = filepath.Join(c.Workdir, fmt.Sprintf("%03d.%s", index, ext))
 	}
 
 	img = c.imageTransform(img)
@@ -799,6 +799,11 @@ func (c *Converter) Cover(fileName string, fileInfo os.FileInfo) error {
 		}
 	}
 
+	ext := c.Opts.Format
+	if ext == "jpeg" {
+		ext = "jpg"
+	}
+
 	var fName string
 	if c.Opts.Recursive {
 		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Dir(fileName)), 0755)
@@ -806,9 +811,9 @@ func (c *Converter) Cover(fileName string, fileInfo os.FileInfo) error {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
 
-		fName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%s.%s", baseNoExt(fileName), c.Opts.Format))
+		fName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%s.%s", baseNoExt(fileName), ext))
 	} else {
-		fName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s.%s", baseNoExt(fileName), c.Opts.Format))
+		fName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s.%s", baseNoExt(fileName), ext))
 	}
 
 	w, err := os.Create(fName)
