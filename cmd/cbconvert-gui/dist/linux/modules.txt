@@ -1,16 +1,29 @@
-# git.sr.ht/~jackmordaunt/go-libwebp v1.1.0
+# github.com/anthonynsimon/bild v0.14.0
 ## explicit; go 1.21
-git.sr.ht/~jackmordaunt/go-libwebp/lib/common
-git.sr.ht/~jackmordaunt/go-libwebp/lib/dynamic/webp
-git.sr.ht/~jackmordaunt/go-libwebp/lib/transpiled/webp
-git.sr.ht/~jackmordaunt/go-libwebp/webp
-# github.com/disintegration/imaging v1.6.2
-## explicit
-github.com/disintegration/imaging
+github.com/anthonynsimon/bild/adjust
+github.com/anthonynsimon/bild/clone
+github.com/anthonynsimon/bild/math/f64
+github.com/anthonynsimon/bild/parallel
+github.com/anthonynsimon/bild/transform
+github.com/anthonynsimon/bild/util
+# github.com/dsoprea/go-exif/v2 v2.0.0-20230826092837-6579e82b732d
+## explicit; go 1.13
+github.com/dsoprea/go-exif/v2
+github.com/dsoprea/go-exif/v2/common
+github.com/dsoprea/go-exif/v2/undefined
+# github.com/dsoprea/go-logging v0.0.0-20200710184922-b02d349568dd
+## explicit; go 1.13
+github.com/dsoprea/go-logging
+# github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
+## explicit; go 1.13
+github.com/dsoprea/go-png-image-structure
+# github.com/dsoprea/go-utility v0.0.0-20221003172846-a3e1774ef349
+## explicit; go 1.12
+github.com/dsoprea/go-utility/image
 # github.com/dustin/go-humanize v1.0.1
 ## explicit; go 1.16
 github.com/dustin/go-humanize
-# github.com/ebitengine/purego v0.5.2
+# github.com/ebitengine/purego v0.8.1
 ## explicit; go 1.18
 github.com/ebitengine/purego
 github.com/ebitengine/purego/internal/cgo
@@ -19,87 +32,115 @@ github.com/ebitengine/purego/internal/strings
 # github.com/fvbommel/sortorder v1.1.0
 ## explicit; go 1.13
 github.com/fvbommel/sortorder
-# github.com/gen2brain/cbconvert v1.0.4-0.20240208144735-a8084ed89758
+# github.com/gen2brain/avif v0.4.0
 ## explicit; go 1.21
+github.com/gen2brain/avif
+# github.com/gen2brain/cbconvert v1.0.5-0.20241103182231-f57b2598f1f7
+## explicit; go 1.23
 github.com/gen2brain/cbconvert
-# github.com/gen2brain/go-fitz v1.23.7
-## explicit; go 1.20
+# github.com/gen2brain/go-fitz v1.24.14
+## explicit; go 1.22
 github.com/gen2brain/go-fitz
-# github.com/gen2brain/go-unarr v0.2.0
-## explicit; go 1.19
+github.com/gen2brain/go-fitz/include/mupdf
+github.com/gen2brain/go-fitz/include/mupdf/fitz
+github.com/gen2brain/go-fitz/libs
+# github.com/gen2brain/go-unarr v0.2.4
+## explicit; go 1.21
 github.com/gen2brain/go-unarr
 github.com/gen2brain/go-unarr/unarrc
-# github.com/gen2brain/iup-go/iup v0.0.0-20230906093706-8b037fe6a7bd
+github.com/gen2brain/go-unarr/unarrc/external
+github.com/gen2brain/go-unarr/unarrc/external/bzip2
+github.com/gen2brain/go-unarr/unarrc/external/unarr
+github.com/gen2brain/go-unarr/unarrc/external/unarr/_7z
+github.com/gen2brain/go-unarr/unarrc/external/unarr/common
+github.com/gen2brain/go-unarr/unarrc/external/unarr/lzmasdk
+github.com/gen2brain/go-unarr/unarrc/external/unarr/rar
+github.com/gen2brain/go-unarr/unarrc/external/unarr/tar
+github.com/gen2brain/go-unarr/unarrc/external/unarr/zip
+github.com/gen2brain/go-unarr/unarrc/external/zlib
+# github.com/gen2brain/iup-go/iup v0.0.0-20231016042002-a3b3bba3edbc
 ## explicit; go 1.19
 github.com/gen2brain/iup-go/iup
 github.com/gen2brain/iup-go/iup/manifest
+# github.com/gen2brain/jpegli v0.3.1
+## explicit; go 1.22
+github.com/gen2brain/jpegli
+# github.com/gen2brain/jpegxl v0.4.1
+## explicit; go 1.22
+github.com/gen2brain/jpegxl
+# github.com/gen2brain/webp v0.5.0
+## explicit; go 1.22
+github.com/gen2brain/webp
+# github.com/go-errors/errors v1.5.1
+## explicit; go 1.14
+github.com/go-errors/errors
 # github.com/godbus/dbus/v5 v5.1.0
 ## explicit; go 1.12
 github.com/godbus/dbus/v5
+# github.com/golang/geo v0.0.0-20230421003525-6adc56603217
+## explicit; go 1.18
+github.com/golang/geo/r1
+github.com/golang/geo/r2
+github.com/golang/geo/r3
+github.com/golang/geo/s1
+github.com/golang/geo/s2
 # github.com/google/uuid v1.6.0
 ## explicit
 github.com/google/uuid
-# github.com/mattn/go-isatty v0.0.20
-## explicit; go 1.15
-github.com/mattn/go-isatty
-# github.com/ncruces/go-strftime v0.1.9
-## explicit; go 1.17
-github.com/ncruces/go-strftime
-# github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec
-## explicit; go 1.12
-github.com/remyoudompheng/bigfft
-# golang.org/x/image v0.15.0
+# github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25
+## explicit
+github.com/jsummers/gobmp
+# github.com/jupiterrider/ffi v0.2.1
 ## explicit; go 1.18
-golang.org/x/image/bmp
+github.com/jupiterrider/ffi
+# github.com/tetratelabs/wazero v1.8.1
+## explicit; go 1.21
+github.com/tetratelabs/wazero
+github.com/tetratelabs/wazero/api
+github.com/tetratelabs/wazero/experimental
+github.com/tetratelabs/wazero/experimental/sys
+github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1
+github.com/tetratelabs/wazero/internal/descriptor
+github.com/tetratelabs/wazero/internal/engine/interpreter
+github.com/tetratelabs/wazero/internal/engine/wazevo
+github.com/tetratelabs/wazero/internal/engine/wazevo/backend
+github.com/tetratelabs/wazero/internal/engine/wazevo/backend/isa/amd64
+github.com/tetratelabs/wazero/internal/engine/wazevo/backend/isa/arm64
+github.com/tetratelabs/wazero/internal/engine/wazevo/backend/regalloc
+github.com/tetratelabs/wazero/internal/engine/wazevo/frontend
+github.com/tetratelabs/wazero/internal/engine/wazevo/ssa
+github.com/tetratelabs/wazero/internal/engine/wazevo/wazevoapi
+github.com/tetratelabs/wazero/internal/expctxkeys
+github.com/tetratelabs/wazero/internal/filecache
+github.com/tetratelabs/wazero/internal/fsapi
+github.com/tetratelabs/wazero/internal/ieee754
+github.com/tetratelabs/wazero/internal/internalapi
+github.com/tetratelabs/wazero/internal/leb128
+github.com/tetratelabs/wazero/internal/moremath
+github.com/tetratelabs/wazero/internal/platform
+github.com/tetratelabs/wazero/internal/sock
+github.com/tetratelabs/wazero/internal/sys
+github.com/tetratelabs/wazero/internal/sysfs
+github.com/tetratelabs/wazero/internal/u32
+github.com/tetratelabs/wazero/internal/u64
+github.com/tetratelabs/wazero/internal/version
+github.com/tetratelabs/wazero/internal/wasip1
+github.com/tetratelabs/wazero/internal/wasm
+github.com/tetratelabs/wazero/internal/wasm/binary
+github.com/tetratelabs/wazero/internal/wasmdebug
+github.com/tetratelabs/wazero/internal/wasmruntime
+github.com/tetratelabs/wazero/sys
+# golang.org/x/image v0.21.0
+## explicit; go 1.18
 golang.org/x/image/ccitt
-golang.org/x/image/riff
 golang.org/x/image/tiff
 golang.org/x/image/tiff/lzw
-golang.org/x/image/vp8
-golang.org/x/image/vp8l
-golang.org/x/image/webp
-# golang.org/x/sync v0.6.0
+# golang.org/x/net v0.30.0
+## explicit; go 1.18
+golang.org/x/net/context
+# golang.org/x/sync v0.8.0
 ## explicit; go 1.18
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.17.0
-## explicit; go 1.18
-golang.org/x/sys/unix
-golang.org/x/sys/windows
-# gopkg.in/gographics/imagick.v3 v3.5.1
-## explicit; go 1.13
-gopkg.in/gographics/imagick.v3/imagick
-gopkg.in/gographics/imagick.v3/imagick/types
-# modernc.org/libc v1.41.0
-## explicit; go 1.20
-modernc.org/libc
-modernc.org/libc/errno
-modernc.org/libc/fcntl
-modernc.org/libc/fts
-modernc.org/libc/grp
-modernc.org/libc/honnef.co/go/netdb
-modernc.org/libc/langinfo
-modernc.org/libc/limits
-modernc.org/libc/netdb
-modernc.org/libc/netinet/in
-modernc.org/libc/poll
-modernc.org/libc/pthread
-modernc.org/libc/pwd
-modernc.org/libc/signal
-modernc.org/libc/stdio
-modernc.org/libc/stdlib
-modernc.org/libc/sys/socket
-modernc.org/libc/sys/stat
-modernc.org/libc/sys/types
-modernc.org/libc/termios
-modernc.org/libc/time
-modernc.org/libc/unistd
-modernc.org/libc/utime
-modernc.org/libc/uuid
-modernc.org/libc/uuid/uuid
-modernc.org/libc/wctype
-# modernc.org/mathutil v1.6.0
-## explicit; go 1.18
-modernc.org/mathutil
-# modernc.org/memory v1.7.2
-## explicit; go 1.18
-modernc.org/memory
+# gopkg.in/yaml.v2 v2.4.0
+## explicit; go 1.15
+gopkg.in/yaml.v2

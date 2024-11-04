@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
   <id>io.github.gen2brain.cbconvert</id>
-  
+
   <name>CBconvert</name>
   <summary>A Comic Book converter</summary>
-  
+
   <metadata_license>MIT</metadata_license>
   <project_license>GPL-3</project_license>
 
@@ -38,10 +38,20 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.1.0" date="2024-11-04" type="stable">
+      <description>
+        <ul>
+          <li>Use jpegli for smaller files</li>
+          <li>Remove ImageMagick dependency</li>
+          <li>Wayland support</li>
+        </ul>
+      </description>
+      <url type="details">https://github.com/gen2brain/cbconvert/releases/tag/v1.1.0</url>
+    </release>
     <release version="1.0.4" date="2024-02-08" type="stable">
       <description>
         <ul>
-            <li>Update modules and dependencies</li>
+          <li>Update modules and dependencies</li>
         </ul>
       </description>
       <url type="details">https://github.com/gen2brain/cbconvert/releases/tag/v1.0.4</url>
@@ -49,7 +59,7 @@
     <release version="1.0.3" date="2023-09-14" type="stable">
       <description>
         <ul>
-            <li>Add content rating</li>
+          <li>Add content rating</li>
         </ul>
       </description>
       <url type="details">https://github.com/gen2brain/cbconvert/releases/tag/v1.0.3</url>
@@ -57,7 +67,7 @@
     <release version="1.0.2" date="2023-09-14" type="stable">
       <description>
         <ul>
-            <li>Change flatpak exec/command name to cbconvert</li>
+          <li>Change flatpak exec/command name to cbconvert</li>
         </ul>
       </description>
       <url type="details">https://github.com/gen2brain/cbconvert/releases/tag/v1.0.2</url>

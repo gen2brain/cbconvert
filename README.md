@@ -22,27 +22,18 @@ See more [screenshots](https://github.com/gen2brain/cbconvert/blob/master/cmd/cb
 
 ### Download
 
-* [Windows x86_64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-1.0.0-windows-x86_64.zip)
-* [Linux x86_64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-1.0.0-linux-x86_64.tar.gz)
-* [macOS x86_64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-1.0.0-darwin-x86_64.zip)
-* [macOS aarch64](https://github.com/gen2brain/cbconvert/releases/latest/download/cbconvert-1.0.0-darwin-aarch64.zip)
+Download the latest binaries from the [releases](https://github.com/gen2brain/cbconvert/releases).
 
-[![flathub](https://dl.flathub.org/assets/badges/flathub-badge-en.png)](https://flathub.org/apps/io.github.gen2brain.cbconvert)
+Linux Flatpak is available at [Flathub](https://flathub.org/apps/io.github.gen2brain.cbconvert).
 
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 
-Copy `cbconvert` cli binary to your PATH and create file `~/.local/share/thumbnailers/cbconvert.thumbnailer`:
-
-```
-[Thumbnailer Entry]
-TryExec=cbconvert
-Exec=cbconvert thumbnail --quiet --width %s --outfile %o %i
-MimeType=application/pdf;application/x-cb7;application/x-cbt;application/epub+zip;application/vnd.comicbook-rar;application/vnd.comicbook+zip;application/x-mobipocket-ebook;application/vnd.ms-xpsdocument;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;
-```
+Copy `cbconvert` cli binary to your `PATH`, create file `~/.local/share/thumbnailers/cbconvert.thumbnailer`
+and paste content from [thumbnailer](https://github.com/gen2brain/cbconvert/tree/master/cmd/cbconvert-gui/dist/linux/io.github.gen2brain.cbconvert.thumbnailer).
 
 This is what it looks like in the PCManFM file manager:
 
-<img src="cmd/cbconvert/screenshots/thumbnails.jpg" width="700" alt="thumbnails" />
+<img src="cmd/cbconvert-gui/screenshots/thumbnails.jpg" width="700" alt="thumbnails" />
 
 
 ### Using command line app
