@@ -28,8 +28,6 @@ github.com/gen2brain/go-fitz v1.24.14 h1:09weRkjVtLYNGo7l0J7DyOwBExbwi8SJ9h8YPhw
 github.com/gen2brain/go-fitz v1.24.14/go.mod h1:0KaZeQgASc20Yp5R/pFzyy7SmP01XcoHKNF842U2/S4=
 github.com/gen2brain/go-unarr v0.2.3 h1:VwZg0P6Dc/8Uh51McjVhzUMg4wHwwbiyqjEFsFELc0c=
 github.com/gen2brain/go-unarr v0.2.3/go.mod h1:hoHheVuf0KT8/hfvkEL7GMwj2h7fq0lF72NdyySdr3c=
-github.com/gen2brain/jpegli v0.3.0 h1:u4YKRql9Ab/5eVCrFX6p/YBcIzV9ka15mKMXgdw4nis=
-github.com/gen2brain/jpegli v0.3.0/go.mod h1:6Dbgr+ni1IUBqGVOKHn8lY+6DvwSGfAfC7pPQiSK6uA=
 github.com/gen2brain/jpegli v0.3.1 h1:KxarZ9oL1mVdtzyGAyLJFduEKCs4itD52aRmS9nAkYc=
 github.com/gen2brain/jpegli v0.3.1/go.mod h1:6Dbgr+ni1IUBqGVOKHn8lY+6DvwSGfAfC7pPQiSK6uA=
 github.com/gen2brain/jpegxl v0.4.1 h1:jWaVp5GkXLJXjRvC+g0R9+uo+xoWiS7DYKxJ3n5gHL4=

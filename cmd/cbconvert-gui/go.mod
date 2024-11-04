@@ -3,7 +3,7 @@ module github.com/gen2brain/cbconvert/cmd/cbconvert-gui
 go 1.23
 
 require (
-	github.com/gen2brain/cbconvert v1.0.5-0.20241103182231-f57b2598f1f7
+	github.com/gen2brain/cbconvert v1.0.5-0.20241104151831-ee2cf2e14d10
 	github.com/gen2brain/iup-go/iup v0.0.0-20231016042002-a3b3bba3edbc
 	github.com/godbus/dbus/v5 v5.1.0
 )
