@@ -27,8 +27,8 @@ github.com/fvbommel/sortorder v1.1.0 h1:fUmoe+HLsBTctBDoaBwpQo5N+nrCp8g/BjKb/6ZQ
 github.com/fvbommel/sortorder v1.1.0/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
 github.com/gen2brain/avif v0.4.0 h1:JuwAX2rVrkAzQrZx9lpIKx/ovCO35gCUquarfJ6uhHc=
 github.com/gen2brain/avif v0.4.0/go.mod h1:oePci7KPleKZ8X/2rjZ3FlVm2JFYjPwXiQpNgq9wrzs=
-github.com/gen2brain/cbconvert v1.0.5-0.20241104151831-ee2cf2e14d10 h1:yyQHNNjXoTA7dBH+I/1N4rO4FYH6CnMoRLv5Ukpg//E=
-github.com/gen2brain/cbconvert v1.0.5-0.20241104151831-ee2cf2e14d10/go.mod h1:U5nLgKf3Yb/T+nuv6XaMlg4jUYd23P0Q+4MNRKhGNcE=
+github.com/gen2brain/cbconvert v1.0.5-0.20241104153621-9e944142d609 h1:LtbfVOdrZSJNCtcEuiTSU+JnptT0RwXq7z2RD6JQcdc=
+github.com/gen2brain/cbconvert v1.0.5-0.20241104153621-9e944142d609/go.mod h1:U5nLgKf3Yb/T+nuv6XaMlg4jUYd23P0Q+4MNRKhGNcE=
 github.com/gen2brain/go-fitz v1.24.14 h1:09weRkjVtLYNGo7l0J7DyOwBExbwi8SJ9h8YPhw9WEo=
 github.com/gen2brain/go-fitz v1.24.14/go.mod h1:0KaZeQgASc20Yp5R/pFzyy7SmP01XcoHKNF842U2/S4=
 github.com/gen2brain/go-unarr v0.2.4 h1:Iu2kqtGfkLBSQoTFwMkSCmp0g3GrEM/XMVWzo9TQr/Y=
