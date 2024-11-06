@@ -35,7 +35,7 @@ github.com/fvbommel/sortorder
 # github.com/gen2brain/avif v0.4.0
 ## explicit; go 1.21
 github.com/gen2brain/avif
-# github.com/gen2brain/cbconvert v1.0.5-0.20241103182231-f57b2598f1f7
+# github.com/gen2brain/cbconvert v1.0.5-0.20241104153621-9e944142d609
 ## explicit; go 1.23
 github.com/gen2brain/cbconvert
 # github.com/gen2brain/go-fitz v1.24.14
@@ -58,9 +58,19 @@ github.com/gen2brain/go-unarr/unarrc/external/unarr/rar
 github.com/gen2brain/go-unarr/unarrc/external/unarr/tar
 github.com/gen2brain/go-unarr/unarrc/external/unarr/zip
 github.com/gen2brain/go-unarr/unarrc/external/zlib
-# github.com/gen2brain/iup-go/iup v0.0.0-20231016042002-a3b3bba3edbc
-## explicit; go 1.19
+# github.com/gen2brain/iup-go/iup v0.0.0-20241106050025-0f971ac33ed4
+## explicit; go 1.22
 github.com/gen2brain/iup-go/iup
+github.com/gen2brain/iup-go/iup/external
+github.com/gen2brain/iup-go/iup/external/include
+github.com/gen2brain/iup-go/iup/external/src
+github.com/gen2brain/iup-go/iup/external/src/cocoa
+github.com/gen2brain/iup-go/iup/external/src/gtk
+github.com/gen2brain/iup-go/iup/external/src/mot
+github.com/gen2brain/iup-go/iup/external/src/win
+github.com/gen2brain/iup-go/iup/external/src/win/wdl
+github.com/gen2brain/iup-go/iup/external/src/win/wdl/dummy
+github.com/gen2brain/iup-go/iup/external/srcgl
 github.com/gen2brain/iup-go/iup/manifest
 # github.com/gen2brain/jpegli v0.3.1
 ## explicit; go 1.22
