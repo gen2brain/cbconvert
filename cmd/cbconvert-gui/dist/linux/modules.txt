@@ -32,10 +32,10 @@ github.com/ebitengine/purego/internal/strings
 # github.com/fvbommel/sortorder v1.1.0
 ## explicit; go 1.13
 github.com/fvbommel/sortorder
-# github.com/gen2brain/avif v0.4.0
+# github.com/gen2brain/avif v0.4.1
 ## explicit; go 1.21
 github.com/gen2brain/avif
-# github.com/gen2brain/cbconvert v1.0.5-0.20241104153621-9e944142d609
+# github.com/gen2brain/cbconvert v1.0.5-0.20241106181414-0dee611bf1de
 ## explicit; go 1.23
 github.com/gen2brain/cbconvert
 # github.com/gen2brain/go-fitz v1.24.14
@@ -72,13 +72,13 @@ github.com/gen2brain/iup-go/iup/external/src/win/wdl
 github.com/gen2brain/iup-go/iup/external/src/win/wdl/dummy
 github.com/gen2brain/iup-go/iup/external/srcgl
 github.com/gen2brain/iup-go/iup/manifest
-# github.com/gen2brain/jpegli v0.3.1
+# github.com/gen2brain/jpegli v0.3.3
 ## explicit; go 1.22
 github.com/gen2brain/jpegli
-# github.com/gen2brain/jpegxl v0.4.1
+# github.com/gen2brain/jpegxl v0.4.2
 ## explicit; go 1.22
 github.com/gen2brain/jpegxl
-# github.com/gen2brain/webp v0.5.0
+# github.com/gen2brain/webp v0.5.1
 ## explicit; go 1.22
 github.com/gen2brain/webp
 # github.com/go-errors/errors v1.5.1
