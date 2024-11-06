@@ -3,7 +3,7 @@ module github.com/gen2brain/cbconvert/cmd/cbconvert-gui
 go 1.23
 
 require (
-	github.com/gen2brain/cbconvert v1.0.5-0.20241104153621-9e944142d609
+	github.com/gen2brain/cbconvert v1.0.5-0.20241106192421-4d845afa43ca
 	github.com/gen2brain/iup-go/iup v0.0.0-20241106050025-0f971ac33ed4
 	github.com/godbus/dbus/v5 v5.1.0
 )
@@ -17,12 +17,12 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.8.1 // indirect
 	github.com/fvbommel/sortorder v1.1.0 // indirect
-	github.com/gen2brain/avif v0.4.0 // indirect
+	github.com/gen2brain/avif v0.4.1 // indirect
 	github.com/gen2brain/go-fitz v1.24.14 // indirect
 	github.com/gen2brain/go-unarr v0.2.4 // indirect
-	github.com/gen2brain/jpegli v0.3.1 // indirect
-	github.com/gen2brain/jpegxl v0.4.1 // indirect
-	github.com/gen2brain/webp v0.5.0 // indirect
+	github.com/gen2brain/jpegli v0.3.3 // indirect
+	github.com/gen2brain/jpegxl v0.4.2 // indirect
+	github.com/gen2brain/webp v0.5.1 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/golang/geo v0.0.0-20230421003525-6adc56603217 // indirect
 	github.com/google/uuid v1.6.0 // indirect
