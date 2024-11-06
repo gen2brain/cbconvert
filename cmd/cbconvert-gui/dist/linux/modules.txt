@@ -35,7 +35,7 @@ github.com/fvbommel/sortorder
 # github.com/gen2brain/avif v0.4.1
 ## explicit; go 1.21
 github.com/gen2brain/avif
-# github.com/gen2brain/cbconvert v1.0.5-0.20241106181414-0dee611bf1de
+# github.com/gen2brain/cbconvert v1.0.5-0.20241106192421-4d845afa43ca
 ## explicit; go 1.23
 github.com/gen2brain/cbconvert
 # github.com/gen2brain/go-fitz v1.24.14
