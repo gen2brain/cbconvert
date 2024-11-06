@@ -191,3 +191,8 @@ Install to `GOBIN` (you can point `GOBIN` to e.g. `/usr/local/bin` or `~/.local/
 For GUI app, check [IUP](https://github.com/gen2brain/iup-go) requirements, and then install:
 
 `go install github.com/gen2brain/cbconvert/cmd/cbconvert-gui@latest`
+
+### Build tags
+
+* `extlib` - use external libmupdf and libunarr libraries
+* `pkgconfig` - enable pkg-config (used with `extlib`)
