@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	pngstructure "github.com/dsoprea/go-png-image-structure"
 	"github.com/dustin/go-humanize"
@@ -275,12 +276,13 @@ func (c *Converter) Cover(fileName string, fileInfo os.FileInfo) error {
 
 	var fName string
 	if c.Opts.Recursive {
-		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Dir(fileName)), 0755)
+		fDir := strings.Split(filepath.Dir(fileName), string(os.PathSeparator))[1:]
+		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Join(fDir...)), 0755)
 		if err != nil {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
 
-		fName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%s.%s", baseNoExt(fileName), ext))
+		fName = filepath.Join(c.Opts.OutDir, filepath.Join(fDir...), fmt.Sprintf("%s.%s", baseNoExt(fileName), ext))
 	} else {
 		fName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s.%s", baseNoExt(fileName), ext))
 	}
@@ -341,12 +343,13 @@ func (c *Converter) Thumbnail(fileName string, fileInfo os.FileInfo) error {
 		fURI = "file://" + fileName
 
 		if c.Opts.Recursive {
-			err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Dir(fileName)), 0755)
+			fDir := strings.Split(filepath.Dir(fileName), string(os.PathSeparator))[1:]
+			err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Join(fDir...)), 0755)
 			if err != nil {
 				return fmt.Errorf("%s: %w", fileName, err)
 			}
 
-			fName = filepath.Join(c.Opts.OutDir, filepath.Dir(fileName), fmt.Sprintf("%x.png", md5.Sum([]byte(fURI))))
+			fName = filepath.Join(c.Opts.OutDir, filepath.Join(fDir...), fmt.Sprintf("%x.png", md5.Sum([]byte(fURI))))
 		} else {
 			fName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%x.png", md5.Sum([]byte(fURI))))
 		}
