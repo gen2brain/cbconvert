@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync/atomic"
 
 	"github.com/gen2brain/avif"
@@ -166,9 +167,15 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 					return c.imageConvert(ctx, img, 0, pathName)
 				})
 			}
-		} else if !c.Opts.NoNonImage {
-			if err = copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
-				return fmt.Errorf("convertArchive: %w", err)
+		} else {
+			if filepath.Ext(pathName) == ".DS_Store" || strings.Contains(pathName, "__MACOSX") {
+				continue
+			}
+
+			if !c.Opts.NoNonImage {
+				if err = copyFile(bytes.NewReader(data), filepath.Join(c.Workdir, filepath.Base(pathName))); err != nil {
+					return fmt.Errorf("convertArchive: %w", err)
+				}
 			}
 		}
 	}
