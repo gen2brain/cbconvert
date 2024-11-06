@@ -24,6 +24,8 @@ github.com/fvbommel/sortorder v1.1.0 h1:fUmoe+HLsBTctBDoaBwpQo5N+nrCp8g/BjKb/6ZQ
 github.com/fvbommel/sortorder v1.1.0/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
 github.com/gen2brain/avif v0.4.0 h1:JuwAX2rVrkAzQrZx9lpIKx/ovCO35gCUquarfJ6uhHc=
 github.com/gen2brain/avif v0.4.0/go.mod h1:oePci7KPleKZ8X/2rjZ3FlVm2JFYjPwXiQpNgq9wrzs=
+github.com/gen2brain/avif v0.4.1 h1:fjwv5SDNYHdI1gbW6MJn3Yaxs1ldUEfAIAH8Ahee538=
+github.com/gen2brain/avif v0.4.1/go.mod h1:oePci7KPleKZ8X/2rjZ3FlVm2JFYjPwXiQpNgq9wrzs=
 github.com/gen2brain/go-fitz v1.24.14 h1:09weRkjVtLYNGo7l0J7DyOwBExbwi8SJ9h8YPhw9WEo=
 github.com/gen2brain/go-fitz v1.24.14/go.mod h1:0KaZeQgASc20Yp5R/pFzyy7SmP01XcoHKNF842U2/S4=
 github.com/gen2brain/go-unarr v0.2.3 h1:VwZg0P6Dc/8Uh51McjVhzUMg4wHwwbiyqjEFsFELc0c=
@@ -32,8 +34,12 @@ github.com/gen2brain/jpegli v0.3.3 h1:ryCOQpmGuVk6FA+QBe9st6cW48jsRdVOPiNrAJ50m+
 github.com/gen2brain/jpegli v0.3.3/go.mod h1:6Dbgr+ni1IUBqGVOKHn8lY+6DvwSGfAfC7pPQiSK6uA=
 github.com/gen2brain/jpegxl v0.4.1 h1:jWaVp5GkXLJXjRvC+g0R9+uo+xoWiS7DYKxJ3n5gHL4=
 github.com/gen2brain/jpegxl v0.4.1/go.mod h1:zIIDnzh7WqG+z66zyzLWQ0M4AS5xi//pyJLgu32GB1o=
+github.com/gen2brain/jpegxl v0.4.2 h1:Ff0jAWtCRdc9yjPc9jkyak6Ji/A89Jg0KI+D7qOEtRI=
+github.com/gen2brain/jpegxl v0.4.2/go.mod h1:zIIDnzh7WqG+z66zyzLWQ0M4AS5xi//pyJLgu32GB1o=
 github.com/gen2brain/webp v0.5.0 h1:nn3o0BtKltoFKX9rlDZG/Y/aWqNzUZVyXdB815yVNfU=
 github.com/gen2brain/webp v0.5.0/go.mod h1:Nb3xO5sy6MeUAHhru9H3GT7nlOQO5dKRNNlE92CZrJw=
+github.com/gen2brain/webp v0.5.1 h1:ly9olTGveZEpq3soJuCmex9fxLJ0ipHcQRRSRit5EUE=
+github.com/gen2brain/webp v0.5.1/go.mod h1:Nb3xO5sy6MeUAHhru9H3GT7nlOQO5dKRNNlE92CZrJw=
 github.com/go-errors/errors v1.0.1/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm6/TyX73Q=
 github.com/go-errors/errors v1.0.2/go.mod h1:psDX2osz5VnTOnFWbDeWwS7yejl+uV3FEWEp4lssFEs=
 github.com/go-errors/errors v1.1.1/go.mod h1:psDX2osz5VnTOnFWbDeWwS7yejl+uV3FEWEp4lssFEs=

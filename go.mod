@@ -7,12 +7,12 @@ require (
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fvbommel/sortorder v1.1.0
-	github.com/gen2brain/avif v0.4.0
+	github.com/gen2brain/avif v0.4.1
 	github.com/gen2brain/go-fitz v1.24.14
 	github.com/gen2brain/go-unarr v0.2.3
 	github.com/gen2brain/jpegli v0.3.3
-	github.com/gen2brain/jpegxl v0.4.1
-	github.com/gen2brain/webp v0.5.0
+	github.com/gen2brain/jpegxl v0.4.2
+	github.com/gen2brain/webp v0.5.1
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25
 	golang.org/x/image v0.21.0
 	golang.org/x/sync v0.8.0
