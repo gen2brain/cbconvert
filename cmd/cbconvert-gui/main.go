@@ -573,7 +573,7 @@ func tabs() iup.Ihandle {
 		vboxOutput.SetAttributes("TABTITLE=Output"),
 		vboxImage.SetAttributes("TABTITLE=Image"),
 		vboxTransform.SetAttributes("TABTITLE=Transform"),
-	).SetHandle("Tabs").SetAttributes("MINSIZE=320x400, EXPAND=HORIZONTAL")
+	).SetHandle("Tabs").SetAttributes("MINSIZE=320x400, EXPAND=HORIZONTAL, MULTILINE=YES")
 }
 
 func buttons() iup.Ihandle {
