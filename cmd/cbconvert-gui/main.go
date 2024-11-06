@@ -364,6 +364,7 @@ func tabs() iup.Ihandle {
 
 					return iup.DEFAULT
 				})),
+			iup.Space().SetAttribute("SIZE", "5x0"),
 			iup.Button("Browse...").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 				SetCallback("ACTION", iup.ActionFunc(onOutputDirectory)),
 		),
