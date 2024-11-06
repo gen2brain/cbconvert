@@ -284,13 +284,16 @@ func previewPost() {
 	go func(opts cbconvert.Options) {
 		conv := cbconvert.New(opts)
 
+		var s string
 		file := files[index]
+
 		img, err := conv.Preview(file.Path, file.Stat, width, height)
 		if err != nil {
+			s = err.Error()
 			fmt.Println(err)
 		}
 
-		iup.PostMessage(iup.GetHandle("Preview"), "", 0, img)
+		iup.PostMessage(iup.GetHandle("Preview"), s, 0, img)
 	}(opts)
 }
 
@@ -312,7 +315,9 @@ func preview() iup.Ihandle {
 				SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(func(ih iup.Ihandle, s string, i int, p any) int {
 					img := p.(cbconvert.Image)
 
-					if img.Image != nil {
+					iup.GetHandle("Loading").SetAttributes("VISIBLE=NO, STOP=YES")
+
+					if img.Image != nil && len(s) == 0 {
 						iup.Destroy(iup.GetHandle("cover"))
 						iup.ImageFromImage(img.Image).SetHandle("cover")
 
@@ -321,9 +326,12 @@ func preview() iup.Ihandle {
 					} else {
 						ih.SetAttribute("IMAGE", "logo")
 						iup.GetHandle("PreviewInfo").SetAttribute("TITLE", "")
-					}
 
-					iup.GetHandle("Loading").SetAttributes("VISIBLE=NO, STOP=YES")
+						sp := strings.Split(s, ": ")
+						if len(sp) > 1 {
+							iup.MessageError(ih, fmt.Sprintf("%s\n\n%s", sp[0], strings.Join(sp[1:], ": ")))
+						}
+					}
 
 					return iup.DEFAULT
 				})),
@@ -340,6 +348,8 @@ func tabs() iup.Ihandle {
 			SetAttributes(`TIP="Do not convert images that have RGB colorspace"`),
 		iup.Toggle(" Exclude Cover").SetHandle("NoCover").
 			SetAttributes(`TIP="Do not convert the cover image"`),
+		iup.Toggle(" Remove Non-Image Files from the Archive").SetHandle("NoNonImage").
+			SetAttribute("TIP", "Remove .nfo, .xml, .txt files from the archive"),
 		iup.Toggle(" Do not Transform or Convert Images").SetHandle("NoConvert").
 			SetAttributes(`TIP="Copy images from archive or directory without modifications"`).
 			SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
@@ -372,10 +382,6 @@ func tabs() iup.Ihandle {
 			iup.Label("Add Suffix to Output File:"),
 			iup.Text().SetAttributes("VISIBLECOLUMNS=16, MINSIZE=100x").SetHandle("Suffix").
 				SetAttribute("TIP", "Add suffix to filename, i.e. filename_suffix.cbz"),
-		),
-		iup.Vbox(
-			iup.Toggle(" Remove Non-Image Files from the Archive").SetHandle("NoNonImage").
-				SetAttribute("TIP", "Remove .nfo, .xml, .txt files from the archive"),
 		),
 		iup.Vbox(
 			iup.Label("Archive Format:"),
