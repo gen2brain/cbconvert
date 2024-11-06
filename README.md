@@ -194,5 +194,5 @@ For GUI app, check [IUP](https://github.com/gen2brain/iup-go) requirements, and 
 
 ### Build tags
 
-* `extlib` - use external libmupdf and libunarr libraries
+* `extlib` - use external `libmupdf` and `libunarr` libraries
 * `pkgconfig` - enable pkg-config (used with `extlib`)
