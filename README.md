@@ -26,6 +26,23 @@ Download the latest binaries from the [releases](https://github.com/gen2brain/cb
 
 Linux Flatpak is available at [Flathub](https://flathub.org/apps/io.github.gen2brain.cbconvert).
 
+### Compile
+
+You must have `CGO_ENABLED=1`. Note that `Go` will disable cgo when cross-compiling.
+
+Install to `GOBIN` (you can point `GOBIN` to e.g. `/usr/local/bin` or `~/.local/bin`):
+
+`go install github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
+
+For GUI app, check [IUP](https://github.com/gen2brain/iup-go) requirements, and then install:
+
+`go install github.com/gen2brain/cbconvert/cmd/cbconvert-gui@latest`
+
+### Build tags
+
+* `extlib` - use external `libmupdf` and `libunarr` libraries
+* `pkgconfig` - enable pkg-config (used with `extlib`)
+
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 
 Copy/install `cbconvert` cli binary to your `PATH`, create file `~/.local/share/thumbnailers/cbconvert.thumbnailer`
@@ -39,115 +56,117 @@ This is what it looks like in the `PCManFM` file manager:
 ### Using command line app
 
 ```
-    Usage: cbconvert <command> [<flags>] [file1 dir1 ... fileOrDirN]
+Usage: cbconvert <command> [<flags>] [file1 dir1 ... fileOrDirN]
 
 
-    Commands:
+Commands:
 
-      convert
-            Convert archive or document
+  convert
+    	Convert archive or document
 
-        --width
-            Image width (default "0")
-        --height
-            Image height (default "0")
-        --fit
-            Best fit for required width and height (default "false")
-        --format
-            Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl (default "jpeg")
-        --archive
-            Archive format, valid values are zip, tar (default "zip")
-        --quality
-            Image quality (default "75")
-        --filter
-            0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
-        --no-cover
-            Do not convert the cover image (default "false")
-        --no-rgb
-            Do not convert images that have RGB colorspace (default "false")
-        --no-nonimage
-            Remove non-image files from the archive (default "false")
-        --no-convert
-            Do not transform or convert images (default "false")
-        --grayscale
-            Convert images to grayscale (monochromatic) (default "false")
-        --rotate
-            Rotate images, valid values are 0, 90, 180, 270 (default "0")
-        --brightness
-            Adjust the brightness of the images, must be in the range (-100, 100) (default "0")
-        --contrast
-            Adjust the contrast of the images, must be in the range (-100, 100) (default "0")
-        --suffix
-            Add suffix to file basename (default "")
-        --outdir
-            Output directory (default ".")
-        --size
-            Process only files larger than size (in MB) (default "0")
-        --recursive
-            Process subdirectories recursively (default "false")
-        --quiet
-            Hide console output (default "false")
+    --width
+    	Image width (default "0")
+    --height
+    	Image height (default "0")
+    --fit
+    	Best fit for required width and height (default "false")
+    --format
+    	Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl (default "jpeg")
+    --archive
+    	Archive format, valid values are zip, tar (default "zip")
+    --quality
+    	Image quality (default "75")
+    --filter
+    	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
+    --no-cover
+    	Do not convert the cover image (default "false")
+    --no-rgb
+    	Do not convert images that have RGB colorspace (default "false")
+    --no-nonimage
+    	Remove non-image files from the archive (default "false")
+    --no-convert
+    	Do not transform or convert images (default "false")
+    --grayscale
+    	Convert images to grayscale (monochromatic) (default "false")
+    --rotate
+    	Rotate images, valid values are 0, 90, 180, 270 (default "0")
+    --brightness
+    	Adjust the brightness of the images, must be in the range (-100, 100) (default "0")
+    --contrast
+    	Adjust the contrast of the images, must be in the range (-100, 100) (default "0")
+    --suffix
+    	Add suffix to file basename (default "")
+    --outdir
+    	Output directory (default ".")
+    --size
+    	Process only files larger than size (in MB) (default "0")
+    --recursive
+    	Process subdirectories recursively (default "false")
+    --quiet
+    	Hide console output (default "false")
 
-      cover
-            Extract cover
+  cover
+    	Extract cover
 
-        --width
-            Image width (default "0")
-        --height
-            Image height (default "0")
-        --fit
-            Best fit for required width and height (default "false")
-        --format
-            Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl (default "jpeg")
-        --quality
-            Image quality (default "75")
-        --filter
-            0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
-        --outdir
-            Output directory (default ".")
-        --size
-            Process only files larger than size (in MB) (default "0")
-        --recursive
-            Process subdirectories recursively (default "false")
-        --quiet
-            Hide console output (default "false")
+    --width
+    	Image width (default "0")
+    --height
+    	Image height (default "0")
+    --fit
+    	Best fit for required width and height (default "false")
+    --format
+    	Image format, valid values are jpeg, png, tiff, bmp, webp, avif (default "jpeg")
+    --quality
+    	Image quality (default "75")
+    --filter
+    	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
+    --outdir
+    	Output directory (default ".")
+    --size
+    	Process only files larger than size (in MB) (default "0")
+    --recursive
+    	Process subdirectories recursively (default "false")
+    --quiet
+    	Hide console output (default "false")
 
-      thumbnail
-            Extract cover thumbnail (freedesktop spec.)
+  thumbnail
+    	Extract cover thumbnail (freedesktop spec.)
 
-        --width
-            Image width (default "0")
-        --height
-            Image height (default "0")
-        --fit
-            Best fit for required width and height (default "false")
-        --filter
-            0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
-        --outdir
-            Output directory (default ".")
-        --outfile
-            Output file (default "")
-        --size
-            Process only files larger than size (in MB) (default "0")
-        --recursive
-            Process subdirectories recursively (default "false")
-        --quiet
-            Hide console output (default "false")
+    --width
+    	Image width (default "0")
+    --height
+    	Image height (default "0")
+    --fit
+    	Best fit for required width and height (default "false")
+    --filter
+    	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
+    --outdir
+    	Output directory (default ".")
+    --outfile
+    	Output file (default "")
+    --size
+    	Process only files larger than size (in MB) (default "0")
+    --recursive
+    	Process subdirectories recursively (default "false")
+    --quiet
+    	Hide console output (default "false")
 
-      meta
-            CBZ metadata
+  meta
+    	CBZ metadata
 
-        --cover
-            Print cover name (default "false")
-        --comment
-            Print zip comment (default "false")
-        --comment-body
-            Set zip comment (default "")
-        --file-add
-            Add file to archive (default "")
-        --file-remove
-            Remove file(s) from archive (glob pattern, i.e. *.xml) (default "")
+    --cover
+    	Print cover name (default "false")
+    --comment
+    	Print zip comment (default "false")
+    --comment-body
+    	Set zip comment (default "")
+    --file-add
+    	Add file to archive (default "")
+    --file-remove
+    	Remove file from archive (glob pattern, i.e. *.xml) (default "")
 
+  version
+    	Print version
 ```
 
 ### Examples
@@ -180,19 +199,3 @@ This table maps quality settings for JPEG to the respective AVIF and WEBP qualit
 | AVIF quality | 48 | 51 | 56 | 64 |
 | WEBP quality | 55 | 64 | 72 | 82 |
 
-### Compile
-
-You must have `CGO_ENABLED=1`. Note that `Go` will disable cgo when cross-compiling.
-
-Install to `GOBIN` (you can point `GOBIN` to e.g. `/usr/local/bin` or `~/.local/bin`):
-
-`go install github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
-
-For GUI app, check [IUP](https://github.com/gen2brain/iup-go) requirements, and then install:
-
-`go install github.com/gen2brain/cbconvert/cmd/cbconvert-gui@latest`
-
-### Build tags
-
-* `extlib` - use external `libmupdf` and `libunarr` libraries
-* `pkgconfig` - enable pkg-config (used with `extlib`)
