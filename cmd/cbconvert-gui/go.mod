@@ -5,7 +5,6 @@ go 1.26
 require (
 	github.com/gen2brain/cbconvert v1.1.0
 	github.com/gen2brain/iup-go/iup v0.32.1-0.20260604112206-a19da6654449
-	github.com/godbus/dbus/v5 v5.2.2
 )
 
 require (
