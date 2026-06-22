@@ -4,8 +4,8 @@ go 1.23
 
 require (
 	github.com/gen2brain/cbconvert v1.0.5-0.20241106192421-4d845afa43ca
-	github.com/gen2brain/iup-go/iup v0.0.0-20241106050025-0f971ac33ed4
-	github.com/godbus/dbus/v5 v5.1.0
+	github.com/gen2brain/iup-go/iup v0.32.0
+	github.com/godbus/dbus/v5 v5.2.2
 )
 
 require (
@@ -32,5 +32,6 @@ require (
 	golang.org/x/image v0.21.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
