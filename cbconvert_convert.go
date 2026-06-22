@@ -3,7 +3,6 @@ package cbconvert
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"image"
 	"image/png"
@@ -16,11 +15,11 @@ import (
 
 	"github.com/gen2brain/avif"
 	"github.com/gen2brain/go-fitz"
-	"github.com/gen2brain/go-unarr"
 	"github.com/gen2brain/jpegli"
 	"github.com/gen2brain/jpegxl"
 	"github.com/gen2brain/webp"
 	"github.com/jsummers/gobmp"
+	"github.com/mholt/archives"
 	"golang.org/x/image/tiff"
 	"golang.org/x/sync/errgroup"
 )
@@ -101,35 +100,40 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 
 	cover := c.coverName(images)
 
-	archive, err := unarr.NewArchive(fileName)
-	if err != nil {
-		return fmt.Errorf("convertArchive: %w", err)
-	}
-	defer archive.Close()
-
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.SetLimit(runtime.NumCPU() + 1)
 
-	for {
-		if ctx.Err() != nil {
-			return fmt.Errorf("convertArchive: %w", ctx.Err())
+	file, ex, input, err := archiveOpen(ctx, fileName)
+	if err != nil {
+		return fmt.Errorf("convertArchive: %w", err)
+	}
+	defer file.Close()
+
+	err = ex.Extract(ctx, input, func(ctx context.Context, f archives.FileInfo) error {
+		if err := ctx.Err(); err != nil {
+			return err
 		}
 
-		err := archive.Entry()
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				break
-			}
+		if f.IsDir() {
+			return nil
+		}
 
+		pathName := f.NameInArchive
+
+		rc, err := f.Open()
+		if err != nil {
 			return fmt.Errorf("convertArchive: %w", err)
 		}
 
-		data, err := archive.ReadAll()
+		data, err := io.ReadAll(rc)
 		if err != nil {
+			rc.Close()
 			return fmt.Errorf("convertArchive: %w", err)
 		}
 
-		pathName := archive.Name()
+		if err = rc.Close(); err != nil {
+			return fmt.Errorf("convertArchive: %w", err)
+		}
 
 		if isImage(pathName) {
 			if c.Opts.NoConvert {
@@ -137,7 +141,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
-				continue
+				return nil
 			}
 
 			if cover == pathName && c.Opts.NoCover {
@@ -145,7 +149,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
-				continue
+				return nil
 			}
 
 			var img image.Image
@@ -159,7 +163,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
-				continue
+				return nil
 			}
 
 			if img != nil {
@@ -169,7 +173,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 			}
 		} else {
 			if filepath.Ext(pathName) == ".DS_Store" || strings.Contains(pathName, "__MACOSX") {
-				continue
+				return nil
 			}
 
 			if !c.Opts.NoNonImage {
@@ -178,9 +182,14 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 				}
 			}
 		}
+
+		return nil
+	})
+
+	if werr := eg.Wait(); werr != nil {
+		return fmt.Errorf("convertArchive: %w", werr)
 	}
 
-	err = eg.Wait()
 	if err != nil {
 		return fmt.Errorf("convertArchive: %w", err)
 	}

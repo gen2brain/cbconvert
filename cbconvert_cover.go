@@ -11,7 +11,6 @@ import (
 
 	"github.com/fvbommel/sortorder"
 	"github.com/gen2brain/go-fitz"
-	"github.com/gen2brain/go-unarr"
 )
 
 // coverArchive extracts cover from archive.
@@ -31,17 +30,7 @@ func (c *Converter) coverArchive(fileName string) (image.Image, error) {
 
 	cover := c.coverName(images)
 
-	archive, err := unarr.NewArchive(fileName)
-	if err != nil {
-		return nil, fmt.Errorf("coverArchive: %w", err)
-	}
-	defer archive.Close()
-
-	if err = archive.EntryFor(cover); err != nil {
-		return nil, fmt.Errorf("coverArchive: %w", err)
-	}
-
-	data, err := archive.ReadAll()
+	data, err := c.archiveFile(fileName, cover)
 	if err != nil {
 		return nil, fmt.Errorf("coverArchive: %w", err)
 	}

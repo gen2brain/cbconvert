@@ -3,13 +3,15 @@ package cbconvert
 import (
 	"archive/tar"
 	"archive/zip"
+	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/gen2brain/go-unarr"
+	"github.com/mholt/archives"
 )
 
 // archiveSave saves workdir to CBZ archive.
@@ -172,22 +174,91 @@ func (c *Converter) archiveSaveTar(fileName string) error {
 	return nil
 }
 
+// archiveOpen identifies the archive and returns its extractor and a reader positioned at the start.
+func archiveOpen(ctx context.Context, fileName string) (io.ReadCloser, archives.Extractor, io.Reader, error) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	format, input, err := archives.Identify(ctx, fileName, file)
+	if err != nil {
+		file.Close()
+		return nil, nil, nil, err
+	}
+
+	ex, ok := format.(archives.Extractor)
+	if !ok {
+		file.Close()
+		return nil, nil, nil, fmt.Errorf("%s: unsupported archive format", fileName)
+	}
+
+	return file, ex, input, nil
+}
+
 // archiveList lists contents of archive.
 func (c *Converter) archiveList(fileName string) ([]string, error) {
 	var contents []string
 
-	archive, err := unarr.NewArchive(fileName)
+	ctx := context.Background()
+
+	file, ex, input, err := archiveOpen(ctx, fileName)
 	if err != nil {
 		return contents, fmt.Errorf("archiveList: %w", err)
 	}
-	defer archive.Close()
+	defer file.Close()
 
-	contents, err = archive.List()
+	err = ex.Extract(ctx, input, func(ctx context.Context, f archives.FileInfo) error {
+		if f.IsDir() {
+			return nil
+		}
+
+		contents = append(contents, f.NameInArchive)
+
+		return nil
+	})
 	if err != nil {
 		return contents, fmt.Errorf("archiveList: %w", err)
 	}
 
 	return contents, nil
+}
+
+// archiveFile returns the contents of a single named file from the archive.
+func (c *Converter) archiveFile(fileName, name string) ([]byte, error) {
+	var data []byte
+
+	ctx := context.Background()
+
+	file, ex, input, err := archiveOpen(ctx, fileName)
+	if err != nil {
+		return nil, fmt.Errorf("archiveFile: %w", err)
+	}
+	defer file.Close()
+
+	err = ex.Extract(ctx, input, func(ctx context.Context, f archives.FileInfo) error {
+		if f.NameInArchive != name {
+			return nil
+		}
+
+		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		data, err = io.ReadAll(rc)
+		if err != nil {
+			return err
+		}
+
+		return fs.SkipAll
+	})
+	if err != nil {
+		return nil, fmt.Errorf("archiveFile: %w", err)
+	}
+
+	return data, nil
 }
 
 // archiveComment returns ZIP comment.
