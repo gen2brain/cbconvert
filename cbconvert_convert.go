@@ -398,11 +398,23 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 		opts.DCTMethod = jpegli.DefaultDCTMethod
 		err = jpegli.Encode(w, img, opts)
 	case "webp":
-		err = webp.Encode(w, img, webp.Options{Quality: c.Opts.Quality, Method: webp.DefaultMethod})
+		method := webp.DefaultMethod
+		if c.Opts.Effort >= 0 {
+			method = min(max(c.Opts.Effort, 0), 6)
+		}
+		err = webp.Encode(w, img, webp.Options{Quality: c.Opts.Quality, Method: method})
 	case "avif":
-		err = avif.Encode(w, img, avif.Options{Quality: c.Opts.Quality, Speed: avif.DefaultSpeed})
+		speed := avif.DefaultSpeed
+		if c.Opts.Effort >= 0 {
+			speed = min(max(c.Opts.Effort, 0), 10)
+		}
+		err = avif.Encode(w, img, avif.Options{Quality: c.Opts.Quality, Speed: speed})
 	case "jxl":
-		err = jpegxl.Encode(w, img, jpegxl.Options{Quality: c.Opts.Quality, Effort: jpegxl.DefaultEffort})
+		effort := jpegxl.DefaultEffort
+		if c.Opts.Effort >= 0 {
+			effort = min(max(c.Opts.Effort, 1), 10)
+		}
+		err = jpegxl.Encode(w, img, jpegxl.Options{Quality: c.Opts.Quality, Effort: effort})
 	case "bmp":
 		opts := &gobmp.EncoderOptions{}
 		opts.SupportTransparency(false)

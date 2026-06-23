@@ -25,6 +25,8 @@ type Options struct {
 	Archive string
 	// JPEG image quality
 	Quality int
+	// Encoder speed/effort, format-specific: webp method 0-6, avif speed 0-10, jxl effort 1-10; -1 uses the format default
+	Effort int
 	// Image width
 	Width int
 	// Image height
@@ -125,6 +127,7 @@ func NewOptions() Options {
 	o.Format = "jpeg"
 	o.Archive = "zip"
 	o.Quality = 75
+	o.Effort = -1
 	o.Filter = 2
 
 	return o

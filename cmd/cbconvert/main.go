@@ -167,6 +167,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.StringVar(&opts.Format, "format", "jpeg", "Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl")
 	convert.StringVar(&opts.Archive, "archive", "zip", "Archive format, valid values are zip, tar")
 	convert.IntVar(&opts.Quality, "quality", 75, "Image quality")
+	convert.IntVar(&opts.Effort, "effort", -1, "Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-10), -1 uses the format default")
 	convert.IntVar(&opts.Filter, "filter", 2, "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos")
 	convert.BoolVar(&opts.NoCover, "no-cover", false, "Do not convert the cover image")
 	convert.BoolVar(&opts.NoRGB, "no-rgb", false, "Do not convert images that have RGB colorspace")
@@ -188,6 +189,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	cover.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
 	cover.StringVar(&opts.Format, "format", "jpeg", "Image format, valid values are jpeg, png, tiff, bmp, webp, avif")
 	cover.IntVar(&opts.Quality, "quality", 75, "Image quality")
+	cover.IntVar(&opts.Effort, "effort", -1, "Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-10), -1 uses the format default")
 	cover.IntVar(&opts.Filter, "filter", 2, "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos")
 	cover.StringVar(&opts.OutDir, "outdir", ".", "Output directory")
 	cover.IntVar(&opts.Size, "size", 0, "Process only files larger than size (in MB)")
@@ -218,7 +220,7 @@ func parseFlags() (cbconvert.Options, []string) {
 		fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
 		fmt.Fprintf(os.Stderr, "\nCommands:\n")
 		fmt.Fprintf(os.Stderr, "\n  convert\n    \tConvert archive or document\n\n")
-		order := []string{"width", "height", "fit", "format", "archive", "quality", "filter", "no-cover", "no-rgb",
+		order := []string{"width", "height", "fit", "format", "archive", "quality", "effort", "filter", "no-cover", "no-rgb",
 			"no-nonimage", "no-convert", "grayscale", "rotate", "brightness", "contrast", "suffix", "outdir", "size", "recursive", "quiet"}
 		for _, name := range order {
 			f := convert.Lookup(name)
@@ -226,7 +228,7 @@ func parseFlags() (cbconvert.Options, []string) {
 			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		}
 		fmt.Fprintf(os.Stderr, "\n  cover\n    \tExtract cover\n\n")
-		order = []string{"width", "height", "fit", "format", "quality", "filter", "outdir", "size", "recursive", "quiet"}
+		order = []string{"width", "height", "fit", "format", "quality", "effort", "filter", "outdir", "size", "recursive", "quiet"}
 		for _, name := range order {
 			f := cover.Lookup(name)
 			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
@@ -297,7 +299,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	return opts, args
 }
 
-// piped checks if we have a piped stdin.
+// piped checks if we have piped stdin.
 func piped() bool {
 	f, err := os.Stdin.Stat()
 	if err != nil {
@@ -311,7 +313,7 @@ func piped() bool {
 	return true
 }
 
-// lines returns slice of lines from reader.
+// lines returns slice of lines from the reader.
 func lines(r io.Reader) []string {
 	data := make([]string, 0)
 	scanner := bufio.NewScanner(r)

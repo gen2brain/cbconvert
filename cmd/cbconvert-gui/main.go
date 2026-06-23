@@ -140,6 +140,12 @@ func options() cbconvert.Options {
 	opts.Fit = iup.GetHandle("Fit").GetAttribute("VALUE") == "ON"
 	opts.Filter = iup.GetHandle("Filter").GetInt("VALUE") - 1
 	opts.Quality = iup.GetHandle("Quality").GetInt("VALUE")
+	switch opts.Format {
+	case "webp", "avif", "jxl":
+		opts.Effort = iup.GetHandle("Effort").GetInt("VALUE")
+	default:
+		opts.Effort = -1
+	}
 	opts.Grayscale = iup.GetHandle("Grayscale").GetAttribute("VALUE") == "ON"
 	opts.Brightness = iup.GetHandle("Brightness").GetInt("VALUE")
 	opts.Contrast = iup.GetHandle("Contrast").GetInt("VALUE")
@@ -200,11 +206,43 @@ func setActive() {
 		iup.GetHandle("VboxQuality").SetAttribute("ACTIVE", "NO")
 	}
 
+	if (opts.Format == "webp" || opts.Format == "avif" || opts.Format == "jxl") && !opts.NoConvert {
+		iup.GetHandle("VboxEffort").SetAttribute("ACTIVE", "YES")
+	} else {
+		iup.GetHandle("VboxEffort").SetAttribute("ACTIVE", "NO")
+	}
+
 	if opts.Width != 0 && opts.Height != 0 && !opts.NoConvert {
 		iup.GetHandle("Fit").SetAttribute("ACTIVE", "YES")
 	} else {
 		iup.GetHandle("Fit").SetAttribute("ACTIVE", "NO")
 	}
+}
+
+func setEffort(format string) {
+	val := iup.GetHandle("Effort")
+
+	var name string
+
+	switch format {
+	case "webp":
+		val.SetAttributes("MIN=0, MAX=6, SHOWTICKS=7, VALUE=4")
+		val.SetAttribute("TIP", "WEBP method, higher is better/slower (0-6, default 4)")
+		name = "Method"
+	case "avif":
+		val.SetAttributes("MIN=0, MAX=10, SHOWTICKS=11, VALUE=10")
+		val.SetAttribute("TIP", "AVIF speed, higher is faster/worse (0-10, default 10)")
+		name = "Speed"
+	case "jxl":
+		val.SetAttributes("MIN=1, MAX=10, SHOWTICKS=10, VALUE=7")
+		val.SetAttribute("TIP", "JXL effort, higher is better/slower (1-10, default 7)")
+		name = "Effort"
+	default:
+		return
+	}
+
+	val.SetAttribute("EFFORTNAME", name)
+	iup.GetHandle("LabelEffort").SetAttribute("TITLE", fmt.Sprintf("%s: %d", name, val.GetInt("VALUE")))
 }
 
 func layout() iup.Ihandle {
@@ -409,6 +447,7 @@ func tabs() iup.Ihandle {
 				"7":        "JXL",
 			}).SetHandle("Format").
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+					setEffort(strings.ToLower(ih.GetAttribute("VALUESTRING")))
 					setActive()
 					previewPost()
 
@@ -494,6 +533,25 @@ func tabs() iup.Ihandle {
 					return iup.DEFAULT
 				})),
 		).SetHandle("VboxQuality"),
+		iup.Vbox(
+			iup.Label("").SetHandle("LabelEffort"),
+			iup.Val("").SetAttributes(`MIN=0, MAX=10, VALUE=0, SHOWTICKS=11`).SetHandle("Effort").
+				SetAttribute("TIP", "Encoder speed/effort (WEBP, AVIF, JXL)").
+				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+					iup.GetHandle("LabelEffort").SetAttribute("TITLE", fmt.Sprintf("%s: %d", ih.GetAttribute("EFFORTNAME"), ih.GetInt("VALUE")))
+					ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
+
+					return iup.DEFAULT
+				})).
+				SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
+					if ih.GetAttribute("MYVALUE") != "" {
+						previewPost()
+					}
+					ih.SetAttribute("MYVALUE", "")
+
+					return iup.DEFAULT
+				})),
+		).SetHandle("VboxEffort"),
 		iup.Vbox(
 			iup.Toggle(" Grayscale").SetHandle("Grayscale").
 				SetAttributes(`TIP="Convert images to grayscale (monochromatic)"`).
