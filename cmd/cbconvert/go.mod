@@ -3,16 +3,16 @@ module github.com/gen2brain/cbconvert/cmd/cbconvert
 go 1.26
 
 require (
-	github.com/gen2brain/cbconvert v1.1.0
+	github.com/gen2brain/cbconvert v1.0.5-0.20260623161611-a5817c3ba5de
 	github.com/schollz/progressbar/v3 v3.19.0
 )
 
 require (
 	github.com/STARRY-S/zip v0.2.3 // indirect
-	github.com/andybalholm/brotli v1.2.0 // indirect
+	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/anthonynsimon/bild v0.15.0 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
-	github.com/bodgit/sevenzip v1.6.1 // indirect
+	github.com/bodgit/sevenzip v1.6.4 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707 // indirect
 	github.com/dsoprea/go-exif/v2 v2.0.0-20230826092837-6579e82b732d // indirect
@@ -22,31 +22,32 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
 	github.com/fvbommel/sortorder v1.1.0 // indirect
-	github.com/gen2brain/avif v0.5.0 // indirect
+	github.com/gen2brain/avif v0.5.1 // indirect
 	github.com/gen2brain/go-fitz v1.24.15 // indirect
 	github.com/gen2brain/jpegli v0.4.0 // indirect
-	github.com/gen2brain/jpegxl v0.5.0 // indirect
-	github.com/gen2brain/webp v0.6.0 // indirect
+	github.com/gen2brain/jpegxl v0.5.1 // indirect
+	github.com/gen2brain/webp v0.6.1 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
-	github.com/golang/geo v0.0.0-20260612074446-f1a45663b0f3 // indirect
+	github.com/golang/geo v0.0.0-20260622181633-f80708c60e82 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25 // indirect
 	github.com/jupiterrider/ffi v0.7.0 // indirect
-	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/mholt/archives v0.1.5 // indirect
 	github.com/mikelolasagasti/xz v1.0.1 // indirect
-	github.com/minio/minlz v1.0.1 // indirect
+	github.com/minio/minlz v1.1.1 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
-	github.com/nwaples/rardecode/v2 v2.2.0 // indirect
-	github.com/pierrec/lz4/v4 v4.1.22 // indirect
+	github.com/nwaples/rardecode/v2 v2.2.5 // indirect
+	github.com/pierrec/lz4/v4 v4.1.27 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sorairolake/lzip-go v0.3.8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
+	github.com/stangelandcl/ppmd v0.1.1 // indirect
 	github.com/tetratelabs/wazero v1.12.0 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
-	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
+	go4.org v0.0.0-20260112195520-a5071408f32f // indirect
 	golang.org/x/image v0.43.0 // indirect
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
