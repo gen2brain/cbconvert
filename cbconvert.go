@@ -87,7 +87,7 @@ type Converter struct {
 	Workdir string
 	// Number of files
 	Nfiles int
-	// Index of current file
+	// Index of the current file
 	CurrFile int
 	// Number of contents in archive/document
 	Ncontents int
@@ -486,7 +486,7 @@ func (c *Converter) Preview(fileName string, fileInfo os.FileInfo, width, height
 	return img, nil
 }
 
-// Convert converts comic book.
+// Convert converts a comic book.
 func (c *Converter) Convert(fileName string, fileInfo os.FileInfo) error {
 	c.CurrFile++
 

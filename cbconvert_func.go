@@ -59,7 +59,7 @@ func imagesFromSlice(files []string) []string {
 	return images
 }
 
-// isArchive checks if file is archive.
+// isArchive checks if a file is archive.
 func isArchive(f string) bool {
 	var types = []string{".rar", ".zip", ".7z", ".tar", ".cbr", ".cbz", ".cb7", ".cbt"}
 	for _, t := range types {

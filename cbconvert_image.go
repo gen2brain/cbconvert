@@ -22,7 +22,7 @@ const (
 	mitchellNetravali
 	// CatmullRom is a sharp bicubic filter.
 	catmullRom
-	// Gaussian is a blurring filter that uses gaussian function, useful for noise removal.
+	// Gaussian is a blurring filter, which uses gaussian function, useful for noise removal.
 	gaussian
 	// Lanczos is a high-quality resampling filter, it's slower than cubic filters.
 	lanczos
@@ -124,7 +124,7 @@ func imageToGray(src image.Image) *image.Gray {
 	return dst
 }
 
-// isGrayScale checks if image is grayscale.
+// isGrayScale checks if the image is grayscale.
 func isGrayScale(img image.Image) bool {
 	model := img.ColorModel()
 	if model == color.GrayModel || model == color.Gray16Model {
@@ -135,29 +135,29 @@ func isGrayScale(img image.Image) bool {
 }
 
 var colors16 = []color.Color{
-	color.RGBA{0, 0, 0, 255},
-	color.RGBA{17, 17, 17, 255},
-	color.RGBA{34, 34, 34, 255},
-	color.RGBA{51, 51, 51, 255},
-	color.RGBA{68, 68, 68, 255},
-	color.RGBA{85, 85, 85, 255},
-	color.RGBA{102, 102, 102, 255},
-	color.RGBA{119, 119, 119, 255},
-	color.RGBA{136, 136, 136, 255},
-	color.RGBA{153, 153, 153, 255},
-	color.RGBA{170, 170, 170, 255},
-	color.RGBA{187, 187, 187, 255},
-	color.RGBA{204, 204, 204, 255},
-	color.RGBA{221, 221, 221, 255},
-	color.RGBA{238, 238, 238, 255},
-	color.RGBA{255, 255, 255, 255},
+	color.RGBA{A: 255},
+	color.RGBA{R: 17, G: 17, B: 17, A: 255},
+	color.RGBA{R: 34, G: 34, B: 34, A: 255},
+	color.RGBA{R: 51, G: 51, B: 51, A: 255},
+	color.RGBA{R: 68, G: 68, B: 68, A: 255},
+	color.RGBA{R: 85, G: 85, B: 85, A: 255},
+	color.RGBA{R: 102, G: 102, B: 102, A: 255},
+	color.RGBA{R: 119, G: 119, B: 119, A: 255},
+	color.RGBA{R: 136, G: 136, B: 136, A: 255},
+	color.RGBA{R: 153, G: 153, B: 153, A: 255},
+	color.RGBA{R: 170, G: 170, B: 170, A: 255},
+	color.RGBA{R: 187, G: 187, B: 187, A: 255},
+	color.RGBA{R: 204, G: 204, B: 204, A: 255},
+	color.RGBA{R: 221, G: 221, B: 221, A: 255},
+	color.RGBA{R: 238, G: 238, B: 238, A: 255},
+	color.RGBA{R: 255, G: 255, B: 255, A: 255},
 }
 
 // imageToPaletted converts an image.Image to *image.Paletted using 16-color palette.
 func imageToPaletted(src image.Image) *image.Paletted {
 	b := src.Bounds()
 	dst := image.NewPaletted(b, colors16)
-	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
+	draw.FloydSteinberg.Draw(dst, b, imageToGray(src), b.Min)
 
 	return dst
 }

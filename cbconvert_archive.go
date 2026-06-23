@@ -336,7 +336,7 @@ func (c *Converter) archiveSetComment(fileName, commentBody string) error {
 	return nil
 }
 
-// archiveFileAdd adds file to archive.
+// archiveFileAdd adds a file to the archive.
 func (c *Converter) archiveFileAdd(fileName, newFileName string) error {
 	zr, err := zip.OpenReader(fileName)
 	if err != nil {
