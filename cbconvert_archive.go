@@ -196,6 +196,27 @@ func archiveOpen(ctx context.Context, fileName string) (io.ReadCloser, archives.
 	return file, ex, input, nil
 }
 
+// FileType returns the detected archive container, document extension, or "DIR".
+func FileType(path string) string {
+	if isArchive(path) {
+		file, err := os.Open(path)
+		if err == nil {
+			defer file.Close()
+
+			format, _, err := archives.Identify(context.Background(), path, file)
+			if err == nil {
+				return strings.ToUpper(strings.TrimPrefix(format.Extension(), "."))
+			}
+		}
+	}
+
+	if info, err := os.Stat(path); err == nil && info.IsDir() {
+		return "DIR"
+	}
+
+	return strings.ToUpper(strings.TrimPrefix(filepath.Ext(path), "."))
+}
+
 // archiveList lists contents of archive.
 func (c *Converter) archiveList(fileName string) ([]string, error) {
 	var contents []string

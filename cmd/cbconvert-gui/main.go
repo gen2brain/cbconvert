@@ -71,11 +71,12 @@ func main() {
 
 	iup.SetGlobal("UTF8MODE", "YES")
 	iup.SetGlobal("UTF8MODE_FILE", "YES")
+	iup.SetGlobal("AUTODARKMODE", "YES")
 
 	img, _ := png.Decode(bytes.NewReader(appLogo))
 	iup.ImageFromImage(img).SetHandle("logo")
 
-	dlg := iup.Dialog(layout()).SetAttributes(fmt.Sprintf(`TITLE="CBconvert %s", ICON=logo`, appVersion)).SetHandle("dlg")
+	dlg := iup.Dialog(layout()).SetAttributes(fmt.Sprintf(`TITLE="CBconvert %s", ICON=logo, SHRINK=YES`, appVersion)).SetHandle("dlg")
 
 	dlg.SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(func(ih iup.Ihandle, s string, i int, p any) int {
 		sp := strings.Split(s, ": ")
@@ -91,6 +92,20 @@ func main() {
 		iup.Refresh(ih)
 
 		previewPost()
+
+		return iup.DEFAULT
+	}))
+
+	dlg.SetCallback("THEMECHANGED_CB", iup.ThemeChangedFunc(func(ih iup.Ihandle, darkMode int) int {
+		t := iup.GetHandle("Table")
+		if darkMode == 1 {
+			t.SetAttribute("EVENROWCOLOR", "#3A3A3A")
+			t.SetAttribute("ODDROWCOLOR", "#2D2D2D")
+		} else {
+			t.SetAttribute("EVENROWCOLOR", "#F0F0F0")
+			t.SetAttribute("ODDROWCOLOR", "#FFFFFF")
+		}
+		t.SetAttribute("REDRAW", "YES")
 
 		return iup.DEFAULT
 	}))
@@ -157,7 +172,7 @@ func options() cbconvert.Options {
 
 func setActive() {
 	opts := options()
-	count := iup.GetHandle("List").GetInt("COUNT")
+	count := iup.GetHandle("Table").GetInt("NUMLIN")
 
 	if count == 0 {
 		iup.GetHandle("Remove").SetAttribute("ACTIVE", "NO")
@@ -277,46 +292,104 @@ func layout() iup.Ihandle {
 }
 
 func list() iup.Ihandle {
-	return iup.Vbox(
-		iup.List().SetAttributes("EXPAND=YES, VISIBLECOLUMNS=16, VISIBLELINES=5").SetHandle("List").
-			SetCallback("ACTION", iup.ListActionFunc(func(ih iup.Ihandle, text string, item int, state int) int {
-				if state == 1 {
-					index = item - 1
-					setActive()
-					previewPost()
-				}
+	t := iup.Table().SetHandle("Table")
+	t.SetAttributes(map[string]string{
+		"EXPAND":         "YES",
+		"NUMCOL":         "3",
+		"NUMLIN":         "0",
+		"TITLE1":         "Title",
+		"TITLE2":         "Type",
+		"TITLE3":         "Size (MiB)",
+		"WIDTH1":         "150",
+		"WIDTH2":         "50",
+		"WIDTH3":         "100",
+		"ALIGNMENT2":     "ACENTER",
+		"ALIGNMENT3":     "ARIGHT",
+		"SELECTIONMODE":  "SINGLE",
+		"USERRESIZE":     "YES",
+		"STRETCHLAST":    "NO",
+		"FOCUSRECT":      "NO",
+		"SORTABLE":       "YES",
+		"ALTERNATECOLOR": "YES",
+	})
 
-				return iup.DEFAULT
-			})).
-			SetCallback("DROPFILES_CB", iup.DropFilesFunc(func(ih iup.Ihandle, fileName string, num, x, y int) int {
-				dec, err := url.QueryUnescape(fileName)
-				if err != nil {
-					iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
-					fmt.Println(err)
+	if iup.GetGlobal("DARKMODE") == "YES" && iup.GetGlobal("AUTODARKMODE") == "YES" {
+		t.SetAttribute("EVENROWCOLOR", "#3A3A3A")
+		t.SetAttribute("ODDROWCOLOR", "#2D2D2D")
+	} else {
+		t.SetAttribute("EVENROWCOLOR", "#F0F0F0")
+		t.SetAttribute("ODDROWCOLOR", "#FFFFFF")
+	}
 
-					return iup.DEFAULT
-				}
+	t.SetCallback("ENTERITEM_CB", iup.EnterItemFunc(func(ih iup.Ihandle, lin, col int) int {
+		index = lin - 1
+		setActive()
+		previewPost()
 
-				conv := cbconvert.New(options())
+		return iup.DEFAULT
+	}))
 
-				fs, err := conv.Files([]string{dec})
-				if err != nil {
-					iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
-					fmt.Println(err)
+	t.SetCallback("DROPFILES_CB", iup.DropFilesFunc(func(ih iup.Ihandle, fileName string, num, x, y int) int {
+		dec, err := url.QueryUnescape(fileName)
+		if err != nil {
+			iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
+			fmt.Println(err)
 
-					return iup.DEFAULT
-				}
+			return iup.DEFAULT
+		}
 
-				for _, file := range fs {
-					iup.SetAttribute(iup.GetHandle("List"), "APPENDITEM", fmt.Sprintf("%s (%s)", file.Name, file.SizeHuman))
-					files = append(files, file)
-				}
+		conv := cbconvert.New(options())
 
-				setActive()
+		fs, err := conv.Files([]string{dec})
+		if err != nil {
+			iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
+			fmt.Println(err)
 
-				return iup.DEFAULT
-			})),
-	)
+			return iup.DEFAULT
+		}
+
+		wasEmpty := len(files) == 0
+
+		for _, file := range fs {
+			appendFile(file)
+		}
+
+		if wasEmpty && len(files) > 0 {
+			selectRow(0)
+		}
+
+		setActive()
+
+		if wasEmpty {
+			previewPost()
+		}
+
+		return iup.DEFAULT
+	}))
+
+	return iup.Vbox(t)
+}
+
+// selectRow focuses and selects the given 0-based row in the table.
+func selectRow(i int) {
+	if i < 0 || i >= len(files) {
+		return
+	}
+
+	index = i
+	iup.GetHandle("Table").SetAttribute("FOCUSCELL", fmt.Sprintf("%d:1", i+1))
+}
+
+// appendFile adds a file as a new row to the table and the files slice.
+func appendFile(file cbconvert.File) {
+	files = append(files, file)
+
+	t := iup.GetHandle("Table")
+	lin := len(files)
+	t.SetAttribute("NUMLIN", strconv.Itoa(lin))
+	iup.SetAttributeId2(t, "", lin, 1, file.Name)
+	iup.SetAttributeId2(t, "", lin, 2, cbconvert.FileType(file.Path))
+	iup.SetAttributeId2(t, "", lin, 3, strconv.FormatFloat(float64(file.Stat.Size())/(1024*1024), 'f', 2, 64))
 }
 
 func previewPost() {
@@ -721,7 +794,7 @@ func status() iup.Ihandle {
 					ih.SetAttributes("VALUE=0, VISIBLE=YES")
 					ih.SetAttribute("MAX", conv.Ncontents)
 
-					iup.GetHandle("List").SetAttributes("ACTIVE=NO")
+					iup.GetHandle("Table").SetAttributes("ACTIVE=NO")
 					iup.GetHandle("Tabs").SetAttributes("ACTIVE=NO")
 					iup.GetHandle("Buttons").SetAttributes("ACTIVE=NO")
 
@@ -735,7 +808,7 @@ func status() iup.Ihandle {
 					ih.SetAttributes("VALUE=0, VISIBLE=YES")
 					ih.SetAttribute("MAX", conv.Nfiles)
 
-					iup.GetHandle("List").SetAttributes("ACTIVE=NO")
+					iup.GetHandle("Table").SetAttributes("ACTIVE=NO")
 					iup.GetHandle("Tabs").SetAttributes("ACTIVE=NO")
 					iup.GetHandle("Buttons").SetAttributes("ACTIVE=NO")
 
@@ -753,7 +826,7 @@ func status() iup.Ihandle {
 
 					iup.Refresh(iup.GetHandle("StatusBar"))
 				case "finish":
-					iup.GetHandle("List").SetAttributes("ACTIVE=YES")
+					iup.GetHandle("Table").SetAttributes("ACTIVE=YES")
 					iup.GetHandle("Tabs").SetAttributes("ACTIVE=YES")
 					iup.GetHandle("Buttons").SetAttributes("ACTIVE=YES")
 
@@ -806,12 +879,21 @@ func onAddFiles(ih iup.Ihandle) int {
 			return iup.DEFAULT
 		}
 
+		wasEmpty := len(files) == 0
+
 		for _, file := range fs {
-			iup.SetAttribute(iup.GetHandle("List"), "APPENDITEM", fmt.Sprintf("%s (%s)", file.Name, file.SizeHuman))
-			files = append(files, file)
+			appendFile(file)
+		}
+
+		if wasEmpty && len(files) > 0 {
+			selectRow(0)
 		}
 
 		setActive()
+
+		if wasEmpty {
+			previewPost()
+		}
 	}
 
 	return iup.DEFAULT
@@ -837,30 +919,40 @@ func onAddDir(ih iup.Ihandle) int {
 			return iup.DEFAULT
 		}
 
+		wasEmpty := len(files) == 0
+
 		for _, file := range fs {
-			iup.SetAttribute(iup.GetHandle("List"), "APPENDITEM", fmt.Sprintf("%s (%s)", file.Name, file.SizeHuman))
-			files = append(files, file)
+			appendFile(file)
+		}
+
+		if wasEmpty && len(files) > 0 {
+			selectRow(0)
 		}
 
 		setActive()
+
+		if wasEmpty {
+			previewPost()
+		}
 	}
 
 	return iup.DEFAULT
 }
 
 func onRemove(ih iup.Ihandle) int {
-	if index == -1 || len(files) == 0 {
+	if index < 0 || index >= len(files) {
 		return iup.IGNORE
 	}
 
-	if len(files) == 1 {
-		files = make([]cbconvert.File, 0)
-	} else {
-		files = slices.Delete(files, index, index)
+	iup.GetHandle("Table").SetAttribute("DELLIN", strconv.Itoa(index+1))
+	files = slices.Delete(files, index, index+1)
+
+	if index >= len(files) {
+		index = len(files) - 1
 	}
 
-	iup.GetHandle("List").SetAttribute("REMOVEITEM", iup.GetHandle("List").GetAttribute("VALUE"))
 	setActive()
+	previewPost()
 
 	return iup.DEFAULT
 }
@@ -869,7 +961,7 @@ func onRemoveAll(ih iup.Ihandle) int {
 	index = -1
 	files = make([]cbconvert.File, 0)
 
-	iup.GetHandle("List").SetAttribute("REMOVEITEM", "ALL")
+	iup.GetHandle("Table").SetAttribute("NUMLIN", "0")
 	setActive()
 
 	return iup.DEFAULT
