@@ -27,6 +27,8 @@ type Options struct {
 	Quality int
 	// Encoder speed/effort, format-specific: webp method 0-6, avif speed 0-10, jxl effort 1-10; -1 uses the format default
 	Effort int
+	// Lossless enables lossless compression (webp, avif, jxl), ignores quality
+	Lossless bool
 	// Image width
 	Width int
 	// Image height

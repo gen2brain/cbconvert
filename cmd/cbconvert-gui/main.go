@@ -146,6 +146,7 @@ func options() cbconvert.Options {
 	default:
 		opts.Effort = -1
 	}
+	opts.Lossless = iup.GetHandle("Lossless").GetAttribute("VALUE") == "ON"
 	opts.Grayscale = iup.GetHandle("Grayscale").GetAttribute("VALUE") == "ON"
 	opts.Brightness = iup.GetHandle("Brightness").GetInt("VALUE")
 	opts.Contrast = iup.GetHandle("Contrast").GetInt("VALUE")
@@ -171,24 +172,30 @@ func setActive() {
 		iup.GetHandle("RemoveAll").SetAttribute("ACTIVE", "YES")
 	}
 
-	if opts.OutDir == "" {
-		iup.GetHandle("Thumbnail").SetAttributes(`ACTIVE=NO`)
-		iup.GetHandle("Cover").SetAttributes(`ACTIVE=NO`)
-		iup.GetHandle("Convert").SetAttributes(`ACTIVE=NO`)
-		if count > 0 {
-			iup.GetHandle("Thumbnail").SetAttributes(`ACTIVE=NO, TIP="Set Output Directory"`)
-			iup.GetHandle("Cover").SetAttributes(`ACTIVE=NO, TIP="Set Output Directory"`)
-			iup.GetHandle("Convert").SetAttributes(`ACTIVE=NO, TIP="Set Output Directory"`)
-		}
-	} else {
-		if count > 0 {
-			iup.GetHandle("Thumbnail").SetAttributes(`ACTIVE=YES, TIP=""`)
-			iup.GetHandle("Cover").SetAttributes(`ACTIVE=YES, TIP=""`)
-			iup.GetHandle("Convert").SetAttributes(`ACTIVE=YES, TIP=""`)
+	active := "YES"
+	var tip string
+	switch {
+	case count == 0 && opts.OutDir == "":
+		active, tip = "NO", "Add files and set output directory"
+	case count == 0:
+		active, tip = "NO", "Add files"
+	case opts.OutDir == "":
+		active, tip = "NO", "Set output directory"
+	}
+
+	enabledTip := map[string]string{
+		"Thumbnail": "Extract cover thumbnails",
+		"Cover":     "Extract covers",
+		"Convert":   "Convert files to the selected format",
+	}
+
+	for _, h := range []string{"Thumbnail", "Cover", "Convert"} {
+		b := iup.GetHandle(h)
+		b.SetAttribute("ACTIVE", active)
+		if active == "YES" {
+			b.SetAttribute("TIP", enabledTip[h])
 		} else {
-			iup.GetHandle("Thumbnail").SetAttributes(`ACTIVE=NO`)
-			iup.GetHandle("Cover").SetAttributes(`ACTIVE=NO`)
-			iup.GetHandle("Convert").SetAttributes(`ACTIVE=NO`)
+			b.SetAttribute("TIP", tip)
 		}
 	}
 
@@ -200,16 +207,21 @@ func setActive() {
 		iup.GetHandle("VboxTransform").SetAttribute("ACTIVE", "YES")
 	}
 
-	if (opts.Format == "jpeg" || opts.Format == "webp" || opts.Format == "avif" || opts.Format == "jxl") && !opts.NoConvert {
+	canLossless := opts.Format == "webp" || opts.Format == "avif" || opts.Format == "jxl"
+	losslessOn := canLossless && opts.Lossless
+
+	if (opts.Format == "jpeg" || canLossless) && !opts.NoConvert && !losslessOn {
 		iup.GetHandle("VboxQuality").SetAttribute("ACTIVE", "YES")
 	} else {
 		iup.GetHandle("VboxQuality").SetAttribute("ACTIVE", "NO")
 	}
 
-	if (opts.Format == "webp" || opts.Format == "avif" || opts.Format == "jxl") && !opts.NoConvert {
+	if canLossless && !opts.NoConvert {
 		iup.GetHandle("VboxEffort").SetAttribute("ACTIVE", "YES")
+		iup.GetHandle("Lossless").SetAttribute("ACTIVE", "YES")
 	} else {
 		iup.GetHandle("VboxEffort").SetAttribute("ACTIVE", "NO")
+		iup.GetHandle("Lossless").SetAttribute("ACTIVE", "NO")
 	}
 
 	if opts.Width != 0 && opts.Height != 0 && !opts.NoConvert {
@@ -243,6 +255,7 @@ func setEffort(format string) {
 
 	val.SetAttribute("EFFORTNAME", name)
 	iup.GetHandle("LabelEffort").SetAttribute("TITLE", fmt.Sprintf("%s: %d", name, val.GetInt("VALUE")))
+	iup.Refresh(iup.GetHandle("LabelEffort"))
 }
 
 func layout() iup.Ihandle {
@@ -401,7 +414,7 @@ func tabs() iup.Ihandle {
 				SetAttributes(`TIP="Process only files larger than minimum size"`),
 		),
 		iup.Space().SetAttributes("EXPAND=HORIZONTAL"),
-	).SetHandle("VboxInput").SetAttributes("MARGIN=5x5, GAP=5")
+	).SetHandle("VboxInput").SetAttributes("NGAP=10")
 
 	vboxOutput := iup.Vbox(
 		iup.Vbox(
@@ -430,37 +443,103 @@ func tabs() iup.Ihandle {
 				"2":        "TAR",
 			}).SetHandle("Archive"),
 		),
-	).SetHandle("VboxOutput").SetAttributes("MARGIN=5x5, GAP=5")
+	).SetHandle("VboxOutput").SetAttributes("NGAP=10")
 
-	vboxImage := iup.Vbox(
+	vboxImage := iup.Hbox(
 		iup.Vbox(
-			iup.Label("Format:"),
-			iup.List().SetAttributes(map[string]string{
-				"DROPDOWN": "YES",
-				"VALUE":    "1",
-				"1":        "JPEG",
-				"2":        "PNG",
-				"3":        "TIFF",
-				"4":        "BMP",
-				"5":        "WEBP",
-				"6":        "AVIF",
-				"7":        "JXL",
-			}).SetHandle("Format").
-				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-					setEffort(strings.ToLower(ih.GetAttribute("VALUESTRING")))
-					setActive()
-					previewPost()
-
-					return iup.DEFAULT
-				})),
-		),
-		iup.Vbox(
-			iup.Label("Size:"),
-			iup.Hbox(
-				iup.Text().SetAttributes(`CUEBANNER=" width", VISIBLECOLUMNS=4, MASK="/d*"`).SetHandle("Width").
-					SetAttribute("TIP", "If one of, width or height is not set, the image aspect ratio is preserved").
+			iup.Vbox(
+				iup.Label("Format:"),
+				iup.List().SetAttributes(map[string]string{
+					"DROPDOWN": "YES",
+					"VALUE":    "1",
+					"1":        "JPEG",
+					"2":        "PNG",
+					"3":        "TIFF",
+					"4":        "BMP",
+					"5":        "WEBP",
+					"6":        "AVIF",
+					"7":        "JXL",
+				}).SetHandle("Format").
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+						setEffort(strings.ToLower(ih.GetAttribute("VALUESTRING")))
 						setActive()
+						previewPost()
+
+						return iup.DEFAULT
+					})),
+			),
+			iup.Vbox(
+				iup.Label("Size:"),
+				iup.Hbox(
+					iup.Text().SetAttributes(`CUEBANNER="width", VISIBLECOLUMNS=6, MASK="/d*"`).SetHandle("Width").
+						SetAttribute("TIP", "If one of, width or height is not set, the image aspect ratio is preserved").
+						SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+							setActive()
+							ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
+
+							return iup.DEFAULT
+						})).
+						SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
+							if ih.GetAttribute("MYVALUE") != "" {
+								previewPost()
+							}
+							ih.SetAttribute("MYVALUE", "")
+
+							return iup.DEFAULT
+						})),
+					iup.Space().SetAttribute("SIZE", "2"),
+					iup.Label("x"),
+					iup.Space().SetAttribute("SIZE", "2"),
+					iup.Text().SetAttributes(`CUEBANNER="height", VISIBLECOLUMNS=6, MASK="/d*"`).SetHandle("Height").
+						SetAttribute("TIP", "If one of, width or height is not set, the image aspect ratio is preserved").
+						SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+							setActive()
+							ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
+
+							return iup.DEFAULT
+						})).
+						SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
+							if ih.GetAttribute("MYVALUE") != "" {
+								previewPost()
+							}
+							ih.SetAttribute("MYVALUE", "")
+
+							return iup.DEFAULT
+						})),
+				).SetAttributes("ALIGNMENT=ACENTER, NMARGIN=0"),
+			),
+			iup.Vbox(
+				iup.Toggle(" Best Fit").SetHandle("Fit").
+					SetAttributes(`TIP="Best fit for required width and height"`),
+			),
+			iup.Vbox(
+				iup.Label("Resize Filter:"),
+				iup.List().SetAttributes(map[string]string{
+					"DROPDOWN": "YES",
+					"VALUE":    "3",
+					"TIP":      "Linear is the bilinear filter, smooth and reasonably fast",
+					"1":        "NearestNeighbor",
+					"2":        "Box",
+					"3":        "Linear",
+					"4":        "MitchellNetravali",
+					"5":        "CatmullRom",
+					"6":        "Gaussian",
+					"7":        "Lanczos",
+				}).SetHandle("Filter").SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(onFilterChanged)),
+			),
+		).SetAttributes("NGAP=10"),
+		iup.Space().SetAttribute("SIZE", "15"),
+		iup.Vbox(
+			iup.Vbox(
+				iup.Hbox(
+					iup.Label("Quality: "),
+					iup.Label("75").SetHandle("LabelQuality"),
+				).SetAttributes("NMARGIN=0"),
+				iup.Val("").SetAttributes(`MIN=0, MAX=100, VALUE=75, SHOWTICKS=10`).SetHandle("Quality").
+					SetAttribute("TIP", "Quality affects JPEG, WEBP, AVIF and JXL").
+					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+						iup.GetHandle("LabelQuality").SetAttribute("TITLE", ih.GetInt("VALUE"))
+						iup.Refresh(iup.GetHandle("LabelQuality"))
 						ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
 
 						return iup.DEFAULT
@@ -473,11 +552,14 @@ func tabs() iup.Ihandle {
 
 						return iup.DEFAULT
 					})),
-				iup.Label("x"),
-				iup.Text().SetAttributes(`CUEBANNER=" height", VISIBLECOLUMNS=4, MASK="/d*"`).SetHandle("Height").
-					SetAttribute("TIP", "If one of, width or height is not set, the image aspect ratio is preserved").
+			).SetHandle("VboxQuality"),
+			iup.Vbox(
+				iup.Label("Effort:").SetHandle("LabelEffort"),
+				iup.Val("").SetAttributes(`MIN=0, MAX=10, VALUE=0, SHOWTICKS=11`).SetHandle("Effort").
+					SetAttribute("TIP", "Encoder speed/effort (WEBP, AVIF, JXL)").
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-						setActive()
+						iup.GetHandle("LabelEffort").SetAttribute("TITLE", fmt.Sprintf("%s: %d", ih.GetAttribute("EFFORTNAME"), ih.GetInt("VALUE")))
+						iup.Refresh(iup.GetHandle("LabelEffort"))
 						ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
 
 						return iup.DEFAULT
@@ -490,89 +572,40 @@ func tabs() iup.Ihandle {
 
 						return iup.DEFAULT
 					})),
-			).SetAttributes("ALIGNMENT=ACENTER, MARGIN=0"),
-		),
-		iup.Vbox(
-			iup.Toggle(" Best Fit").SetHandle("Fit").
-				SetAttributes(`TIP="Best fit for required width and height"`),
-		),
-		iup.Vbox(
-			iup.Label("Resize Filter:"),
-			iup.List().SetAttributes(map[string]string{
-				"DROPDOWN": "YES",
-				"VALUE":    "3",
-				"TIP":      "Linear is the bilinear filter, smooth and reasonably fast",
-				"1":        "NearestNeighbor",
-				"2":        "Box",
-				"3":        "Linear",
-				"4":        "MitchellNetravali",
-				"5":        "CatmullRom",
-				"6":        "Gaussian",
-				"7":        "Lanczos",
-			}).SetHandle("Filter").SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(onFilterChanged)),
-		),
-		iup.Vbox(
-			iup.Hbox(
-				iup.Label("Quality: "),
-				iup.Label("75").SetHandle("LabelQuality"),
-			).SetAttributes("MARGIN=0"),
-			iup.Val("").SetAttributes(`MIN=0, MAX=100, VALUE=75, SHOWTICKS=10`).SetHandle("Quality").
-				SetAttribute("TIP", "Quality affects JPEG, WEBP, AVIF and JXL").
-				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-					iup.GetHandle("LabelQuality").SetAttribute("TITLE", ih.GetInt("VALUE"))
-					ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-					return iup.DEFAULT
-				})).
-				SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-					if ih.GetAttribute("MYVALUE") != "" {
+			).SetHandle("VboxEffort"),
+			iup.Vbox(
+				iup.Toggle(" Lossless").SetHandle("Lossless").
+					SetAttributes(`TIP="Lossless compression (WEBP, AVIF, JXL), ignores quality"`).
+					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+						setActive()
 						previewPost()
-					}
-					ih.SetAttribute("MYVALUE", "")
 
-					return iup.DEFAULT
-				})),
-		).SetHandle("VboxQuality"),
-		iup.Vbox(
-			iup.Label("").SetHandle("LabelEffort"),
-			iup.Val("").SetAttributes(`MIN=0, MAX=10, VALUE=0, SHOWTICKS=11`).SetHandle("Effort").
-				SetAttribute("TIP", "Encoder speed/effort (WEBP, AVIF, JXL)").
-				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-					iup.GetHandle("LabelEffort").SetAttribute("TITLE", fmt.Sprintf("%s: %d", ih.GetAttribute("EFFORTNAME"), ih.GetInt("VALUE")))
-					ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-					return iup.DEFAULT
-				})).
-				SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-					if ih.GetAttribute("MYVALUE") != "" {
+						return iup.DEFAULT
+					})),
+			),
+			iup.Vbox(
+				iup.Toggle(" Grayscale").SetHandle("Grayscale").
+					SetAttributes(`TIP="Convert images to grayscale (monochromatic)"`).
+					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						previewPost()
-					}
-					ih.SetAttribute("MYVALUE", "")
 
-					return iup.DEFAULT
-				})),
-		).SetHandle("VboxEffort"),
-		iup.Vbox(
-			iup.Toggle(" Grayscale").SetHandle("Grayscale").
-				SetAttributes(`TIP="Convert images to grayscale (monochromatic)"`).
-				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-					previewPost()
-
-					return iup.DEFAULT
-				})),
-		),
-	).SetHandle("VboxImage").SetAttributes("MARGIN=5x5, GAP=5")
+						return iup.DEFAULT
+					})),
+			),
+		).SetAttributes("NGAP=10"),
+	).SetHandle("VboxImage")
 
 	vboxTransform := iup.Vbox(
 		iup.Vbox(
 			iup.Hbox(
 				iup.Label("Brightness: "),
 				iup.Label("0").SetHandle("LabelBrightness"),
-			).SetAttributes("ALIGNMENT=ACENTER, MARGIN=0"),
+			).SetAttributes("ALIGNMENT=ACENTER, NMARGIN=0"),
 			iup.Val("").SetAttributes(`MIN=-100, MAX=100, VALUE=0, SHOWTICKS=10`).SetHandle("Brightness").
 				SetAttributes(`TIP="Adjust the brightness of the images"`).
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					iup.GetHandle("LabelBrightness").SetAttribute("TITLE", iup.GetHandle("Brightness").GetInt("VALUE"))
+					iup.Refresh(iup.GetHandle("LabelBrightness"))
 					ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
 
 					return iup.DEFAULT
@@ -590,11 +623,12 @@ func tabs() iup.Ihandle {
 			iup.Hbox(
 				iup.Label("Contrast: "),
 				iup.Label("0").SetHandle("LabelContrast"),
-			).SetAttributes("ALIGNMENT=ACENTER, MARGIN=0"),
+			).SetAttributes("ALIGNMENT=ACENTER, NMARGIN=0"),
 			iup.Val("").SetAttributes(`MIN=-100, MAX=100, VALUE=0, SHOWTICKS=10`).SetHandle("Contrast").
 				SetAttributes(`TIP="Adjust the contrast of the images"`).
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					iup.GetHandle("LabelContrast").SetAttribute("TITLE", iup.GetHandle("Contrast").GetInt("VALUE"))
+					iup.Refresh(iup.GetHandle("LabelContrast"))
 					ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
 
 					return iup.DEFAULT
@@ -624,45 +658,51 @@ func tabs() iup.Ihandle {
 					return iup.DEFAULT
 				})),
 		),
-	).SetHandle("VboxTransform").SetAttributes("MARGIN=5x5, GAP=5")
+	).SetHandle("VboxTransform").SetAttributes("NGAP=10")
 
 	return iup.Tabs(
-		vboxInput.SetAttributes("TABTITLE=Input"),
-		vboxOutput.SetAttributes("TABTITLE=Output"),
-		vboxImage.SetAttributes("TABTITLE=Image"),
-		vboxTransform.SetAttributes("TABTITLE=Transform"),
-	).SetHandle("Tabs").SetAttributes("MINSIZE=320x400, EXPAND=HORIZONTAL, MULTILINE=YES")
+		vboxInput.SetAttributes("TABTITLE=Input, NMARGIN=10x10"),
+		vboxOutput.SetAttributes("TABTITLE=Output, NMARGIN=10x10"),
+		vboxImage.SetAttributes("TABTITLE=Image, NMARGIN=10x10"),
+		vboxTransform.SetAttributes("TABTITLE=Transform, NMARGIN=10x10"),
+	).SetHandle("Tabs")
 }
 
 func buttons() iup.Ihandle {
+	addFiles := iup.Button("Add &Files...").SetHandle("AddFiles").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetCallback("ACTION", iup.ActionFunc(onAddFiles))
+	addDir := iup.Button("Add &Dir...").SetHandle("AddDir").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetCallback("ACTION", iup.ActionFunc(onAddDir))
+	remove := iup.Button("Remove").SetHandle("Remove").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetCallback("ACTION", iup.ActionFunc(onRemove))
+	removeAll := iup.Button("Remove All").SetHandle("RemoveAll").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetCallback("ACTION", iup.ActionFunc(onRemoveAll))
+	thumbnail := iup.Button("Thumbnail").SetHandle("Thumbnail").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetCallback("ACTION", iup.ActionFunc(onThumbnail))
+	cover := iup.Button("Cover").SetHandle("Cover").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetCallback("ACTION", iup.ActionFunc(onCover))
+	convert := iup.Button("&Convert").SetHandle("Convert").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetCallback("ACTION", iup.ActionFunc(onConvert))
+
+	iup.Normalizer(addFiles, addDir, remove, removeAll, thumbnail, cover, convert).SetAttribute("NORMALIZE", "BOTH")
+
 	return iup.Vbox(
-		iup.Frame(
-			iup.Vbox(
-				iup.Button("Add &Files...").SetHandle("AddFiles").SetAttributes("EXPAND=HORIZONTAL, PADDING=DEFAULTBUTTONPADDING").
-					SetCallback("ACTION", iup.ActionFunc(onAddFiles)),
-				iup.Button("Add &Dir...").SetHandle("AddDir").SetAttributes("EXPAND=HORIZONTAL, PADDING=DEFAULTBUTTONPADDING").
-					SetCallback("ACTION", iup.ActionFunc(onAddDir)),
-				iup.Button("Remove").SetHandle("Remove").SetAttributes("EXPAND=HORIZONTAL, PADDING=DEFAULTBUTTONPADDING").
-					SetCallback("ACTION", iup.ActionFunc(onRemove)),
-				iup.Button("Remove All").SetHandle("RemoveAll").SetAttributes("EXPAND=HORIZONTAL, PADDING=DEFAULTBUTTONPADDING").
-					SetCallback("ACTION", iup.ActionFunc(onRemoveAll)),
-			).SetAttributes("NGAP=5"),
+		iup.Vbox(
+			addFiles,
+			addDir,
+			remove,
+			removeAll,
+		).SetAttribute("NGAP", "2"),
+		iup.Space().SetAttribute("SIZE", "x5"),
+		iup.Vbox(
+			thumbnail,
+			cover,
+		).SetAttribute("NGAP", "2"),
+		iup.Space().SetAttribute("SIZE", "x5"),
+		iup.Vbox(
+			convert,
 		),
-		iup.Frame(
-			iup.Vbox(
-				iup.Button("Thumbnail").SetHandle("Thumbnail").SetAttributes("EXPAND=HORIZONTAL, PADDING=DEFAULTBUTTONPADDING").
-					SetCallback("ACTION", iup.ActionFunc(onThumbnail)),
-				iup.Button("Cover").SetHandle("Cover").SetAttributes("EXPAND=HORIZONTAL, PADDING=DEFAULTBUTTONPADDING").
-					SetCallback("ACTION", iup.ActionFunc(onCover)),
-			).SetAttributes("NGAP=5"),
-		),
-		iup.Frame(
-			iup.Vbox(
-				iup.Button("&Convert").SetHandle("Convert").SetAttributes("EXPAND=HORIZONTAL, PADDING=DEFAULTBUTTONPADDING").
-					SetCallback("ACTION", iup.ActionFunc(onConvert)),
-			),
-		),
-	).SetHandle("Buttons").SetAttributes("ALIGNMENT=ACENTER, NGAP=10")
+	).SetHandle("Buttons").SetAttributes("ALIGNMENT=ACENTER")
 }
 
 func status() iup.Ihandle {
@@ -670,10 +710,10 @@ func status() iup.Ihandle {
 		loading(),
 		iup.Fill(),
 		iup.Label("File 1 of 1").SetHandle("LabelStatus1").SetAttributes("VISIBLE=NO"),
-		iup.Space().SetAttribute("SIZE", "5x0"),
+		iup.Space().SetAttribute("SIZE", "5"),
 		iup.Label("(000/000)").SetHandle("LabelStatus2").SetAttributes("VISIBLE=NO"),
-		iup.Space().SetAttribute("SIZE", "5x0"),
-		iup.ProgressBar().SetAttributes("RASTERSIZE=200x15, VISIBLE=NO").SetHandle("ProgressBar").
+		iup.Space().SetAttribute("SIZE", "5"),
+		iup.ProgressBar().SetAttributes("RASTERSIZE=200x, VISIBLE=NO").SetHandle("ProgressBar").
 			SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(func(ih iup.Ihandle, s string, i int, p any) int {
 				switch s {
 				case "convert":

@@ -402,19 +402,19 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 		if c.Opts.Effort >= 0 {
 			method = min(max(c.Opts.Effort, 0), 6)
 		}
-		err = webp.Encode(w, img, webp.Options{Quality: c.Opts.Quality, Method: method})
+		err = webp.Encode(w, img, webp.Options{Quality: c.Opts.Quality, Method: method, Lossless: c.Opts.Lossless})
 	case "avif":
 		speed := avif.DefaultSpeed
 		if c.Opts.Effort >= 0 {
 			speed = min(max(c.Opts.Effort, 0), 10)
 		}
-		err = avif.Encode(w, img, avif.Options{Quality: c.Opts.Quality, Speed: speed})
+		err = avif.Encode(w, img, avif.Options{Quality: c.Opts.Quality, Speed: speed, Lossless: c.Opts.Lossless})
 	case "jxl":
 		effort := jpegxl.DefaultEffort
 		if c.Opts.Effort >= 0 {
 			effort = min(max(c.Opts.Effort, 1), 10)
 		}
-		err = jpegxl.Encode(w, img, jpegxl.Options{Quality: c.Opts.Quality, Effort: effort})
+		err = jpegxl.Encode(w, img, jpegxl.Options{Quality: c.Opts.Quality, Effort: effort, Lossless: c.Opts.Lossless})
 	case "bmp":
 		opts := &gobmp.EncoderOptions{}
 		opts.SupportTransparency(false)
