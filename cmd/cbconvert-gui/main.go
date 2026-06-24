@@ -34,7 +34,57 @@ var appVersion string
 var (
 	index = -1
 	files []cbconvert.File
+
+	config iup.Ihandle
 )
+
+const (
+	pathsGroup    = "Paths"
+	profilesGroup = "Profiles"
+
+	inputDirKey  = "InputDir"
+	outputDirKey = "OutputDir"
+)
+
+type settingKind int
+
+const (
+	kindBool settingKind = iota
+	kindInt
+	kindStr
+)
+
+type setting struct {
+	handle string
+	kind   settingKind
+	def    string
+}
+
+var settings = []setting{
+	{"Recursive", kindBool, "OFF"},
+	{"NoRGB", kindBool, "OFF"},
+	{"NoCover", kindBool, "OFF"},
+	{"NoConvert", kindBool, "OFF"},
+	{"NoNonImage", kindBool, "OFF"},
+	{"Combine", kindBool, "OFF"},
+	{"Fit", kindBool, "OFF"},
+	{"Lossless", kindBool, "OFF"},
+	{"Grayscale", kindBool, "OFF"},
+	{"OutDir", kindStr, ""},
+	{"Suffix", kindStr, ""},
+	{"Width", kindStr, ""},
+	{"Height", kindStr, ""},
+	{"Size", kindInt, "0"},
+	{"Quality", kindInt, "75"},
+	{"Effort", kindInt, "0"},
+	{"Brightness", kindInt, "0"},
+	{"Contrast", kindInt, "0"},
+	{"Format", kindInt, "1"},
+	{"Archive", kindInt, "1"},
+	{"ZipLevel", kindInt, "1"},
+	{"Filter", kindInt, "3"},
+	{"Rotate", kindInt, "1"},
+}
 
 func init() {
 	if appVersion != "" {
@@ -69,7 +119,12 @@ func main() {
 	iup.Open()
 	defer iup.Close()
 
+	iup.SetGlobal("APPNAME", "cbconvert")
+	iup.SetGlobal("APPID", "io.github.gen2brain.cbconvert")
 	iup.SetGlobal("AUTODARKMODE", "YES")
+
+	config = iup.Config()
+	iup.ConfigLoad(config)
 
 	img, _ := png.Decode(bytes.NewReader(appLogo))
 	iup.ImageFromImage(img).SetHandle("logo")
@@ -103,7 +158,7 @@ func main() {
 	}))
 
 	iup.Map(dlg)
-	setActive()
+	profilesInit()
 
 	iup.ShowXY(dlg, iup.CENTER, iup.CENTER)
 	iup.MainLoop()
@@ -270,6 +325,195 @@ func zipLevel(value string) int {
 
 		return level
 	}
+}
+
+func profileGroup(name string) string {
+	return "Profile:" + name
+}
+
+func profileNames() []string {
+	s := iup.ConfigGetVariableStr(config, profilesGroup, "Names")
+	if s == "" {
+		return nil
+	}
+
+	return strings.Split(s, ";")
+}
+
+func currentProfile() string {
+	return iup.ConfigGetVariableStrDef(config, profilesGroup, "Current", "Default")
+}
+
+func setStartDir(dlg iup.Ihandle, key string) {
+	if dir := iup.ConfigGetVariableStr(config, pathsGroup, key); dir != "" {
+		dlg.SetAttribute("DIRECTORY", dir)
+	}
+}
+
+func rememberDir(dlg iup.Ihandle, key string) {
+	dir := dlg.GetAttribute("DIRECTORY")
+	if dir == "" {
+		return
+	}
+
+	iup.ConfigSetVariableStr(config, pathsGroup, key, dir)
+	iup.ConfigSave(config)
+}
+
+func settingsSave(group string) {
+	for _, s := range settings {
+		h := iup.GetHandle(s.handle)
+		switch s.kind {
+		case kindBool:
+			v := 0
+			if h.GetAttribute("VALUE") == "ON" {
+				v = 1
+			}
+			iup.ConfigSetVariableInt(config, group, s.handle, v)
+		case kindInt:
+			iup.ConfigSetVariableInt(config, group, s.handle, h.GetInt("VALUE"))
+		case kindStr:
+			iup.ConfigSetVariableStr(config, group, s.handle, h.GetAttribute("VALUE"))
+		}
+	}
+
+	iup.ConfigSave(config)
+}
+
+// settingsApply sets every control from the given profile group, or from defaults when group is empty.
+func settingsApply(group string) {
+	for _, s := range settings {
+		h := iup.GetHandle(s.handle)
+		switch s.kind {
+		case kindBool:
+			def := 0
+			if s.def == "ON" {
+				def = 1
+			}
+			v := def
+			if group != "" {
+				v = iup.ConfigGetVariableIntDef(config, group, s.handle, def)
+			}
+			if v != 0 {
+				h.SetAttribute("VALUE", "ON")
+			} else {
+				h.SetAttribute("VALUE", "OFF")
+			}
+		case kindInt:
+			def, _ := strconv.Atoi(s.def)
+			v := def
+			if group != "" {
+				v = iup.ConfigGetVariableIntDef(config, group, s.handle, def)
+			}
+			h.SetAttribute("VALUE", strconv.Itoa(v))
+		case kindStr:
+			v := s.def
+			if group != "" {
+				v = iup.ConfigGetVariableStrDef(config, group, s.handle, s.def)
+			}
+			h.SetAttribute("VALUE", v)
+		}
+	}
+
+	syncLabels()
+	setActive()
+	previewPost()
+}
+
+// syncLabels mirrors slider values into their value labels and retunes the effort slider for the current format.
+func syncLabels() {
+	iup.GetHandle("LabelQuality").SetAttribute("TITLE", iup.GetHandle("Quality").GetInt("VALUE"))
+	iup.GetHandle("LabelBrightness").SetAttribute("TITLE", iup.GetHandle("Brightness").GetInt("VALUE"))
+	iup.GetHandle("LabelContrast").SetAttribute("TITLE", iup.GetHandle("Contrast").GetInt("VALUE"))
+
+	format := strings.ToLower(iup.GetHandle("Format").GetAttribute("VALUESTRING"))
+	eff := iup.GetHandle("Effort").GetInt("VALUE")
+	setEffort(format)
+	switch format {
+	case "webp", "avif", "jxl":
+		val := iup.GetHandle("Effort")
+		val.SetAttribute("VALUE", strconv.Itoa(eff))
+		iup.GetHandle("LabelEffort").SetAttribute("TITLE", fmt.Sprintf("%s: %d", val.GetAttribute("EFFORTNAME"), eff))
+	}
+
+	iup.Refresh(iup.GetHandle("Tabs"))
+}
+
+func fillProfileList() {
+	list := iup.GetHandle("Profile")
+	list.SetAttribute("REMOVEITEM", "ALL")
+
+	cur := currentProfile()
+	sel := 1
+	for i, n := range profileNames() {
+		list.SetAttribute(strconv.Itoa(i+1), n)
+		if n == cur {
+			sel = i + 1
+		}
+	}
+
+	list.SetAttribute("VALUE", strconv.Itoa(sel))
+}
+
+// profilesInit loads the current profile on startup, creating a default one on first run.
+func profilesInit() {
+	if len(profileNames()) == 0 {
+		iup.ConfigSetVariableStr(config, profilesGroup, "Names", "Default")
+		iup.ConfigSetVariableStr(config, profilesGroup, "Current", "Default")
+		settingsSave(profileGroup("Default"))
+	}
+
+	fillProfileList()
+	settingsApply(profileGroup(currentProfile()))
+}
+
+func onProfileSelect(ih iup.Ihandle) int {
+	name := ih.GetAttribute("VALUESTRING")
+	if name == "" {
+		return iup.DEFAULT
+	}
+
+	iup.ConfigSetVariableStr(config, profilesGroup, "Current", name)
+	iup.ConfigSave(config)
+
+	settingsApply(profileGroup(name))
+
+	return iup.DEFAULT
+}
+
+func onSave(iup.Ihandle) int {
+	name := currentProfile()
+	if iup.GetParam("Save Profile", nil, "Name: %s\n", &name) != 1 {
+		return iup.DEFAULT
+	}
+
+	name = strings.TrimSpace(name)
+	if name == "" || strings.ContainsAny(name, ".;") {
+		iup.Message("Invalid Name", "Profile name must not be empty or contain '.' or ';'.")
+
+		return iup.DEFAULT
+	}
+
+	settingsSave(profileGroup(name))
+
+	names := profileNames()
+	if !slices.Contains(names, name) {
+		names = append(names, name)
+		iup.ConfigSetVariableStr(config, profilesGroup, "Names", strings.Join(names, ";"))
+	}
+
+	iup.ConfigSetVariableStr(config, profilesGroup, "Current", name)
+	iup.ConfigSave(config)
+
+	fillProfileList()
+
+	return iup.DEFAULT
+}
+
+func onReset(iup.Ihandle) int {
+	settingsApply("")
+
+	return iup.DEFAULT
 }
 
 func setEffort(format string) {
@@ -832,8 +1076,18 @@ func buttons() iup.Ihandle {
 		SetCallback("ACTION", iup.ActionFunc(onCover))
 	convert := iup.Button("&Convert").SetHandle("Convert").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 		SetCallback("ACTION", iup.ActionFunc(onConvert))
+	reset := iup.Button("Reset").SetHandle("Reset").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetAttribute("TIP", "Restore all settings to their defaults").
+		SetCallback("ACTION", iup.ActionFunc(onReset))
+	save := iup.Button("Save").SetHandle("Save").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetAttribute("TIP", "Save current settings to a profile").
+		SetCallback("ACTION", iup.ActionFunc(onSave))
 
-	iup.Normalizer(addFiles, addDir, remove, removeAll, thumbnail, cover, convert).SetAttribute("NORMALIZE", "BOTH")
+	profile := iup.List().SetAttributes("DROPDOWN=YES, EXPAND=HORIZONTAL").SetHandle("Profile").
+		SetAttribute("TIP", "Select a settings profile").
+		SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(onProfileSelect))
+
+	iup.Normalizer(addFiles, addDir, remove, removeAll, thumbnail, cover, convert, reset, save).SetAttribute("NORMALIZE", "BOTH")
 
 	return iup.Vbox(
 		iup.Vbox(
@@ -842,15 +1096,22 @@ func buttons() iup.Ihandle {
 			remove,
 			removeAll,
 		).SetAttribute("NGAP", "2"),
-		iup.Space().SetAttribute("SIZE", "x5"),
+		iup.Space().SetAttribute("SIZE", "x8"),
 		iup.Vbox(
 			thumbnail,
 			cover,
 		).SetAttribute("NGAP", "2"),
-		iup.Space().SetAttribute("SIZE", "x5"),
+		iup.Space().SetAttribute("SIZE", "x8"),
 		iup.Vbox(
 			convert,
 		),
+		iup.Fill(),
+		iup.Vbox(
+			iup.Label("Profile:"),
+			profile,
+			reset,
+			save,
+		).SetAttribute("NGAP", "2"),
 	).SetHandle("Buttons").SetAttributes("ALIGNMENT=ACENTER")
 }
 
@@ -936,7 +1197,7 @@ func loading() iup.Ihandle {
 }
 
 func onAddFiles(ih iup.Ihandle) int {
-	args, err := fileDlg("Add Files", true, false)
+	args, err := fileDlg("Add Files", true, false, inputDirKey)
 	if err != nil {
 		iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
 		fmt.Println(err)
@@ -976,7 +1237,7 @@ func onAddFiles(ih iup.Ihandle) int {
 }
 
 func onAddDir(ih iup.Ihandle) int {
-	args, err := fileDlg("Add Directory", false, true)
+	args, err := fileDlg("Add Directory", false, true, inputDirKey)
 	if err != nil {
 		iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
 		fmt.Println(err)
@@ -1197,7 +1458,7 @@ func onConvert(ih iup.Ihandle) int {
 }
 
 func onOutputDirectory(ih iup.Ihandle) int {
-	args, err := fileDlg("Output Directory", false, true)
+	args, err := fileDlg("Output Directory", false, true, outputDirKey)
 	if err != nil {
 		iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
 		fmt.Println(err)
@@ -1215,7 +1476,7 @@ func onOutputDirectory(ih iup.Ihandle) int {
 }
 
 func onOutputFile(ih iup.Ihandle) int {
-	name := saveDlg("Output File")
+	name := saveDlg("Output File", outputDirKey)
 	if name != "" {
 		iup.GetHandle("OutFile").SetAttribute("VALUE", filepath.Base(name))
 		iup.GetHandle("OutDir").SetAttribute("VALUE", filepath.Dir(name))
@@ -1248,7 +1509,7 @@ func onFilterChanged(ih iup.Ihandle) int {
 	return iup.DEFAULT
 }
 
-func fileDlg(title string, multiple, directory bool) ([]string, error) {
+func fileDlg(title string, multiple, directory bool, dirKey string) ([]string, error) {
 	ret := make([]string, 0)
 
 	dlg := iup.FileDlg()
@@ -1261,11 +1522,12 @@ func fileDlg(title string, multiple, directory bool) ([]string, error) {
 		}
 
 		dlg.SetAttributes(map[string]string{
-			"DIALOGTYPE":    "OPEN",
-			"MULTIPLEFILES": mf,
-			"EXTFILTER":     "Comic Files|*.rar;*.zip;*.7z;*.tar;*.cbr;*.cbz;*.cb7;*.cbt;*.pdf;*.epub;*.mobi;*.docx;*.pptx|",
-			"FILTER":        "*.cb*", // for Motif
-			"TITLE":         title,
+			"DIALOGTYPE":     "OPEN",
+			"MULTIPLEFILES":  mf,
+			"MULTIVALUEPATH": "YES",
+			"EXTFILTER":      "Comic Files|*.rar;*.zip;*.7z;*.tar;*.cbr;*.cbz;*.cb7;*.cbt;*.pdf;*.epub;*.mobi;*.docx;*.pptx|",
+			"FILTER":         "*.cb*", // for Motif
+			"TITLE":          title,
 		})
 	} else {
 		dlg.SetAttributes(map[string]string{
@@ -1274,30 +1536,33 @@ func fileDlg(title string, multiple, directory bool) ([]string, error) {
 		})
 	}
 
+	setStartDir(dlg, dirKey)
+
 	iup.Popup(dlg, iup.CENTERPARENT, iup.CENTERPARENT)
 
 	if dlg.GetInt("STATUS") == 0 {
-		if !directory {
-			value := dlg.GetAttribute("VALUE")
-			sp := strings.Split(value, "|")
-
-			if len(sp) > 1 {
-				for _, file := range sp[1 : len(sp)-1] {
-					ret = append(ret, filepath.Join(sp[0], file))
+		switch {
+		case multiple:
+			// MULTIVALUEPATH makes each MULTIVALUE a full path (id 0 is the path), so a folder-spanning selection works.
+			count := dlg.GetInt("MULTIVALUECOUNT")
+			if count > 1 {
+				for i := 1; i < count; i++ {
+					ret = append(ret, iup.GetAttributeId(dlg, "MULTIVALUE", i))
 				}
-			} else {
+			} else if value := dlg.GetAttribute("VALUE"); value != "" {
 				ret = append(ret, value)
 			}
-		} else {
-			value := dlg.GetAttribute("VALUE")
-			ret = append(ret, value)
+		default:
+			ret = append(ret, dlg.GetAttribute("VALUE"))
 		}
+
+		rememberDir(dlg, dirKey)
 	}
 
 	return ret, nil
 }
 
-func saveDlg(title string) string {
+func saveDlg(title, dirKey string) string {
 	dlg := iup.FileDlg()
 	defer dlg.Destroy()
 
@@ -1308,11 +1573,15 @@ func saveDlg(title string) string {
 		"TITLE":      title,
 	})
 
+	setStartDir(dlg, dirKey)
+
 	iup.Popup(dlg, iup.CENTERPARENT, iup.CENTERPARENT)
 
 	if dlg.GetInt("STATUS") == -1 {
 		return ""
 	}
+
+	rememberDir(dlg, dirKey)
 
 	return dlg.GetAttribute("VALUE")
 }
