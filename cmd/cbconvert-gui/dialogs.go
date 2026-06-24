@@ -1,6 +1,13 @@
 package main
 
-import "github.com/gen2brain/iup-go/iup"
+import (
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/gen2brain/cbconvert"
+	"github.com/gen2brain/iup-go/iup"
+)
 
 func fileDlg(title string, multiple, directory bool, dirKey string) ([]string, error) {
 	ret := make([]string, 0)
@@ -21,7 +28,12 @@ func fileDlg(title string, multiple, directory bool, dirKey string) ([]string, e
 			"EXTFILTER":      "Comic Files|*.rar;*.zip;*.7z;*.tar;*.cbr;*.cbz;*.cb7;*.cbt;*.pdf;*.epub;*.mobi;*.docx;*.pptx|",
 			"FILTER":         "*.cb*", // for Motif
 			"TITLE":          title,
+			"SHOWPREVIEW":    "YES",
+			"PREVIEWWIDTH":   "240",
+			"PREVIEWHEIGHT":  "320",
 		})
+
+		dlg.SetCallback("FILE_CB", iup.FileFunc(previewCover()))
 	} else {
 		dlg.SetAttributes(map[string]string{
 			"DIALOGTYPE": "DIR",
@@ -53,6 +65,86 @@ func fileDlg(title string, multiple, directory bool, dirKey string) ([]string, e
 	}
 
 	return ret, nil
+}
+
+const dlgPreviewName = "_FILEDLGPREVIEW_"
+
+// previewCover returns a FILE_CB handler that draws the highlighted comic's cover in the dialog preview pane.
+func previewCover() iup.FileFunc {
+	var image iup.Ihandle
+	var lastFile string
+
+	return func(ih iup.Ihandle, filename, status string) int {
+		switch status {
+		case "PAINT":
+			iup.DrawBegin(ih)
+			cw, ch := iup.DrawGetSize(ih)
+			iup.DrawParentBackground(ih)
+
+			if filename != lastFile {
+				lastFile = filename
+				if image != 0 {
+					image.Destroy()
+					image = 0
+				}
+				if img := loadCover(filename, cw, ch); img != 0 {
+					image = img
+					iup.SetHandle(dlgPreviewName, image)
+				}
+			}
+
+			if image != 0 {
+				iw, iih, _ := iup.DrawGetImageInfo(dlgPreviewName)
+				iup.DrawImage(ih, dlgPreviewName, (cw-iw)/2, (ch-iih)/2, iw, iih)
+			} else {
+				ih.SetAttribute("DRAWCOLOR", "128 128 128")
+				tw, th := iup.DrawGetTextSize(ih, "No preview")
+				iup.DrawText(ih, "No preview", (cw-tw)/2, (ch-th)/2, 0, 0)
+			}
+
+			iup.DrawEnd(ih)
+		case "FINISH":
+			if image != 0 {
+				image.Destroy()
+				image = 0
+			}
+			lastFile = ""
+		}
+
+		return iup.DEFAULT
+	}
+}
+
+// loadCover extracts the cover of a comic file and returns it as an IUP image fitted to w by h, or 0.
+func loadCover(path string, w, h int) iup.Ihandle {
+	if w <= 0 || h <= 0 || !isComic(path) {
+		return 0
+	}
+
+	fi, err := os.Stat(path)
+	if err != nil || fi.IsDir() {
+		return 0
+	}
+
+	opts := cbconvert.NewOptions()
+	opts.DPI = 96
+
+	img, err := cbconvert.New(opts).Preview(path, fi, w, h)
+	if err != nil || img.Image == nil {
+		return 0
+	}
+
+	return iup.ImageFromImage(img.Image)
+}
+
+func isComic(path string) bool {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".rar", ".zip", ".7z", ".tar", ".cbr", ".cbz", ".cb7", ".cbt",
+		".pdf", ".xps", ".epub", ".mobi", ".docx", ".pptx", ".xlsx":
+		return true
+	}
+
+	return false
 }
 
 func saveDlg(title, dirKey string) string {
