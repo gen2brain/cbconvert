@@ -27,6 +27,8 @@ type Options struct {
 	Quality int
 	// Encoder speed/effort, format-specific: webp method 0-6, avif speed 0-10, jxl effort 1-10; -1 uses the format default
 	Effort int
+	// Combine all inputs into a single archive
+	Combine bool
 	// Lossless enables lossless compression (webp, avif, jxl), ignores quality
 	Lossless bool
 	// Image width
@@ -89,6 +91,8 @@ type Converter struct {
 	Opts Options
 	// Current working directory
 	Workdir string
+	// Page name prefix, set per input when combining
+	prefix string
 	// Number of files
 	Nfiles int
 	// Index of the current file
@@ -499,6 +503,13 @@ func (c *Converter) Convert(fileName string, fileInfo os.FileInfo) error {
 	defer cancel()
 
 	c.OnCancel = cancel
+	c.prefix = ""
+
+	var err error
+	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
+	if err != nil {
+		return fmt.Errorf("%s: %w", fileName, err)
+	}
 
 	switch {
 	case fileInfo.IsDir():
@@ -517,6 +528,55 @@ func (c *Converter) Convert(fileName string, fileInfo os.FileInfo) error {
 
 	if err := c.archiveSave(fileName); err != nil {
 		return fmt.Errorf("%s: %w", fileName, err)
+	}
+
+	c.OnCancel = nil
+
+	return nil
+}
+
+// Combine merges multiple comic books into a single archive.
+func (c *Converter) Combine(files []File) error {
+	if len(files) == 0 {
+		return nil
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	c.OnCancel = cancel
+
+	var err error
+	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
+	if err != nil {
+		return fmt.Errorf("Combine: %w", err)
+	}
+
+	for i, file := range files {
+		c.CurrFile++
+		c.prefix = fmt.Sprintf("%04d_", i+1)
+
+		switch {
+		case file.Stat.IsDir():
+			err = c.convertDirectory(ctx, file.Path)
+		case isDocument(file.Path):
+			err = c.convertDocument(ctx, file.Path)
+		case isArchive(file.Path):
+			err = c.convertArchive(ctx, file.Path)
+		}
+
+		if err != nil {
+			return fmt.Errorf("%s: %w", file.Path, err)
+		}
+	}
+
+	out := c.Opts.OutFile
+	if out == "" {
+		out = baseNoExt(files[0].Path) + "-combined"
+	}
+
+	if err := c.archiveSave(out); err != nil {
+		return fmt.Errorf("Combine: %w", err)
 	}
 
 	c.OnCancel = nil

@@ -69,8 +69,6 @@ func main() {
 	iup.Open()
 	defer iup.Close()
 
-	iup.SetGlobal("UTF8MODE", "YES")
-	iup.SetGlobal("UTF8MODE_FILE", "YES")
 	iup.SetGlobal("AUTODARKMODE", "YES")
 
 	img, _ := png.Decode(bytes.NewReader(appLogo))
@@ -98,13 +96,7 @@ func main() {
 
 	dlg.SetCallback("THEMECHANGED_CB", iup.ThemeChangedFunc(func(ih iup.Ihandle, darkMode int) int {
 		t := iup.GetHandle("Table")
-		if darkMode == 1 {
-			t.SetAttribute("EVENROWCOLOR", "#3A3A3A")
-			t.SetAttribute("ODDROWCOLOR", "#2D2D2D")
-		} else {
-			t.SetAttribute("EVENROWCOLOR", "#F0F0F0")
-			t.SetAttribute("ODDROWCOLOR", "#FFFFFF")
-		}
+		tableRowColors(t, darkMode == 1)
 		t.SetAttribute("REDRAW", "YES")
 
 		return iup.DEFAULT
@@ -162,6 +154,10 @@ func options() cbconvert.Options {
 		opts.Effort = -1
 	}
 	opts.Lossless = iup.GetHandle("Lossless").GetAttribute("VALUE") == "ON"
+	opts.Combine = iup.GetHandle("Combine").GetAttribute("VALUE") == "ON"
+	if opts.Combine {
+		opts.OutFile = iup.GetHandle("OutFile").GetAttribute("VALUE")
+	}
 	opts.Grayscale = iup.GetHandle("Grayscale").GetAttribute("VALUE") == "ON"
 	opts.Brightness = iup.GetHandle("Brightness").GetInt("VALUE")
 	opts.Contrast = iup.GetHandle("Contrast").GetInt("VALUE")
@@ -244,6 +240,12 @@ func setActive() {
 	} else {
 		iup.GetHandle("Fit").SetAttribute("ACTIVE", "NO")
 	}
+
+	if opts.Combine {
+		iup.GetHandle("VboxOutFile").SetAttribute("ACTIVE", "YES")
+	} else {
+		iup.GetHandle("VboxOutFile").SetAttribute("ACTIVE", "NO")
+	}
 }
 
 func setEffort(format string) {
@@ -291,6 +293,16 @@ func layout() iup.Ihandle {
 	)
 }
 
+// tableRowColors sets the alternating row colors for dark or light mode.
+func tableRowColors(t iup.Ihandle, dark bool) {
+	even, odd := "#F0F0F0", "#FFFFFF"
+	if dark {
+		even, odd = "#3A3A3A", "#2D2D2D"
+	}
+	t.SetAttribute("EVENROWCOLOR", even)
+	t.SetAttribute("ODDROWCOLOR", odd)
+}
+
 func list() iup.Ihandle {
 	t := iup.Table().SetHandle("Table")
 	t.SetAttributes(map[string]string{
@@ -313,13 +325,7 @@ func list() iup.Ihandle {
 		"ALTERNATECOLOR": "YES",
 	})
 
-	if iup.GetGlobal("DARKMODE") == "YES" && iup.GetGlobal("AUTODARKMODE") == "YES" {
-		t.SetAttribute("EVENROWCOLOR", "#3A3A3A")
-		t.SetAttribute("ODDROWCOLOR", "#2D2D2D")
-	} else {
-		t.SetAttribute("EVENROWCOLOR", "#F0F0F0")
-		t.SetAttribute("ODDROWCOLOR", "#FFFFFF")
-	}
+	tableRowColors(t, iup.GetGlobal("DARKMODE") == "YES" && iup.GetGlobal("AUTODARKMODE") == "YES")
 
 	t.SetCallback("ENTERITEM_CB", iup.EnterItemFunc(func(ih iup.Ihandle, lin, col int) int {
 		index = lin - 1
@@ -489,34 +495,56 @@ func tabs() iup.Ihandle {
 		iup.Space().SetAttributes("EXPAND=HORIZONTAL"),
 	).SetHandle("VboxInput").SetAttributes("NGAP=10")
 
-	vboxOutput := iup.Vbox(
+	vboxOutput := iup.Hbox(
 		iup.Vbox(
-			iup.Label("Output Directory:"),
-			iup.Text().SetAttributes("VISIBLECOLUMNS=16, MINSIZE=100x").SetHandle("OutDir").
-				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-					setActive()
+			iup.Vbox(
+				iup.Label("Output Directory:"),
+				iup.Text().SetAttributes("VISIBLECOLUMNS=16, MINSIZE=100x").SetHandle("OutDir").
+					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+						setActive()
 
-					return iup.DEFAULT
-				})),
-			iup.Space().SetAttribute("SIZE", "5x0"),
-			iup.Button("Browse...").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
-				SetCallback("ACTION", iup.ActionFunc(onOutputDirectory)),
-		),
+						return iup.DEFAULT
+					})),
+				iup.Space().SetAttribute("SIZE", "5x0"),
+				iup.Button("Browse...").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+					SetCallback("ACTION", iup.ActionFunc(onOutputDirectory)),
+			),
+			iup.Vbox(
+				iup.Label("Add Suffix to Output File:"),
+				iup.Text().SetAttributes("VISIBLECOLUMNS=16, MINSIZE=100x").SetHandle("Suffix").
+					SetAttribute("TIP", "Add suffix to filename, i.e. filename_suffix.cbz"),
+			),
+			iup.Vbox(
+				iup.Label("Archive Format:"),
+				iup.List().SetAttributes(map[string]string{
+					"DROPDOWN": "YES",
+					"VALUE":    "1",
+					"1":        "ZIP",
+					"2":        "TAR",
+				}).SetHandle("Archive"),
+			),
+		).SetAttributes("NGAP=10"),
+		iup.Space().SetAttribute("SIZE", "15"),
 		iup.Vbox(
-			iup.Label("Add Suffix to Output File:"),
-			iup.Text().SetAttributes("VISIBLECOLUMNS=16, MINSIZE=100x").SetHandle("Suffix").
-				SetAttribute("TIP", "Add suffix to filename, i.e. filename_suffix.cbz"),
-		),
-		iup.Vbox(
-			iup.Label("Archive Format:"),
-			iup.List().SetAttributes(map[string]string{
-				"DROPDOWN": "YES",
-				"VALUE":    "1",
-				"1":        "ZIP",
-				"2":        "TAR",
-			}).SetHandle("Archive"),
-		),
-	).SetHandle("VboxOutput").SetAttributes("NGAP=10")
+			iup.Vbox(
+				iup.Toggle(" Combine into single file").SetHandle("Combine").
+					SetAttributes(`TIP="Merge all listed files into one archive"`).
+					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+						setActive()
+
+						return iup.DEFAULT
+					})),
+			),
+			iup.Vbox(
+				iup.Label("Output File:"),
+				iup.Text().SetAttributes("VISIBLECOLUMNS=16, MINSIZE=100x").SetHandle("OutFile").
+					SetAttribute("TIP", "Combined file name (default: first input + -combined)"),
+				iup.Space().SetAttribute("SIZE", "5x0"),
+				iup.Button("Browse...").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+					SetCallback("ACTION", iup.ActionFunc(onOutputFile)),
+			).SetHandle("VboxOutFile"),
+		).SetAttributes("NGAP=10"),
+	).SetHandle("VboxOutput")
 
 	vboxImage := iup.Hbox(
 		iup.Vbox(
@@ -1079,25 +1107,38 @@ func onConvert(ih iup.Ihandle) int {
 		return iup.DEFAULT
 	}))
 
+	convertErr := func(err error) {
+		if errors.Is(err, context.Canceled) {
+			if err := os.RemoveAll(conv.Workdir); err != nil {
+				fmt.Println(err)
+			}
+
+			return
+		}
+
+		iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
+		fmt.Println(err)
+
+		if err := os.RemoveAll(conv.Workdir); err != nil {
+			fmt.Println(err)
+		}
+	}
+
 	go func(c *cbconvert.Converter) {
-		for _, file := range files {
-			if err := c.Convert(file.Path, file.Stat); err != nil {
-				if errors.Is(err, context.Canceled) {
-					if err := os.RemoveAll(c.Workdir); err != nil {
-						fmt.Println(err)
+		if c.Opts.Combine {
+			if err := c.Combine(files); err != nil {
+				convertErr(err)
+			}
+		} else {
+			for _, file := range files {
+				if err := c.Convert(file.Path, file.Stat); err != nil {
+					convertErr(err)
+					if errors.Is(err, context.Canceled) {
+						break
 					}
 
-					break
+					continue
 				}
-
-				iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
-				fmt.Println(err)
-
-				if err := os.RemoveAll(c.Workdir); err != nil {
-					fmt.Println(err)
-				}
-
-				continue
 			}
 		}
 
@@ -1121,6 +1162,17 @@ func onOutputDirectory(ih iup.Ihandle) int {
 	}
 
 	setActive()
+
+	return iup.DEFAULT
+}
+
+func onOutputFile(ih iup.Ihandle) int {
+	name := saveDlg("Output File")
+	if name != "" {
+		iup.GetHandle("OutFile").SetAttribute("VALUE", filepath.Base(name))
+		iup.GetHandle("OutDir").SetAttribute("VALUE", filepath.Dir(name))
+		setActive()
+	}
 
 	return iup.DEFAULT
 }
@@ -1195,4 +1247,24 @@ func fileDlg(title string, multiple, directory bool) ([]string, error) {
 	}
 
 	return ret, nil
+}
+
+func saveDlg(title string) string {
+	dlg := iup.FileDlg()
+	defer dlg.Destroy()
+
+	dlg.SetAttributes(map[string]string{
+		"DIALOGTYPE": "SAVE",
+		"EXTFILTER":  "Comic Files|*.cbz;*.cbt|",
+		"FILTER":     "*.cb*", // for Motif
+		"TITLE":      title,
+	})
+
+	iup.Popup(dlg, iup.CENTERPARENT, iup.CENTERPARENT)
+
+	if dlg.GetInt("STATUS") == -1 {
+		return ""
+	}
+
+	return dlg.GetAttribute("VALUE")
 }
