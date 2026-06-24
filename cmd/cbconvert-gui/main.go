@@ -77,6 +77,7 @@ var settings = []setting{
 	{"Suffix", kindStr, ""},
 	{"Width", kindStr, ""},
 	{"Height", kindStr, ""},
+	{"DPI", kindStr, "Default"},
 	{"Size", kindInt, "0"},
 	{"Quality", kindInt, "75"},
 	{"Effort", kindInt, "0"},
@@ -203,6 +204,7 @@ func options() cbconvert.Options {
 	opts.Format = strings.ToLower(iup.GetHandle("Format").GetAttribute("VALUESTRING"))
 	opts.Width = iup.GetHandle("Width").GetInt("VALUE")
 	opts.Height = iup.GetHandle("Height").GetInt("VALUE")
+	opts.DPI = dpiValue(iup.GetHandle("DPI").GetAttribute("VALUE"))
 	opts.Fit = iup.GetHandle("Fit").GetAttribute("VALUE") == "ON"
 	opts.Filter = iup.GetHandle("Filter").GetInt("VALUE") - 1
 	opts.Quality = iup.GetHandle("Quality").GetInt("VALUE")
@@ -360,6 +362,15 @@ func zipLevel(value string) int {
 
 		return level
 	}
+}
+
+func dpiValue(value string) int {
+	dpi, err := strconv.Atoi(strings.TrimSpace(value))
+	if err != nil {
+		return 0
+	}
+
+	return dpi
 }
 
 func profileGroup(name string) string {
@@ -845,6 +856,21 @@ func tabs() iup.Ihandle {
 			iup.Label("Minimum Size (MiB):"),
 			iup.Text().SetAttributes(`SPIN=YES, SPINMAX=2048, VISIBLECOLUMNS=4, MASK="/d*"`).SetHandle("Size").
 				SetAttributes(`TIP="Process only files larger than minimum size"`),
+		),
+		iup.Vbox(
+			iup.Label("Document DPI:"),
+			iup.List().SetAttributes(map[string]string{
+				"DROPDOWN":       "YES",
+				"EDITBOX":        "YES",
+				"VISIBLECOLUMNS": "6",
+				"VALUE":          "Default",
+				"1":              "Default",
+				"2":              "150",
+				"3":              "300",
+				"4":              "600",
+				"5":              "1200",
+			}).SetHandle("DPI").
+				SetAttribute("TIP", "Resolution for rendering documents (PDF, EPUB, etc.); Default is 300"),
 		),
 		iup.Space().SetAttributes("EXPAND=HORIZONTAL"),
 	).SetHandle("VboxInput").SetAttributes("NGAP=10")

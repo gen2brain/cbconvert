@@ -48,7 +48,7 @@ func (c *Converter) convertDocument(ctx context.Context, fileName string) error 
 			return fmt.Errorf("convertDocument: %w", ctx.Err())
 		}
 
-		img, err := doc.Image(n)
+		img, err := doc.ImageDPI(n, c.renderDPI())
 		if err != nil {
 			return fmt.Errorf("convertDocument: %w", err)
 		}

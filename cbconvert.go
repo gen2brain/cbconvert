@@ -39,6 +39,8 @@ type Options struct {
 	Height int
 	// Best fit for required width and height
 	Fit bool
+	// Document rendering resolution in DPI (PDF, EPUB, etc.); 0 uses the default
+	DPI int
 	// 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
 	Filter int
 	// Do not convert the cover image
@@ -178,6 +180,7 @@ func (o Options) Args() []string {
 	num("width", o.Width, def.Width)
 	num("height", o.Height, def.Height)
 	flag("fit", o.Fit)
+	num("dpi", o.DPI, def.DPI)
 	str("format", o.Format, def.Format)
 	str("archive", o.Archive, def.Archive)
 	num("zip-level", o.ZipLevel, def.ZipLevel)
@@ -201,6 +204,15 @@ func (o Options) Args() []string {
 	num("size", o.Size, def.Size)
 
 	return args
+}
+
+// renderDPI returns the document rendering resolution, falling back to 300 when unset.
+func (c *Converter) renderDPI() float64 {
+	if c.Opts.DPI > 0 {
+		return float64(c.Opts.DPI)
+	}
+
+	return 300
 }
 
 // Cancel cancels the operation.

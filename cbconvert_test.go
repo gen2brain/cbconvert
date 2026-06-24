@@ -114,13 +114,49 @@ func TestArgs(t *testing.T) {
 	opts.Effort = 4
 	opts.Lossless = true
 	opts.Width = 1200
+	opts.DPI = 150
 	opts.Grayscale = true
 	opts.OutDir = "/out"
 
 	got := strings.Join(opts.Args(), " ")
-	want := "--width 1200 --format webp --quality 90 --effort 4 --lossless --grayscale --outdir /out"
+	want := "--width 1200 --dpi 150 --format webp --quality 90 --effort 4 --lossless --grayscale --outdir /out"
 	if got != want {
 		t.Errorf("Args() = %q, want %q", got, want)
+	}
+}
+
+func TestConvertDPI(t *testing.T) {
+	tmpDir, err := os.MkdirTemp(os.TempDir(), "cbc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	dims := func(dpi int) int {
+		opts := NewOptions()
+		opts.OutDir = tmpDir
+		opts.DPI = dpi
+
+		conv := New(opts)
+
+		files, err := conv.Files([]string{"testdata/test.pdf"})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, file := range files {
+			if err := conv.Convert(file); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		return firstPage(t, conv, filepath.Join(tmpDir, "test.cbz")).Bounds().Dx()
+	}
+
+	low := dims(150)
+	high := dims(600)
+	if low >= high {
+		t.Errorf("higher DPI should render larger pages: 150dpi=%d, 600dpi=%d", low, high)
 	}
 }
 

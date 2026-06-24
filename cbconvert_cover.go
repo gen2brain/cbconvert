@@ -52,7 +52,7 @@ func (c *Converter) coverDocument(fileName string) (image.Image, error) {
 	}
 	defer doc.Close()
 
-	img, err := doc.Image(0)
+	img, err := doc.ImageDPI(0, c.renderDPI())
 	if err != nil {
 		return nil, fmt.Errorf("coverDocument: %w", err)
 	}

@@ -175,6 +175,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.IntVar(&opts.Width, "width", 0, "Image width")
 	convert.IntVar(&opts.Height, "height", 0, "Image height")
 	convert.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
+	convert.IntVar(&opts.DPI, "dpi", 0, "Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300)")
 	convert.StringVar(&opts.Format, "format", "jpeg", "Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl")
 	convert.StringVar(&opts.Archive, "archive", "zip", "Archive format, valid values are zip, tar")
 	convert.IntVar(&opts.ZipLevel, "zip-level", -1, "ZIP compression level, 0 disables compression, 1-9 sets deflate level (1 fastest, 9 smallest), -1 uses the default")
@@ -202,6 +203,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	cover.IntVar(&opts.Width, "width", 0, "Image width")
 	cover.IntVar(&opts.Height, "height", 0, "Image height")
 	cover.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
+	cover.IntVar(&opts.DPI, "dpi", 0, "Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300)")
 	cover.StringVar(&opts.Format, "format", "jpeg", "Image format, valid values are jpeg, png, tiff, bmp, webp, avif")
 	cover.IntVar(&opts.Quality, "quality", 75, "Image quality")
 	cover.IntVar(&opts.Effort, "effort", -1, "Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-10), -1 uses the format default")
@@ -216,6 +218,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	thumbnail.IntVar(&opts.Width, "width", 0, "Image width")
 	thumbnail.IntVar(&opts.Height, "height", 0, "Image height")
 	thumbnail.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
+	thumbnail.IntVar(&opts.DPI, "dpi", 0, "Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300)")
 	thumbnail.IntVar(&opts.Filter, "filter", 2, "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos")
 	thumbnail.StringVar(&opts.OutDir, "outdir", ".", "Output directory")
 	thumbnail.StringVar(&opts.OutFile, "outfile", "", "Output file")
@@ -236,7 +239,7 @@ func parseFlags() (cbconvert.Options, []string) {
 		fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
 		fmt.Fprintf(os.Stderr, "\nCommands:\n")
 		fmt.Fprintf(os.Stderr, "\n  convert\n    \tConvert archive or document\n\n")
-		order := []string{"width", "height", "fit", "format", "archive", "zip-level", "quality", "effort", "lossless", "combine", "outfile", "filter", "no-cover", "no-rgb",
+		order := []string{"width", "height", "fit", "dpi", "format", "archive", "zip-level", "quality", "effort", "lossless", "combine", "outfile", "filter", "no-cover", "no-rgb",
 			"no-nonimage", "no-convert", "grayscale", "rotate", "brightness", "contrast", "suffix", "outdir", "size", "recursive", "quiet"}
 		for _, name := range order {
 			f := convert.Lookup(name)
@@ -244,14 +247,14 @@ func parseFlags() (cbconvert.Options, []string) {
 			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		}
 		fmt.Fprintf(os.Stderr, "\n  cover\n    \tExtract cover\n\n")
-		order = []string{"width", "height", "fit", "format", "quality", "effort", "lossless", "combine", "outfile", "filter", "outdir", "size", "recursive", "quiet"}
+		order = []string{"width", "height", "fit", "dpi", "format", "quality", "effort", "lossless", "filter", "outdir", "size", "recursive", "quiet"}
 		for _, name := range order {
 			f := cover.Lookup(name)
 			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
 			fmt.Fprintf(os.Stderr, "%v (default %q)\n", f.Usage, f.DefValue)
 		}
 		fmt.Fprintf(os.Stderr, "\n  thumbnail\n    \tExtract cover thumbnail (freedesktop spec.)\n\n")
-		order = []string{"width", "height", "fit", "filter", "outdir", "outfile", "size", "recursive", "quiet"}
+		order = []string{"width", "height", "fit", "dpi", "filter", "outdir", "outfile", "size", "recursive", "quiet"}
 		for _, name := range order {
 			f := thumbnail.Lookup(name)
 			fmt.Fprintf(os.Stderr, "    --%s\n    \t", f.Name)
