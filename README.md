@@ -70,12 +70,24 @@ Commands:
     	Image height (default "0")
     --fit
     	Best fit for required width and height (default "false")
+    --dpi
+    	Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300) (default "0")
     --format
     	Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl (default "jpeg")
     --archive
     	Archive format, valid values are zip, tar (default "zip")
+    --zip-level
+    	ZIP compression level, 0 disables compression, 1-9 sets deflate level (1 fastest, 9 smallest), -1 uses the default (default "-1")
     --quality
     	Image quality (default "75")
+    --effort
+    	Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-10), -1 uses the format default (default "-1")
+    --lossless
+    	Lossless compression (webp, avif, jxl), ignores quality (default "false")
+    --combine
+    	Combine all inputs into a single archive (default "false")
+    --outfile
+    	Output file name for --combine (default: first input + -combined) (default "")
     --filter
     	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
     --no-cover
@@ -114,10 +126,16 @@ Commands:
     	Image height (default "0")
     --fit
     	Best fit for required width and height (default "false")
+    --dpi
+    	Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300) (default "0")
     --format
     	Image format, valid values are jpeg, png, tiff, bmp, webp, avif (default "jpeg")
     --quality
     	Image quality (default "75")
+    --effort
+    	Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-10), -1 uses the format default (default "-1")
+    --lossless
+    	Lossless compression (webp, avif, jxl), ignores quality (default "false")
     --filter
     	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
     --outdir
@@ -138,6 +156,8 @@ Commands:
     	Image height (default "0")
     --fit
     	Best fit for required width and height (default "false")
+    --dpi
+    	Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300) (default "0")
     --filter
     	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
     --outdir
@@ -188,6 +208,10 @@ Commands:
 * Convert all images to AVIF format:
 
 `cbconvert --format avif --quality 50 --width 1280 --outdir ~/comics /media/comics/Misc/`
+
+* Combine several issues into a single archive:
+
+`cbconvert convert --combine --outfile Series.cbz --outdir ~/comics issue1.cbz issue2.cbr issue3.cb7`
 
 ### Quality settings
 
