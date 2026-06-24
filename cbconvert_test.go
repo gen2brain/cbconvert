@@ -203,6 +203,58 @@ func TestConvertTar(t *testing.T) {
 	}
 }
 
+func TestZipLevel(t *testing.T) {
+	convertWith := func(level int) *zip.ReadCloser {
+		tmpDir, err := os.MkdirTemp(os.TempDir(), "cbc")
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { os.RemoveAll(tmpDir) })
+
+		opts := NewOptions()
+		opts.OutDir = tmpDir
+		opts.ZipLevel = level
+		opts.NoConvert = true
+
+		conv := New(opts)
+
+		files, err := conv.Files([]string{"testdata/test.cbz"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, file := range files {
+			if err := conv.Convert(file); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		zr, err := zip.OpenReader(filepath.Join(tmpDir, "test.cbz"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { zr.Close() })
+
+		return zr
+	}
+
+	store := convertWith(0)
+	for _, f := range store.File {
+		if f.Method != zip.Store {
+			t.Errorf("level 0: %s stored with method %d, want Store", f.Name, f.Method)
+		}
+		if f.CompressedSize64 != f.UncompressedSize64 {
+			t.Errorf("level 0: %s is compressed (%d < %d)", f.Name, f.CompressedSize64, f.UncompressedSize64)
+		}
+	}
+
+	deflate := convertWith(9)
+	for _, f := range deflate.File {
+		if f.Method != zip.Deflate {
+			t.Errorf("level 9: %s method %d, want Deflate", f.Name, f.Method)
+		}
+	}
+}
+
 func TestImageTransforms(t *testing.T) {
 	conv := New(NewOptions())
 

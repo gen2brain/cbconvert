@@ -3,6 +3,7 @@ package cbconvert
 import (
 	"archive/tar"
 	"archive/zip"
+	"compress/flate"
 	"context"
 	"fmt"
 	"io"
@@ -50,6 +51,13 @@ func (c *Converter) archiveSaveZip(fileName string) error {
 
 	z := zip.NewWriter(zipFile)
 
+	if c.Opts.ZipLevel >= 1 {
+		level := c.Opts.ZipLevel
+		z.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
+			return flate.NewWriter(out, level)
+		})
+	}
+
 	files, err := os.ReadDir(c.Workdir)
 	if err != nil {
 		return fmt.Errorf("archiveSaveZip: %w", err)
@@ -72,6 +80,9 @@ func (c *Converter) archiveSaveZip(fileName string) error {
 		}
 
 		zipInfo.Method = zip.Deflate
+		if c.Opts.ZipLevel == 0 {
+			zipInfo.Method = zip.Store
+		}
 		w, err := z.CreateHeader(zipInfo)
 		if err != nil {
 			return fmt.Errorf("archiveSaveZip: %w", err)

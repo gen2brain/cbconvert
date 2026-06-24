@@ -177,6 +177,7 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.BoolVar(&opts.Fit, "fit", false, "Best fit for required width and height")
 	convert.StringVar(&opts.Format, "format", "jpeg", "Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl")
 	convert.StringVar(&opts.Archive, "archive", "zip", "Archive format, valid values are zip, tar")
+	convert.IntVar(&opts.ZipLevel, "zip-level", -1, "ZIP compression level, 0 disables compression, 1-9 sets deflate level (1 fastest, 9 smallest), -1 uses the default")
 	convert.IntVar(&opts.Quality, "quality", 75, "Image quality")
 	convert.IntVar(&opts.Effort, "effort", -1, "Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-10), -1 uses the format default")
 	convert.BoolVar(&opts.Lossless, "lossless", false, "Lossless compression (webp, avif, jxl), ignores quality")
@@ -235,7 +236,7 @@ func parseFlags() (cbconvert.Options, []string) {
 		fmt.Fprintf(os.Stderr, "Usage: %s <command> [<flags>] [file1 dir1 ... fileOrDirN]\n\n", filepath.Base(os.Args[0]))
 		fmt.Fprintf(os.Stderr, "\nCommands:\n")
 		fmt.Fprintf(os.Stderr, "\n  convert\n    \tConvert archive or document\n\n")
-		order := []string{"width", "height", "fit", "format", "archive", "quality", "effort", "lossless", "combine", "outfile", "filter", "no-cover", "no-rgb",
+		order := []string{"width", "height", "fit", "format", "archive", "zip-level", "quality", "effort", "lossless", "combine", "outfile", "filter", "no-cover", "no-rgb",
 			"no-nonimage", "no-convert", "grayscale", "rotate", "brightness", "contrast", "suffix", "outdir", "size", "recursive", "quiet"}
 		for _, name := range order {
 			f := convert.Lookup(name)

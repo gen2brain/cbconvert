@@ -141,6 +141,7 @@ func options() cbconvert.Options {
 	opts.NoConvert = iup.GetHandle("NoConvert").GetAttribute("VALUE") == "ON"
 	opts.NoNonImage = iup.GetHandle("NoNonImage").GetAttribute("VALUE") == "ON"
 	opts.Archive = strings.ToLower(iup.GetHandle("Archive").GetAttribute("VALUESTRING"))
+	opts.ZipLevel = zipLevel(iup.GetHandle("ZipLevel").GetAttribute("VALUESTRING"))
 	opts.Format = strings.ToLower(iup.GetHandle("Format").GetAttribute("VALUESTRING"))
 	opts.Width = iup.GetHandle("Width").GetInt("VALUE")
 	opts.Height = iup.GetHandle("Height").GetInt("VALUE")
@@ -245,6 +246,29 @@ func setActive() {
 		iup.GetHandle("VboxOutFile").SetAttribute("ACTIVE", "YES")
 	} else {
 		iup.GetHandle("VboxOutFile").SetAttribute("ACTIVE", "NO")
+	}
+
+	if opts.Archive == "zip" {
+		iup.GetHandle("VboxZipLevel").SetAttribute("ACTIVE", "YES")
+	} else {
+		iup.GetHandle("VboxZipLevel").SetAttribute("ACTIVE", "NO")
+	}
+}
+
+// zipLevel maps the compression dropdown selection to Options.ZipLevel.
+func zipLevel(value string) int {
+	switch value {
+	case "Default":
+		return -1
+	case "Store (none)":
+		return 0
+	default:
+		level, err := strconv.Atoi(value)
+		if err != nil {
+			return -1
+		}
+
+		return level
 	}
 }
 
@@ -521,8 +545,32 @@ func tabs() iup.Ihandle {
 					"VALUE":    "1",
 					"1":        "ZIP",
 					"2":        "TAR",
-				}).SetHandle("Archive"),
+				}).SetHandle("Archive").
+					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+						setActive()
+
+						return iup.DEFAULT
+					})),
 			),
+			iup.Vbox(
+				iup.Label("Compression:"),
+				iup.List().SetAttributes(map[string]string{
+					"DROPDOWN": "YES",
+					"VALUE":    "1",
+					"1":        "Default",
+					"2":        "Store (none)",
+					"3":        "1",
+					"4":        "2",
+					"5":        "3",
+					"6":        "4",
+					"7":        "5",
+					"8":        "6",
+					"9":        "7",
+					"10":       "8",
+					"11":       "9",
+				}).SetHandle("ZipLevel").
+					SetAttribute("TIP", "ZIP compression: Store disables it, 1 is fastest, 9 is smallest"),
+			).SetHandle("VboxZipLevel"),
 		).SetAttributes("NGAP=10"),
 		iup.Space().SetAttribute("SIZE", "15"),
 		iup.Vbox(
