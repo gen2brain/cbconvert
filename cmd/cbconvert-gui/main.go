@@ -836,50 +836,55 @@ func preview() iup.Ihandle {
 }
 
 func tabs() iup.Ihandle {
-	vboxInput := iup.Vbox(
-		iup.Toggle(" Recurse SubDirectories").SetHandle("Recursive").
-			SetAttributes(`TIP="Process subdirectories recursively"`),
-		iup.Toggle(" Only Grayscale Images").SetHandle("NoRGB").
-			SetAttributes(`TIP="Do not convert images that have RGB colorspace"`),
-		iup.Toggle(" Exclude Cover").SetHandle("NoCover").
-			SetAttributes(`TIP="Do not convert the cover image"`),
-		iup.Toggle(" Remove Non-Image Files from the Archive").SetHandle("NoNonImage").
-			SetAttribute("TIP", "Remove .nfo, .xml, .txt files from the archive"),
-		iup.Toggle(" Do not Transform or Convert Images").SetHandle("NoConvert").
-			SetAttributes(`TIP="Copy images from archive or directory without modifications"`).
-			SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
-				setActive()
+	vboxInput := iup.Hbox(
+		iup.Vbox(
+			iup.Toggle(" Recurse SubDirectories").SetHandle("Recursive").
+				SetAttributes(`TIP="Process subdirectories recursively"`),
+			iup.Toggle(" Only Grayscale Images").SetHandle("NoRGB").
+				SetAttributes(`TIP="Do not convert images that have RGB colorspace"`),
+			iup.Toggle(" Exclude Cover").SetHandle("NoCover").
+				SetAttributes(`TIP="Do not convert the cover image"`),
+			iup.Toggle(" Remove Non-Image Files from the Archive").SetHandle("NoNonImage").
+				SetAttribute("TIP", "Remove .nfo, .xml, .txt files from the archive"),
+			iup.Toggle(" Do not Transform or Convert Images").SetHandle("NoConvert").
+				SetAttributes(`TIP="Copy images from archive or directory without modifications"`).
+				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+					setActive()
 
-				return iup.DEFAULT
-			})),
+					return iup.DEFAULT
+				})),
+		).SetAttributes("NGAP=10"),
+		iup.Space().SetAttribute("SIZE", "15"),
 		iup.Vbox(
-			iup.Label("Minimum Size (MiB):"),
-			iup.Text().SetAttributes(`SPIN=YES, SPINMAX=2048, VISIBLECOLUMNS=4, MASK="/d*"`).SetHandle("Size").
-				SetAttributes(`TIP="Process only files larger than minimum size"`),
-		),
-		iup.Vbox(
-			iup.Label("Document DPI:"),
-			iup.List().SetAttributes(map[string]string{
-				"DROPDOWN":       "YES",
-				"EDITBOX":        "YES",
-				"VISIBLECOLUMNS": "6",
-				"VALUE":          "Default",
-				"1":              "Default",
-				"2":              "150",
-				"3":              "300",
-				"4":              "600",
-				"5":              "1200",
-			}).SetHandle("DPI").
-				SetAttribute("TIP", "Resolution for rendering documents (PDF, EPUB, etc.); Default is 300"),
-		),
-		iup.Space().SetAttributes("EXPAND=HORIZONTAL"),
-	).SetHandle("VboxInput").SetAttributes("NGAP=10")
+			iup.Vbox(
+				iup.Label("Minimum Size (MiB):"),
+				iup.Text().SetAttributes(`SPIN=YES, SPINMAX=2048, VISIBLECOLUMNS=4, MASK="/d*"`).SetHandle("Size").
+					SetAttributes(`TIP="Process only files larger than minimum size"`),
+			),
+			iup.Vbox(
+				iup.Label("Document DPI:"),
+				iup.List().SetAttributes(map[string]string{
+					"DROPDOWN":       "YES",
+					"EDITBOX":        "YES",
+					"VISIBLECOLUMNS": "6",
+					"VALUE":          "Default",
+					"1":              "Default",
+					"2":              "150",
+					"3":              "300",
+					"4":              "600",
+					"5":              "1200",
+				}).SetHandle("DPI").
+					SetAttribute("TIP", "Resolution for rendering documents (PDF, EPUB, etc.); Default is 300"),
+			),
+		).SetAttributes("NGAP=10"),
+	).SetHandle("VboxInput")
 
 	vboxOutput := iup.Hbox(
 		iup.Vbox(
 			iup.Vbox(
 				iup.Label("Output Directory:"),
 				iup.Text().SetAttributes("VISIBLECOLUMNS=16, MINSIZE=100x").SetHandle("OutDir").
+					SetAttribute("TIP", "Directory where converted files are written (required)").
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						setActive()
 
@@ -902,6 +907,7 @@ func tabs() iup.Ihandle {
 					"1":        "ZIP",
 					"2":        "TAR",
 				}).SetHandle("Archive").
+					SetAttribute("TIP", "Output container: ZIP (.cbz) or uncompressed TAR (.cbt)").
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						setActive()
 
@@ -965,6 +971,7 @@ func tabs() iup.Ihandle {
 					"6":        "AVIF",
 					"7":        "JXL",
 				}).SetHandle("Format").
+					SetAttribute("TIP", "Output image format for the converted pages").
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						setEffort(strings.ToLower(ih.GetAttribute("VALUESTRING")))
 						setActive()
@@ -1157,6 +1164,7 @@ func tabs() iup.Ihandle {
 				"3":        "180",
 				"4":        "270",
 			}).SetHandle("Rotate").
+				SetAttribute("TIP", "Rotate every page clockwise by the given angle in degrees").
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					previewPost()
 
@@ -1213,12 +1221,12 @@ func buttons() iup.Ihandle {
 			remove,
 			removeAll,
 		).SetAttribute("NGAP", "2"),
-		iup.Space().SetAttribute("SIZE", "x8"),
+		iup.Space().SetAttribute("SIZE", "x5"),
 		iup.Vbox(
 			thumbnail,
 			cover,
 		).SetAttribute("NGAP", "2"),
-		iup.Space().SetAttribute("SIZE", "x8"),
+		iup.Space().SetAttribute("SIZE", "x5"),
 		iup.Vbox(
 			convert,
 		),
