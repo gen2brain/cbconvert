@@ -13,6 +13,7 @@ import (
 
 	"github.com/gen2brain/cbconvert"
 	pb "github.com/schollz/progressbar/v3"
+	"golang.org/x/term"
 )
 
 var appVersion string
@@ -78,39 +79,55 @@ func main() {
 		os.Exit(1)
 	}
 
+	interactive := !opts.Quiet && term.IsTerminal(int(os.Stderr.Fd()))
+
 	var bar *pb.ProgressBar
-	if opts.Cover || opts.Thumbnail || opts.Meta {
-		if !opts.Quiet {
-			bar = pb.NewOptions(conv.Nfiles,
-				pb.OptionShowCount(),
-				pb.OptionClearOnFinish(),
-				pb.OptionUseANSICodes(true),
-				pb.OptionSetPredictTime(false),
-			)
+	newBar := func(max int, description string) {
+		bar = pb.NewOptions(max,
+			pb.OptionShowCount(),
+			pb.OptionClearOnFinish(),
+			pb.OptionUseANSICodes(true),
+			pb.OptionSetPredictTime(false),
+			pb.OptionSetDescription(description),
+		)
+	}
+
+	clearLine := func() {
+		fmt.Fprint(os.Stderr, "\033[2K\r")
+	}
+
+	cleanup := func() {
+		if interactive {
+			if bar != nil {
+				_ = bar.Finish()
+			}
+			clearLine()
 		}
 	}
 
+	if interactive && (opts.Cover || opts.Thumbnail || opts.Meta) {
+		newBar(conv.Nfiles, "")
+	}
+
 	conv.OnStart = func() {
-		if !opts.Quiet {
-			bar = pb.NewOptions(conv.Ncontents,
-				pb.OptionShowCount(),
-				pb.OptionClearOnFinish(),
-				pb.OptionUseANSICodes(true),
-				pb.OptionSetDescription(fmt.Sprintf("Converting %d of %d:", conv.CurrFile, conv.Nfiles)),
-				pb.OptionSetPredictTime(false),
-			)
+		if interactive {
+			clearLine()
+			newBar(conv.Ncontents, fmt.Sprintf("Converting %d of %d:", conv.CurrFile, conv.Nfiles))
 		}
 	}
 
 	conv.OnProgress = func() {
-		if !opts.Quiet {
+		if bar != nil {
 			_ = bar.Add(1)
 		}
 	}
 
 	conv.OnCompress = func() {
-		if !opts.Quiet {
-			fmt.Fprintf(os.Stderr, "Compressing %d of %d...\r", conv.CurrFile, conv.Nfiles)
+		if interactive {
+			if bar != nil {
+				_ = bar.Finish()
+			}
+			fmt.Fprintf(os.Stderr, "Compressing %d of %d...", conv.CurrFile, conv.Nfiles)
 		}
 	}
 
@@ -120,7 +137,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		fmt.Fprintf(os.Stderr, "\r")
+		cleanup()
 
 		return
 	}
@@ -163,7 +180,7 @@ func main() {
 		}
 	}
 
-	fmt.Fprintf(os.Stderr, "\r")
+	cleanup()
 }
 
 // parseFlags parses command line flags.
