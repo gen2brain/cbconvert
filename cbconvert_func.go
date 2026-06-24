@@ -123,6 +123,12 @@ func baseNoExt(filename string) string {
 	return strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))
 }
 
+// flatName flattens a path into a single collision-free name by replacing separators.
+func flatName(name string) string {
+	name = strings.ReplaceAll(name, "\\", "/")
+	return strings.ReplaceAll(name, "/", "_")
+}
+
 // copyFile copies reader to file.
 func copyFile(reader io.Reader, filename string) error {
 	err := os.MkdirAll(filepath.Dir(filename), 0755)

@@ -123,7 +123,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 
 		if isImage(pathName) {
 			if c.Opts.NoConvert {
-				if err = copyFile(bytes.NewReader(data), c.workPath(filepath.Base(pathName))); err != nil {
+				if err = copyFile(bytes.NewReader(data), c.workPath(flatName(pathName))); err != nil {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
@@ -131,7 +131,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 			}
 
 			if cover == pathName && c.Opts.NoCover {
-				if err = copyFile(bytes.NewReader(data), c.workPath(filepath.Base(pathName))); err != nil {
+				if err = copyFile(bytes.NewReader(data), c.workPath(flatName(pathName))); err != nil {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
@@ -145,7 +145,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 			}
 
 			if c.Opts.NoRGB && !isGrayScale(img) {
-				if err = copyFile(bytes.NewReader(data), c.workPath(filepath.Base(pathName))); err != nil {
+				if err = copyFile(bytes.NewReader(data), c.workPath(flatName(pathName))); err != nil {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 
@@ -163,7 +163,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 			}
 
 			if c.prefix == "" && !c.Opts.NoNonImage {
-				if err = copyFile(bytes.NewReader(data), c.workPath(filepath.Base(pathName))); err != nil {
+				if err = copyFile(bytes.NewReader(data), c.workPath(flatName(pathName))); err != nil {
 					return fmt.Errorf("convertArchive: %w", err)
 				}
 			}
@@ -206,13 +206,18 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 			return fmt.Errorf("convertDirectory: %w", ctx.Err())
 		}
 
+		rel, rerr := filepath.Rel(dirPath, img)
+		if rerr != nil {
+			rel = filepath.Base(img)
+		}
+
 		file, err := os.Open(img)
 		if err != nil {
 			return fmt.Errorf("convertDirectory: %w", err)
 		}
 
 		if isNonImage(img) && c.prefix == "" && !c.Opts.NoNonImage {
-			if err = copyFile(file, c.workPath(filepath.Base(img))); err != nil {
+			if err = copyFile(file, c.workPath(flatName(rel))); err != nil {
 				return fmt.Errorf("convertDirectory: %w", err)
 			}
 
@@ -223,7 +228,7 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 			continue
 		} else if isImage(img) {
 			if c.Opts.NoConvert {
-				if err = copyFile(file, c.workPath(filepath.Base(img))); err != nil {
+				if err = copyFile(file, c.workPath(flatName(rel))); err != nil {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
@@ -241,7 +246,7 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 			}
 
 			if c.Opts.NoRGB && !isGrayScale(i) {
-				if err = copyFile(file, c.workPath(filepath.Base(img))); err != nil {
+				if err = copyFile(file, c.workPath(flatName(rel))); err != nil {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
@@ -258,7 +263,7 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 
 			if i != nil {
 				eg.Go(func() error {
-					return c.imageConvert(ctx, i, index, img)
+					return c.imageConvert(ctx, i, index, rel)
 				})
 			}
 		}
@@ -296,7 +301,7 @@ func (c *Converter) imageConvert(ctx context.Context, img image.Image, index int
 
 	var fileName string
 	if pathName != "" {
-		fileName = c.workPath(fmt.Sprintf("%s.%s", baseNoExt(pathName), ext))
+		fileName = c.workPath(fmt.Sprintf("%s.%s", flatName(strings.TrimSuffix(pathName, filepath.Ext(pathName))), ext))
 	} else {
 		fileName = c.workPath(fmt.Sprintf("%03d.%s", index, ext))
 	}
