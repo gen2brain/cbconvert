@@ -114,14 +114,65 @@ func TestArgs(t *testing.T) {
 	opts.Effort = 4
 	opts.Lossless = true
 	opts.Width = 1200
+	opts.NoUpscale = true
 	opts.DPI = 150
 	opts.Grayscale = true
 	opts.OutDir = "/out"
 
 	got := strings.Join(opts.Args(), " ")
-	want := "--width 1200 --dpi 150 --format webp --quality 90 --effort 4 --lossless --grayscale --outdir /out"
+	want := "--width 1200 --no-upscale --dpi 150 --format webp --quality 90 --effort 4 --lossless --grayscale --outdir /out"
 	if got != want {
 		t.Errorf("Args() = %q, want %q", got, want)
+	}
+}
+
+func TestNoUpscale(t *testing.T) {
+	tmpDir, err := os.MkdirTemp(os.TempDir(), "cbc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	width := func(o Options) int {
+		conv := New(o)
+		files, err := conv.Files([]string{"testdata/test.cbz"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, file := range files {
+			if err := conv.Convert(file); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		return firstPage(t, conv, filepath.Join(tmpDir, "test.cbz")).Bounds().Dx()
+	}
+
+	base := NewOptions()
+	base.OutDir = tmpDir
+	orig := width(base)
+
+	up := NewOptions()
+	up.OutDir = tmpDir
+	up.Width = orig * 2
+	up.NoUpscale = true
+	if got := width(up); got != orig {
+		t.Errorf("NoUpscale should keep original width %d, got %d", orig, got)
+	}
+
+	no := NewOptions()
+	no.OutDir = tmpDir
+	no.Width = orig * 2
+	if got := width(no); got != orig*2 {
+		t.Errorf("without NoUpscale should upscale to %d, got %d", orig*2, got)
+	}
+
+	down := NewOptions()
+	down.OutDir = tmpDir
+	down.Width = orig / 2
+	down.NoUpscale = true
+	if got := width(down); got != orig/2 {
+		t.Errorf("NoUpscale should still downscale to %d, got %d", orig/2, got)
 	}
 }
 

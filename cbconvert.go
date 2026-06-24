@@ -39,6 +39,8 @@ type Options struct {
 	Height int
 	// Best fit for required width and height
 	Fit bool
+	// Do not upscale images already smaller than the requested width/height
+	NoUpscale bool
 	// Document rendering resolution in DPI (PDF, EPUB, etc.); 0 uses the default
 	DPI int
 	// 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
@@ -180,6 +182,7 @@ func (o Options) Args() []string {
 	num("width", o.Width, def.Width)
 	num("height", o.Height, def.Height)
 	flag("fit", o.Fit)
+	flag("no-upscale", o.NoUpscale)
 	num("dpi", o.DPI, def.DPI)
 	str("format", o.Format, def.Format)
 	str("archive", o.Archive, def.Archive)
@@ -360,11 +363,7 @@ func (c *Converter) Cover(file File) error {
 	}
 
 	if c.Opts.Width > 0 || c.Opts.Height > 0 {
-		if c.Opts.Fit {
-			cover = fit(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
-		} else {
-			cover = resize(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
-		}
+		cover = c.resizeFit(cover)
 	}
 
 	ext := c.Opts.Format
@@ -409,11 +408,7 @@ func (c *Converter) Thumbnail(file File) error {
 	}
 
 	if c.Opts.Width > 0 || c.Opts.Height > 0 {
-		if c.Opts.Fit {
-			cover = fit(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
-		} else {
-			cover = resize(cover, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
-		}
+		cover = c.resizeFit(cover)
 	} else {
 		cover = resize(cover, 256, 0, filters[c.Opts.Filter])
 	}

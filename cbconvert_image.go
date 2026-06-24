@@ -86,6 +86,26 @@ func fit(img image.Image, width, height int, filter transform.ResampleFilter) *i
 	return resize(img, dstW, dstH, filter)
 }
 
+// withinBounds reports whether img already fits within width by height; a zero dimension is unbounded.
+func withinBounds(img image.Image, width, height int) bool {
+	b := img.Bounds()
+
+	return (width == 0 || b.Dx() <= width) && (height == 0 || b.Dy() <= height)
+}
+
+// resizeFit resizes img to the configured width/height, honoring Fit and NoUpscale.
+func (c *Converter) resizeFit(img image.Image) image.Image {
+	if c.Opts.Fit {
+		return fit(img, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
+	}
+
+	if c.Opts.NoUpscale && withinBounds(img, c.Opts.Width, c.Opts.Height) {
+		return img
+	}
+
+	return resize(img, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
+}
+
 func rotate(img image.Image, angle float64) *image.RGBA {
 	return transform.Rotate(img, angle, &transform.RotationOptions{ResizeBounds: true, Pivot: &image.Point{}})
 }

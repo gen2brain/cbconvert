@@ -326,11 +326,7 @@ func (c *Converter) imageTransform(img image.Image) image.Image {
 	var i = img
 
 	if c.Opts.Width > 0 || c.Opts.Height > 0 {
-		if c.Opts.Fit {
-			i = fit(i, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
-		} else {
-			i = resize(i, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
-		}
+		i = c.resizeFit(i)
 	}
 
 	if c.Opts.Rotate > 0 {

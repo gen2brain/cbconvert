@@ -359,6 +359,8 @@ func tabImage() iup.Ihandle {
 			iup.Vbox(
 				iup.Toggle(" Best Fit").SetHandle("Fit").
 					SetAttributes(`TIP="Best fit for required width and height"`),
+				iup.Toggle(" No Upscale").SetHandle("NoUpscale").
+					SetAttribute("TIP", "Do not enlarge images already smaller than the requested size"),
 			),
 			iup.Vbox(
 				iup.Label("Resize Filter:"),

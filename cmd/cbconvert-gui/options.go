@@ -25,6 +25,7 @@ func options() cbconvert.Options {
 	opts.Height = iup.GetHandle("Height").GetInt("VALUE")
 	opts.DPI = dpiValue(iup.GetHandle("DPI").GetAttribute("VALUE"))
 	opts.Fit = iup.GetHandle("Fit").GetAttribute("VALUE") == "ON"
+	opts.NoUpscale = iup.GetHandle("NoUpscale").GetAttribute("VALUE") == "ON"
 	opts.Filter = iup.GetHandle("Filter").GetInt("VALUE") - 1
 	opts.Quality = iup.GetHandle("Quality").GetInt("VALUE")
 	switch opts.Format {

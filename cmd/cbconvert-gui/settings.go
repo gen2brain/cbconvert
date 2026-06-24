@@ -39,6 +39,7 @@ var settings = []setting{
 	{"NoNonImage", kindBool, "OFF"},
 	{"Combine", kindBool, "OFF"},
 	{"Fit", kindBool, "OFF"},
+	{"NoUpscale", kindBool, "OFF"},
 	{"Lossless", kindBool, "OFF"},
 	{"Grayscale", kindBool, "OFF"},
 	{"OutDir", kindStr, ""},

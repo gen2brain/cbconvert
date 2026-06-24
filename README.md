@@ -70,6 +70,8 @@ Commands:
     	Image height (default "0")
     --fit
     	Best fit for required width and height (default "false")
+    --no-upscale
+    	Do not upscale images already smaller than the requested width/height (default "false")
     --dpi
     	Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300) (default "0")
     --format
@@ -126,6 +128,8 @@ Commands:
     	Image height (default "0")
     --fit
     	Best fit for required width and height (default "false")
+    --no-upscale
+    	Do not upscale images already smaller than the requested width/height (default "false")
     --dpi
     	Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300) (default "0")
     --format
@@ -156,6 +160,8 @@ Commands:
     	Image height (default "0")
     --fit
     	Best fit for required width and height (default "false")
+    --no-upscale
+    	Do not upscale images already smaller than the requested width/height (default "false")
     --dpi
     	Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300) (default "0")
     --filter
