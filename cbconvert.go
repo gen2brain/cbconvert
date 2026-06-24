@@ -153,6 +153,56 @@ func New(o Options) *Converter {
 	return c
 }
 
+// Args returns the non-default options as cbconvert convert command-line flags.
+func (o Options) Args() []string {
+	def := NewOptions()
+
+	var args []string
+
+	str := func(name, val, dflt string) {
+		if val != dflt {
+			args = append(args, "--"+name, val)
+		}
+	}
+	num := func(name string, val, dflt int) {
+		if val != dflt {
+			args = append(args, "--"+name, strconv.Itoa(val))
+		}
+	}
+	flag := func(name string, val bool) {
+		if val {
+			args = append(args, "--"+name)
+		}
+	}
+
+	num("width", o.Width, def.Width)
+	num("height", o.Height, def.Height)
+	flag("fit", o.Fit)
+	str("format", o.Format, def.Format)
+	str("archive", o.Archive, def.Archive)
+	num("zip-level", o.ZipLevel, def.ZipLevel)
+	num("quality", o.Quality, def.Quality)
+	num("effort", o.Effort, def.Effort)
+	flag("lossless", o.Lossless)
+	flag("combine", o.Combine)
+	str("outfile", o.OutFile, def.OutFile)
+	num("filter", o.Filter, def.Filter)
+	flag("no-cover", o.NoCover)
+	flag("no-rgb", o.NoRGB)
+	flag("no-nonimage", o.NoNonImage)
+	flag("no-convert", o.NoConvert)
+	str("suffix", o.Suffix, def.Suffix)
+	flag("grayscale", o.Grayscale)
+	num("rotate", o.Rotate, def.Rotate)
+	num("brightness", o.Brightness, def.Brightness)
+	num("contrast", o.Contrast, def.Contrast)
+	flag("recursive", o.Recursive)
+	str("outdir", o.OutDir, def.OutDir)
+	num("size", o.Size, def.Size)
+
+	return args
+}
+
 // Cancel cancels the operation.
 func (c *Converter) Cancel() {
 	if c.OnCancel != nil {

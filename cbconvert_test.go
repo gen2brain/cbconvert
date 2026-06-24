@@ -103,6 +103,27 @@ func TestThumbnail(t *testing.T) {
 	}
 }
 
+func TestArgs(t *testing.T) {
+	opts := NewOptions()
+	if got := opts.Args(); len(got) != 0 {
+		t.Errorf("defaults should emit no flags, got %v", got)
+	}
+
+	opts.Format = "webp"
+	opts.Quality = 90
+	opts.Effort = 4
+	opts.Lossless = true
+	opts.Width = 1200
+	opts.Grayscale = true
+	opts.OutDir = "/out"
+
+	got := strings.Join(opts.Args(), " ")
+	want := "--width 1200 --format webp --quality 90 --effort 4 --lossless --grayscale --outdir /out"
+	if got != want {
+		t.Errorf("Args() = %q, want %q", got, want)
+	}
+}
+
 func TestConvertResize(t *testing.T) {
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "cbc")
 	if err != nil {

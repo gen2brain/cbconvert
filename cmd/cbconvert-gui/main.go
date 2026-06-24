@@ -310,6 +310,34 @@ func setActive() {
 	}
 }
 
+// shellArg quotes a command-line argument that contains whitespace.
+func shellArg(s string) string {
+	if strings.ContainsAny(s, " \t") {
+		return `"` + strings.ReplaceAll(s, `"`, `\"`) + `"`
+	}
+
+	return s
+}
+
+func commandLine() string {
+	parts := append([]string{"cbconvert", "convert"}, options().Args()...)
+	for _, file := range files {
+		parts = append(parts, file.Path)
+	}
+
+	for i, p := range parts {
+		parts[i] = shellArg(p)
+	}
+
+	return strings.Join(parts, " ")
+}
+
+func onCommand(iup.Ihandle) int {
+	iup.GetText("Command Line", commandLine(), -1)
+
+	return iup.DEFAULT
+}
+
 // zipLevel maps the compression dropdown selection to Options.ZipLevel.
 func zipLevel(value string) int {
 	switch value {
@@ -1083,11 +1111,16 @@ func buttons() iup.Ihandle {
 		SetAttribute("TIP", "Save current settings to a profile").
 		SetCallback("ACTION", iup.ActionFunc(onSave))
 
-	profile := iup.List().SetAttributes("DROPDOWN=YES, EXPAND=HORIZONTAL").SetHandle("Profile").
+	command := iup.Button("Command").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetAttribute("TIP", "Show the equivalent command line").
+		SetCallback("ACTION", iup.ActionFunc(onCommand))
+
+	profile := iup.List().SetAttributes("DROPDOWN=YES").SetHandle("Profile").
 		SetAttribute("TIP", "Select a settings profile").
 		SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(onProfileSelect))
 
-	iup.Normalizer(addFiles, addDir, remove, removeAll, thumbnail, cover, convert, reset, save).SetAttribute("NORMALIZE", "BOTH")
+	iup.Normalizer(addFiles, addDir, remove, removeAll, thumbnail, cover, convert, reset, save, command).SetAttribute("NORMALIZE", "BOTH")
+	iup.Normalizer(addFiles, addDir, remove, removeAll, thumbnail, cover, convert, reset, save, command, profile).SetAttribute("NORMALIZE", "HORIZONTAL")
 
 	return iup.Vbox(
 		iup.Vbox(
@@ -1111,6 +1144,7 @@ func buttons() iup.Ihandle {
 			profile,
 			reset,
 			save,
+			command,
 		).SetAttribute("NGAP", "2"),
 	).SetHandle("Buttons").SetAttributes("ALIGNMENT=ACENTER")
 }
