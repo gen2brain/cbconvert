@@ -408,7 +408,7 @@ func settingsSave(group string) {
 	iup.ConfigSave(config)
 }
 
-// settingsApply sets every control from the given profile group, or from defaults when group is empty.
+// settingsApply sets every control from the given profile group, or from defaults when a group is empty.
 func settingsApply(group string) {
 	for _, s := range settings {
 		h := iup.GetHandle(s.handle)
@@ -483,7 +483,7 @@ func fillProfileList() {
 	list.SetAttribute("VALUE", strconv.Itoa(sel))
 }
 
-// profilesInit loads the current profile on startup, creating a default one on first run.
+// profilesInit loads the current profile on startup, creating a default one on the first run.
 func profilesInit() {
 	if len(profileNames()) == 0 {
 		iup.ConfigSetVariableStr(config, profilesGroup, "Names", "Default")
@@ -631,6 +631,8 @@ func list() iup.Ihandle {
 		return iup.DEFAULT
 	}))
 
+	t.SetCallback("SORT_CB", iup.TableSortFunc(onSort))
+
 	t.SetCallback("DROPFILES_CB", iup.DropFilesFunc(func(ih iup.Ihandle, fileName string, num, x, y int) int {
 		dec, err := url.QueryUnescape(fileName)
 		if err != nil {
@@ -680,6 +682,55 @@ func selectRow(i int) {
 
 	index = i
 	iup.GetHandle("Table").SetAttribute("FOCUSCELL", fmt.Sprintf("%d:1", i+1))
+}
+
+// onSort re-syncs the files slice to the table's displayed order after a sort, so rows keep mapping to the right file.
+func onSort(ih iup.Ihandle, col int) int {
+	n := len(files)
+	if n < 2 {
+		return iup.DEFAULT
+	}
+
+	rowKey := func(name, size string) string {
+		return name + "\x00" + size
+	}
+
+	buckets := make(map[string][]int, n)
+	for i, f := range files {
+		size := strconv.FormatFloat(float64(f.Stat.Size())/(1024*1024), 'f', 2, 64)
+		k := rowKey(f.Name, size)
+		buckets[k] = append(buckets[k], i)
+	}
+
+	var selPath string
+	if index >= 0 && index < len(files) {
+		selPath = files[index].Path
+	}
+
+	reordered := make([]cbconvert.File, 0, n)
+	for lin := 1; lin <= n; lin++ {
+		k := rowKey(iup.GetAttributeId2(ih, "", lin, 1), iup.GetAttributeId2(ih, "", lin, 3))
+		idxs := buckets[k]
+		if len(idxs) == 0 {
+			return iup.DEFAULT
+		}
+		reordered = append(reordered, files[idxs[0]])
+		buckets[k] = idxs[1:]
+	}
+
+	files = reordered
+
+	index = -1
+	if selPath != "" {
+		for i, f := range files {
+			if f.Path == selPath {
+				selectRow(i)
+				break
+			}
+		}
+	}
+
+	return iup.DEFAULT
 }
 
 // appendFile adds a file as a new row to the table and the files slice.
