@@ -36,6 +36,9 @@ var (
 	files []cbconvert.File
 
 	config iup.Ihandle
+
+	activeConv *cbconvert.Converter
+	busy       bool
 )
 
 const (
@@ -223,6 +226,10 @@ func options() cbconvert.Options {
 }
 
 func setActive() {
+	if busy {
+		return
+	}
+
 	opts := options()
 	count := iup.GetHandle("Table").GetInt("NUMLIN")
 
@@ -1162,7 +1169,7 @@ func buttons() iup.Ihandle {
 		SetAttribute("TIP", "Save current settings to a profile").
 		SetCallback("ACTION", iup.ActionFunc(onSave))
 
-	command := iup.Button("Command").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+	command := iup.Button("Command").SetHandle("Command").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 		SetAttribute("TIP", "Show the equivalent command line").
 		SetCallback("ACTION", iup.ActionFunc(onCommand))
 
@@ -1208,17 +1215,13 @@ func status() iup.Ihandle {
 		iup.Space().SetAttribute("SIZE", "5"),
 		iup.Label("(000/000)").SetHandle("LabelStatus2").SetAttributes("VISIBLE=NO"),
 		iup.Space().SetAttribute("SIZE", "5"),
-		iup.ProgressBar().SetAttributes("RASTERSIZE=200x, VISIBLE=NO").SetHandle("ProgressBar").
+		iup.ProgressBar().SetAttributes("VISIBLE=NO").SetHandle("ProgressBar").
 			SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(func(ih iup.Ihandle, s string, i int, p any) int {
 				switch s {
 				case "convert":
 					conv := p.(*cbconvert.Converter)
 					ih.SetAttributes("VALUE=0, VISIBLE=YES")
 					ih.SetAttribute("MAX", conv.Ncontents)
-
-					iup.GetHandle("Table").SetAttributes("ACTIVE=NO")
-					iup.GetHandle("Tabs").SetAttributes("ACTIVE=NO")
-					iup.GetHandle("Buttons").SetAttributes("ACTIVE=NO")
 
 					iup.GetHandle("LabelStatus1").SetAttribute("TITLE", fmt.Sprintf("File %d of %d", conv.CurrFile, conv.Nfiles))
 					iup.GetHandle("LabelStatus1").SetAttributes("VISIBLE=YES")
@@ -1229,10 +1232,6 @@ func status() iup.Ihandle {
 					conv := p.(*cbconvert.Converter)
 					ih.SetAttributes("VALUE=0, VISIBLE=YES")
 					ih.SetAttribute("MAX", conv.Nfiles)
-
-					iup.GetHandle("Table").SetAttributes("ACTIVE=NO")
-					iup.GetHandle("Tabs").SetAttributes("ACTIVE=NO")
-					iup.GetHandle("Buttons").SetAttributes("ACTIVE=NO")
 
 					iup.GetHandle("LabelStatus2").SetAttributes("VISIBLE=YES")
 				case "progress":
@@ -1248,9 +1247,7 @@ func status() iup.Ihandle {
 
 					iup.Refresh(iup.GetHandle("StatusBar"))
 				case "finish":
-					iup.GetHandle("Table").SetAttributes("ACTIVE=YES")
-					iup.GetHandle("Tabs").SetAttributes("ACTIVE=YES")
-					iup.GetHandle("Buttons").SetAttributes("ACTIVE=YES")
+					setBusy(false)
 
 					iup.GetHandle("LabelStatus1").SetAttributes(`TITLE="", VISIBLE=NO`)
 					iup.GetHandle("LabelStatus2").SetAttributes(`TITLE="", VISIBLE=NO`)
@@ -1392,6 +1389,8 @@ func onRemoveAll(ih iup.Ihandle) int {
 func onThumbnail(ih iup.Ihandle) int {
 	conv := cbconvert.New(options())
 	conv.Nfiles = len(files)
+	activeConv = conv
+	setBusy(true)
 
 	conv.OnProgress = func() {
 		iup.PostMessage(iup.GetHandle("ProgressBar"), "progress2", 0, conv)
@@ -1435,6 +1434,8 @@ func onThumbnail(ih iup.Ihandle) int {
 func onCover(ih iup.Ihandle) int {
 	conv := cbconvert.New(options())
 	conv.Nfiles = len(files)
+	activeConv = conv
+	setBusy(true)
 
 	conv.OnProgress = func() {
 		iup.PostMessage(iup.GetHandle("ProgressBar"), "progress2", 0, conv)
@@ -1475,9 +1476,48 @@ func onCover(ih iup.Ihandle) int {
 	return iup.DEFAULT
 }
 
+// setBusy locks the UI while an operation runs and turns Convert into a Cancel button.
+func setBusy(on bool) {
+	busy = on
+
+	// Controls not governed by setActive; setActive owns the rest.
+	always := "YES"
+	if on {
+		always = "NO"
+	}
+	for _, h := range []string{"AddFiles", "AddDir", "Profile", "Reset", "Save", "Command", "Tabs", "Table"} {
+		iup.GetHandle(h).SetAttribute("ACTIVE", always)
+	}
+
+	convert := iup.GetHandle("Convert")
+	if on {
+		for _, h := range []string{"Remove", "RemoveAll", "Thumbnail", "Cover"} {
+			iup.GetHandle(h).SetAttribute("ACTIVE", "NO")
+		}
+		convert.SetAttribute("ACTIVE", "YES")
+		convert.SetAttribute("TITLE", "Cancel")
+		convert.SetAttribute("TIP", "Cancel the running operation (or press Esc)")
+	} else {
+		activeConv = nil
+		convert.SetAttribute("TITLE", "&Convert")
+		convert.SetAttribute("TIP", "Convert files to the selected format")
+		setActive() // restores the conditional buttons and option boxes
+	}
+}
+
 func onConvert(ih iup.Ihandle) int {
+	if busy {
+		if activeConv != nil {
+			activeConv.Cancel()
+		}
+
+		return iup.DEFAULT
+	}
+
 	conv := cbconvert.New(options())
 	conv.Nfiles = len(files)
+	activeConv = conv
+	setBusy(true)
 
 	conv.OnStart = func() {
 		iup.PostMessage(iup.GetHandle("ProgressBar"), "convert", 0, conv)
