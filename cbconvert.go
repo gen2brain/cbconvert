@@ -93,6 +93,8 @@ type Converter struct {
 	Workdir string
 	// Page name prefix, set per input when combining
 	prefix string
+	// Input root for the current file, used to build recursive output paths
+	root string
 	// Number of files
 	Nfiles int
 	// Index of the current file
@@ -115,6 +117,7 @@ type Converter struct {
 type File struct {
 	Name      string
 	Path      string
+	Root      string
 	Stat      os.FileInfo
 	SizeHuman string
 }
@@ -157,11 +160,13 @@ func (c *Converter) Cancel() {
 // Files returns list of found comic files.
 func (c *Converter) Files(args []string) ([]File, error) {
 	var files []File
+	var root string
 
 	toFile := func(fp string, f os.FileInfo) File {
 		var file File
 		file.Name = filepath.Base(fp)
 		file.Path = fp
+		file.Root = root
 		file.Stat = f
 		file.SizeHuman = humanize.IBytes(uint64(f.Size()))
 		return file
@@ -214,12 +219,14 @@ func (c *Converter) Files(args []string) ([]File, error) {
 		}
 
 		if !stat.IsDir() {
+			root = filepath.Dir(path)
 			if isArchive(path) || isDocument(path) {
 				if isSize(int64(c.Opts.Size), stat.Size()) {
 					files = append(files, toFile(path, stat))
 				}
 			}
 		} else {
+			root = path
 			if c.Opts.Recursive {
 				if err := filepath.Walk(path, walkFiles); err != nil {
 					return files, fmt.Errorf("%s: %w", arg, err)
@@ -261,9 +268,26 @@ func (c *Converter) Files(args []string) ([]File, error) {
 	return files, nil
 }
 
+// recursiveDir mirrors the source path under OutDir, relative to the input root.
+func (c *Converter) recursiveDir(fileName string) string {
+	dir := filepath.Dir(fileName)
+
+	if c.root != "" {
+		if rel, err := filepath.Rel(c.root, dir); err == nil {
+			return filepath.Join(c.Opts.OutDir, rel)
+		}
+	}
+
+	dir = strings.TrimPrefix(dir[len(filepath.VolumeName(dir)):], string(os.PathSeparator))
+
+	return filepath.Join(c.Opts.OutDir, dir)
+}
+
 // Cover extracts cover.
-func (c *Converter) Cover(fileName string, fileInfo os.FileInfo) error {
+func (c *Converter) Cover(file File) error {
 	c.CurrFile++
+	c.root = file.Root
+	fileName, fileInfo := file.Path, file.Stat
 
 	cover, err := c.coverImage(fileName, fileInfo)
 	if err != nil {
@@ -285,13 +309,12 @@ func (c *Converter) Cover(fileName string, fileInfo os.FileInfo) error {
 
 	var fName string
 	if c.Opts.Recursive {
-		fDir := strings.Split(filepath.Dir(fileName), string(os.PathSeparator))[1:]
-		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Join(fDir...)), 0755)
-		if err != nil {
+		outDir := c.recursiveDir(fileName)
+		if err := os.MkdirAll(outDir, 0755); err != nil {
 			return fmt.Errorf("%s: %w", fileName, err)
 		}
 
-		fName = filepath.Join(c.Opts.OutDir, filepath.Join(fDir...), fmt.Sprintf("%s.%s", baseNoExt(fileName), ext))
+		fName = filepath.Join(outDir, fmt.Sprintf("%s.%s", baseNoExt(fileName), ext))
 	} else {
 		fName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s.%s", baseNoExt(fileName), ext))
 	}
@@ -310,8 +333,10 @@ func (c *Converter) Cover(fileName string, fileInfo os.FileInfo) error {
 }
 
 // Thumbnail extracts thumbnail.
-func (c *Converter) Thumbnail(fileName string, fileInfo os.FileInfo) error {
+func (c *Converter) Thumbnail(file File) error {
 	c.CurrFile++
+	c.root = file.Root
+	fileName, fileInfo := file.Path, file.Stat
 
 	cover, err := c.coverImage(fileName, fileInfo)
 	if err != nil {
@@ -352,13 +377,12 @@ func (c *Converter) Thumbnail(fileName string, fileInfo os.FileInfo) error {
 		fURI = "file://" + fileName
 
 		if c.Opts.Recursive {
-			fDir := strings.Split(filepath.Dir(fileName), string(os.PathSeparator))[1:]
-			err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Join(fDir...)), 0755)
-			if err != nil {
+			outDir := c.recursiveDir(fileName)
+			if err := os.MkdirAll(outDir, 0755); err != nil {
 				return fmt.Errorf("%s: %w", fileName, err)
 			}
 
-			fName = filepath.Join(c.Opts.OutDir, filepath.Join(fDir...), fmt.Sprintf("%x.png", md5.Sum([]byte(fURI))))
+			fName = filepath.Join(outDir, fmt.Sprintf("%x.png", md5.Sum([]byte(fURI))))
 		} else {
 			fName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%x.png", md5.Sum([]byte(fURI))))
 		}
@@ -496,8 +520,10 @@ func (c *Converter) Preview(fileName string, fileInfo os.FileInfo, width, height
 }
 
 // Convert converts a comic book.
-func (c *Converter) Convert(fileName string, fileInfo os.FileInfo) error {
+func (c *Converter) Convert(file File) error {
 	c.CurrFile++
+	c.root = file.Root
+	fileName, fileInfo := file.Path, file.Stat
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -540,6 +566,8 @@ func (c *Converter) Combine(files []File) error {
 	if len(files) == 0 {
 		return nil
 	}
+
+	c.root = ""
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

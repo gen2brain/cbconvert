@@ -33,13 +33,12 @@ func (c *Converter) archiveSaveZip(fileName string) error {
 
 	var zipName string
 	if c.Opts.Recursive {
-		fDir := strings.Split(filepath.Dir(fileName), string(os.PathSeparator))[1:]
-		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Join(fDir...)), 0755)
-		if err != nil {
+		outDir := c.recursiveDir(fileName)
+		if err := os.MkdirAll(outDir, 0755); err != nil {
 			return fmt.Errorf("archiveSaveZip: %w", err)
 		}
 
-		zipName = filepath.Join(c.Opts.OutDir, filepath.Join(fDir...), fmt.Sprintf("%s%s.cbz", baseNoExt(fileName), c.Opts.Suffix))
+		zipName = filepath.Join(outDir, fmt.Sprintf("%s%s.cbz", baseNoExt(fileName), c.Opts.Suffix))
 	} else {
 		zipName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s%s.cbz", baseNoExt(fileName), c.Opts.Suffix))
 	}
@@ -108,13 +107,12 @@ func (c *Converter) archiveSaveTar(fileName string) error {
 
 	var tarName string
 	if c.Opts.Recursive {
-		fDir := strings.Split(filepath.Dir(fileName), string(os.PathSeparator))[1:]
-		err := os.MkdirAll(filepath.Join(c.Opts.OutDir, filepath.Join(fDir...)), 0755)
-		if err != nil {
+		outDir := c.recursiveDir(fileName)
+		if err := os.MkdirAll(outDir, 0755); err != nil {
 			return fmt.Errorf("archiveSaveTar: %w", err)
 		}
 
-		tarName = filepath.Join(c.Opts.OutDir, filepath.Join(fDir...), fmt.Sprintf("%s%s.cbt", baseNoExt(fileName), c.Opts.Suffix))
+		tarName = filepath.Join(outDir, fmt.Sprintf("%s%s.cbt", baseNoExt(fileName), c.Opts.Suffix))
 	} else {
 		tarName = filepath.Join(c.Opts.OutDir, fmt.Sprintf("%s%s.cbt", baseNoExt(fileName), c.Opts.Suffix))
 	}

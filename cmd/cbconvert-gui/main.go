@@ -1024,7 +1024,7 @@ func onThumbnail(ih iup.Ihandle) int {
 				break
 			}
 
-			if err := c.Thumbnail(file.Path, file.Stat); err != nil {
+			if err := c.Thumbnail(file); err != nil {
 				iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
 				fmt.Println(err)
 
@@ -1067,7 +1067,7 @@ func onCover(ih iup.Ihandle) int {
 				break
 			}
 
-			if err := c.Cover(file.Path, file.Stat); err != nil {
+			if err := c.Cover(file); err != nil {
 				iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
 				fmt.Println(err)
 
@@ -1131,7 +1131,7 @@ func onConvert(ih iup.Ihandle) int {
 			}
 		} else {
 			for _, file := range files {
-				if err := c.Convert(file.Path, file.Stat); err != nil {
+				if err := c.Convert(file); err != nil {
 					convertErr(err)
 					if errors.Is(err, context.Canceled) {
 						break

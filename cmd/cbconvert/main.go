@@ -68,8 +68,8 @@ func main() {
 	if _, err := os.Stat(opts.OutDir); err != nil {
 		if err := os.MkdirAll(opts.OutDir, 0775); err != nil {
 			fmt.Println(err)
+			os.Exit(1)
 		}
-		os.Exit(1)
 	}
 
 	files, err := conv.Files(args)
@@ -142,14 +142,14 @@ func main() {
 
 			continue
 		case opts.Cover:
-			if err := conv.Cover(file.Path, file.Stat); err != nil {
+			if err := conv.Cover(file); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 
 			continue
 		case opts.Thumbnail:
-			if err = conv.Thumbnail(file.Path, file.Stat); err != nil {
+			if err = conv.Thumbnail(file); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
@@ -157,7 +157,7 @@ func main() {
 			continue
 		}
 
-		if err := conv.Convert(file.Path, file.Stat); err != nil {
+		if err := conv.Convert(file); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -279,27 +279,27 @@ func parseFlags() (cbconvert.Options, []string) {
 
 	switch os.Args[1] {
 	case "convert":
-		_ = convert.Parse(os.Args[2:])
+		operands := parseArgs(convert, os.Args[2:])
 		if !pipe {
-			args = convert.Args()
+			args = operands
 		}
 	case "cover":
 		opts.Cover = true
-		_ = cover.Parse(os.Args[2:])
+		operands := parseArgs(cover, os.Args[2:])
 		if !pipe {
-			args = cover.Args()
+			args = operands
 		}
 	case "thumbnail":
 		opts.Thumbnail = true
-		_ = thumbnail.Parse(os.Args[2:])
+		operands := parseArgs(thumbnail, os.Args[2:])
 		if !pipe {
-			args = thumbnail.Args()
+			args = operands
 		}
 	case "meta":
 		opts.Meta = true
-		_ = meta.Parse(os.Args[2:])
+		operands := parseArgs(meta, os.Args[2:])
 		if !pipe {
-			args = meta.Args()
+			args = operands
 		}
 	case "version":
 		opts.Version = true
@@ -312,6 +312,19 @@ func parseFlags() (cbconvert.Options, []string) {
 	}
 
 	return opts, args
+}
+
+// parseArgs parses flags interspersed with file/dir operands.
+func parseArgs(fs *flag.FlagSet, args []string) []string {
+	var operands []string
+
+	_ = fs.Parse(args)
+	for fs.NArg() > 0 {
+		operands = append(operands, fs.Arg(0))
+		_ = fs.Parse(fs.Args()[1:])
+	}
+
+	return operands
 }
 
 // piped checks if we have piped stdin.
