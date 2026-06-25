@@ -17,6 +17,7 @@ import (
 )
 
 //go:generate rsrc --ico dist/windows/icon.ico --arch amd64 -o main_windows_amd64.syso
+//go:generate rsrc --ico dist/windows/icon.ico --arch arm64 -o main_windows_arm64.syso
 
 //go:embed assets/logo.png
 var appLogo []byte
