@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image/gif"
+	"math"
 	"net/url"
 	"strconv"
 	"strings"
@@ -58,7 +59,7 @@ func list() iup.Ihandle {
 		"TITLE1":         "Title",
 		"TITLE2":         "Type",
 		"TITLE3":         "Size (MiB)",
-		"WIDTH1":         "150",
+		"WIDTH1":         "300",
 		"WIDTH2":         "50",
 		"WIDTH3":         "100",
 		"ALIGNMENT2":     "ACENTER",
@@ -102,21 +103,7 @@ func list() iup.Ihandle {
 			return iup.DEFAULT
 		}
 
-		wasEmpty := len(files) == 0
-
-		for _, file := range fs {
-			appendFile(file)
-		}
-
-		if wasEmpty && len(files) > 0 {
-			selectRow(0)
-		}
-
-		setActive()
-
-		if wasEmpty {
-			previewPost()
-		}
+		addFiles(fs)
 
 		return iup.DEFAULT
 	}))
@@ -124,47 +111,113 @@ func list() iup.Ihandle {
 	return iup.Vbox(t)
 }
 
-func previewSize() (int, int) {
-	var width, height int
-	sp := strings.Split(iup.GetHandle("Preview").GetAttribute("RASTERSIZE"), "x")
-	if len(sp) == 2 {
-		width, _ = strconv.Atoi(sp[0])
-		height, _ = strconv.Atoi(sp[1])
-	}
-
-	return width, height
-}
-
 func preview() iup.Ihandle {
 	return iup.Frame(
 		iup.Vbox(
-			iup.Label("").SetAttributes("EXPAND=YES, ALIGNMENT=ACENTER, MINSIZE=400x, IMAGE=cover").SetHandle("Preview").
-				SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(func(ih iup.Ihandle, s string, i int, p any) int {
-					img := p.(cbconvert.Image)
-
-					iup.GetHandle("Loading").SetAttributes("VISIBLE=NO, STOP=YES")
-
-					if img.Image != nil && len(s) == 0 {
-						iup.Destroy(iup.GetHandle("cover"))
-						iup.ImageFromImage(img.Image).SetHandle("cover")
-
-						ih.SetAttribute("IMAGE", "cover")
-						iup.GetHandle("PreviewInfo").SetAttribute("TITLE", fmt.Sprintf("%s (%dx%d)", img.SizeHuman, img.Width, img.Height))
-					} else {
-						ih.SetAttribute("IMAGE", "logo")
-						iup.GetHandle("PreviewInfo").SetAttribute("TITLE", "")
-
-						sp := strings.Split(s, ": ")
-						if len(sp) > 1 {
-							iup.MessageError(ih, fmt.Sprintf("%s\n\n%s", sp[0], strings.Join(sp[1:], ": ")))
-						}
-					}
-
-					return iup.DEFAULT
-				})),
+			iup.Canvas().SetAttributes("EXPAND=YES, MINSIZE=400x, BORDER=NO").SetHandle("Preview").
+				SetCallback("ACTION", iup.ActionFunc(drawPreview)).
+				SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(previewMessage)),
 			iup.Label("").SetAttributes("EXPAND=HORIZONTAL, ALIGNMENT=ACENTER").SetHandle("PreviewInfo"),
 		),
 	)
+}
+
+// drawPreview draws the cover scaled to fit, else the logo centered.
+func drawPreview(ih iup.Ihandle) int {
+	iup.DrawBegin(ih)
+	defer iup.DrawEnd(ih)
+
+	cw, ch := iup.DrawGetSize(ih)
+	iup.DrawParentBackground(ih)
+
+	name := "logo"
+	if hasCover {
+		name = "cover"
+	}
+
+	iw, ihh, _ := iup.DrawGetImageInfo(name)
+	if iw <= 0 || ihh <= 0 {
+		return iup.DEFAULT
+	}
+
+	dw, dh := iw, ihh
+	if hasCover {
+		s := math.Min(float64(cw)/float64(iw), float64(ch)/float64(ihh))
+		dw = int(float64(iw) * s)
+		dh = int(float64(ihh) * s)
+	}
+
+	iup.DrawImage(ih, name, (cw-dw)/2, (ch-dh)/2, dw, dh)
+
+	return iup.DEFAULT
+}
+
+// previewMessage receives a rendered cover from previewRender and triggers a canvas redraw.
+func previewMessage(ih iup.Ihandle, s string, i int, p any) int {
+	if i != previewPage {
+		return iup.DEFAULT
+	}
+
+	img := p.(cbconvert.Image)
+	iup.GetHandle("Loading").SetAttributes("VISIBLE=NO, STOP=YES")
+
+	if img.Image != nil && len(s) == 0 {
+		iup.Destroy(iup.GetHandle("cover"))
+		iup.ImageFromImage(img.Image).SetHandle("cover")
+		hasCover = true
+		iup.GetHandle("PreviewInfo").SetAttribute("TITLE", fmt.Sprintf("%s (%dx%d)", img.SizeHuman, img.Width, img.Height))
+	} else {
+		hasCover = false
+		iup.GetHandle("PreviewInfo").SetAttribute("TITLE", "")
+
+		sp := strings.Split(s, ": ")
+		if len(sp) > 1 {
+			iup.MessageError(ih, fmt.Sprintf("%s\n\n%s", sp[0], strings.Join(sp[1:], ": ")))
+		}
+	}
+
+	iup.Update(ih)
+
+	return iup.DEFAULT
+}
+
+// pageBox is the page-navigation spin shown in the status bar; hidden until a comic is selected.
+func pageBox() iup.Ihandle {
+	return iup.Hbox(
+		iup.Space().SetAttribute("SIZE", "5"),
+		iup.Label("Page:"),
+		iup.Space().SetAttribute("SIZE", "3"),
+		iup.Text().SetAttributes(`SPIN=YES, SPINMIN=1, SPINMAX=1, VALUE=1, VISIBLECOLUMNS=3, MASK="/d*"`).SetHandle("Page").
+			SetAttribute("TIP", "Preview a different page of the selected comic").
+			SetCallback("SPIN_CB", iup.SpinFunc(func(ih iup.Ihandle, pos int) int {
+				return onPageChanged()
+			})).
+			SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+				return onPageChanged()
+			})).
+			SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(func(ih iup.Ihandle, s string, i int, p any) int {
+				if s != previewPath {
+					return iup.DEFAULT
+				}
+
+				ih.SetAttribute("SPINMAX", strconv.Itoa(i))
+				iup.GetHandle("PageCount").SetAttribute("TITLE", fmt.Sprintf("/ %d", i))
+
+				if previewPage > i-1 {
+					previewPage = i - 1
+				}
+				if previewPage < 0 {
+					previewPage = 0
+				}
+				ih.SetAttribute("VALUE", strconv.Itoa(previewPage+1))
+
+				previewRender()
+
+				return iup.DEFAULT
+			})),
+		iup.Space().SetAttribute("SIZE", "3"),
+		iup.Label("").SetHandle("PageCount"),
+	).SetAttributes("ALIGNMENT=ACENTER, VISIBLE=NO").SetHandle("PageBox")
 }
 
 func tabInput() iup.Ihandle {
@@ -586,6 +639,7 @@ func buttons() iup.Ihandle {
 func status() iup.Ihandle {
 	return iup.Hbox(
 		loading(),
+		pageBox(),
 		iup.Fill(),
 		iup.Label("File 1 of 1").SetHandle("LabelStatus1").SetAttributes("VISIBLE=NO"),
 		iup.Space().SetAttribute("SIZE", "5"),

@@ -7,9 +7,10 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strconv"
-	"strings"
 
+	"github.com/fvbommel/sortorder"
 	"github.com/gen2brain/cbconvert"
 	"github.com/gen2brain/iup-go/iup"
 )
@@ -24,7 +25,7 @@ func selectRow(i int) {
 	iup.GetHandle("Table").SetAttribute("FOCUSCELL", fmt.Sprintf("%d:1", i+1))
 }
 
-// onSort re-syncs the files slice to the table's displayed order after a sort, so rows keep mapping to the right file.
+// onSort re-syncs the files slice to the table's displayed order after a sort.
 func onSort(ih iup.Ihandle, col int) int {
 	n := len(files)
 	if n < 2 {
@@ -73,16 +74,49 @@ func onSort(ih iup.Ihandle, col int) int {
 	return iup.DEFAULT
 }
 
-// appendFile adds a file as a new row to the table and the files slice.
-func appendFile(file cbconvert.File) {
-	files = append(files, file)
+// addFiles appends files, natural-sorts the list, and rebuilds the table.
+func addFiles(fs []cbconvert.File) {
+	if len(fs) == 0 {
+		return
+	}
+
+	wasEmpty := len(files) == 0
+
+	var selPath string
+	if index >= 0 && index < len(files) {
+		selPath = files[index].Path
+	}
+
+	files = append(files, fs...)
+	sort.Slice(files, func(i, j int) bool {
+		return sortorder.NaturalLess(files[i].Name, files[j].Name)
+	})
 
 	t := iup.GetHandle("Table")
-	lin := len(files)
-	t.SetAttribute("NUMLIN", strconv.Itoa(lin))
-	iup.SetAttributeId2(t, "", lin, 1, file.Name)
-	iup.SetAttributeId2(t, "", lin, 2, cbconvert.FileType(file.Path))
-	iup.SetAttributeId2(t, "", lin, 3, strconv.FormatFloat(float64(file.Stat.Size())/(1024*1024), 'f', 2, 64))
+	t.SetAttribute("NUMLIN", strconv.Itoa(len(files)))
+	for i, f := range files {
+		lin := i + 1
+		iup.SetAttributeId2(t, "", lin, 1, f.Name)
+		iup.SetAttributeId2(t, "", lin, 2, cbconvert.FileType(f.Path))
+		iup.SetAttributeId2(t, "", lin, 3, strconv.FormatFloat(float64(f.Stat.Size())/(1024*1024), 'f', 2, 64))
+	}
+
+	if wasEmpty {
+		selectRow(0)
+		setActive()
+		previewPost()
+
+		return
+	}
+
+	index = -1
+	for i, f := range files {
+		if f.Path == selPath {
+			selectRow(i)
+			break
+		}
+	}
+	setActive()
 }
 
 func previewPost() {
@@ -90,28 +124,75 @@ func previewPost() {
 		return
 	}
 
-	width, height := previewSize()
-	iup.GetHandle("Loading").SetAttributes("VISIBLE=YES, START=YES")
-	if strings.ToLower(iup.GetGlobal("DRIVER")) == "motif" {
-		iup.GetHandle("Preview").SetAttribute("IMAGE", "")
+	file := files[index]
+
+	// On a new file, fetch the count first; the Page POSTMESSAGE handler clamps previewPage and renders.
+	if file.Path != previewPath {
+		previewPath = file.Path
+		iup.GetHandle("Loading").SetAttributes("VISIBLE=YES, START=YES")
+		go pageCountPost(file)
+
+		return
 	}
 
+	previewRender()
+}
+
+// previewRenderSize is the size the cover is rendered at.
+const previewRenderSize = 1200
+
+// previewRender renders the current file at previewPage off the UI thread.
+func previewRender() {
+	if index == -1 || len(files) == 0 {
+		return
+	}
+
+	file := files[index]
+
+	iup.GetHandle("Loading").SetAttributes("VISIBLE=YES, START=YES")
+
 	opts := options()
+	page := previewPage
 
 	go func(opts cbconvert.Options) {
 		conv := cbconvert.New(opts)
 
 		var s string
-		file := files[index]
 
-		img, err := conv.Preview(file.Path, file.Stat, width, height)
+		img, err := conv.PreviewPage(file.Path, file.Stat, page, previewRenderSize, previewRenderSize)
 		if err != nil {
 			s = err.Error()
 			fmt.Println(err)
 		}
 
-		iup.PostMessage(iup.GetHandle("Preview"), s, 0, img)
+		iup.PostMessage(iup.GetHandle("Preview"), s, page, img)
 	}(opts)
+}
+
+// pageCountPost computes the file's page count off the UI thread and posts it, tagged with the path, to the Page spin.
+func pageCountPost(file cbconvert.File) {
+	n, err := cbconvert.New(cbconvert.NewOptions()).PageCount(file.Path, file.Stat)
+	if err != nil || n < 1 {
+		n = 1
+	}
+
+	iup.PostMessage(iup.GetHandle("Page"), file.Path, n, nil)
+}
+
+// onPageChanged re-renders the preview for the spin's page; dedupes so spin and typing don't both fire.
+func onPageChanged() int {
+	page := iup.GetHandle("Page").GetInt("VALUE") - 1
+	if page < 0 {
+		page = 0
+	}
+	if page == previewPage {
+		return iup.DEFAULT
+	}
+
+	previewPage = page
+	previewRender()
+
+	return iup.DEFAULT
 }
 
 func onAddFiles(ih iup.Ihandle) int {
@@ -134,21 +215,7 @@ func onAddFiles(ih iup.Ihandle) int {
 			return iup.DEFAULT
 		}
 
-		wasEmpty := len(files) == 0
-
-		for _, file := range fs {
-			appendFile(file)
-		}
-
-		if wasEmpty && len(files) > 0 {
-			selectRow(0)
-		}
-
-		setActive()
-
-		if wasEmpty {
-			previewPost()
-		}
+		addFiles(fs)
 	}
 
 	return iup.DEFAULT
@@ -174,21 +241,7 @@ func onAddDir(ih iup.Ihandle) int {
 			return iup.DEFAULT
 		}
 
-		wasEmpty := len(files) == 0
-
-		for _, file := range fs {
-			appendFile(file)
-		}
-
-		if wasEmpty && len(files) > 0 {
-			selectRow(0)
-		}
-
-		setActive()
-
-		if wasEmpty {
-			previewPost()
-		}
+		addFiles(fs)
 	}
 
 	return iup.DEFAULT
@@ -207,9 +260,23 @@ func onRemove(ih iup.Ihandle) int {
 	}
 
 	setActive()
-	previewPost()
+	if len(files) == 0 {
+		clearPreview()
+	} else {
+		previewPost()
+	}
 
 	return iup.DEFAULT
+}
+
+// clearPreview resets the preview state and repaints the canvas to its empty state.
+func clearPreview() {
+	hasCover = false
+	previewPath = ""
+	previewPage = 0
+
+	iup.GetHandle("PreviewInfo").SetAttribute("TITLE", "")
+	iup.Update(iup.GetHandle("Preview"))
 }
 
 func onRemoveAll(ih iup.Ihandle) int {
@@ -217,6 +284,7 @@ func onRemoveAll(ih iup.Ihandle) int {
 	files = make([]cbconvert.File, 0)
 
 	iup.GetHandle("Table").SetAttribute("NUMLIN", "0")
+	clearPreview()
 	setActive()
 
 	return iup.DEFAULT

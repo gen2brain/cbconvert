@@ -38,6 +38,15 @@ var filters = map[int]transform.ResampleFilter{
 	lanczos:           transform.Lanczos,
 }
 
+// resampleFilter returns the resample filter for index i, falling back to Linear for an unknown index.
+func resampleFilter(i int) transform.ResampleFilter {
+	if f, ok := filters[i]; ok {
+		return f
+	}
+
+	return filters[linear]
+}
+
 func resize(img image.Image, width, height int, filter transform.ResampleFilter) *image.RGBA {
 	dstW, dstH := width, height
 
@@ -96,14 +105,14 @@ func withinBounds(img image.Image, width, height int) bool {
 // resizeFit resizes img to the configured width/height, honoring Fit and NoUpscale.
 func (c *Converter) resizeFit(img image.Image) image.Image {
 	if c.Opts.Fit {
-		return fit(img, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
+		return fit(img, c.Opts.Width, c.Opts.Height, resampleFilter(c.Opts.Filter))
 	}
 
 	if c.Opts.NoUpscale && withinBounds(img, c.Opts.Width, c.Opts.Height) {
 		return img
 	}
 
-	return resize(img, c.Opts.Width, c.Opts.Height, filters[c.Opts.Filter])
+	return resize(img, c.Opts.Width, c.Opts.Height, resampleFilter(c.Opts.Filter))
 }
 
 func rotate(img image.Image, angle float64) *image.RGBA {

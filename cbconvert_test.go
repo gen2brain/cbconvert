@@ -211,6 +211,40 @@ func TestConvertDPI(t *testing.T) {
 	}
 }
 
+func TestPreviewPage(t *testing.T) {
+	for _, name := range []string{"testdata/test.cbz", "testdata/test.pdf"} {
+		conv := New(NewOptions())
+
+		files, err := conv.Files([]string{name})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(files) != 1 {
+			t.Fatalf("%s: expected 1 file, got %d", name, len(files))
+		}
+		file := files[0]
+
+		n, err := conv.PageCount(file.Path, file.Stat)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if n < 2 {
+			t.Fatalf("%s: expected >= 2 pages, got %d", name, n)
+		}
+
+		for _, page := range []int{0, 1, n - 1} {
+			img, err := conv.PreviewPage(file.Path, file.Stat, page, 0, 0)
+			if err != nil || img.Image == nil {
+				t.Fatalf("%s: page %d: img=%v err=%v", name, page, img.Image, err)
+			}
+		}
+
+		if _, err := conv.PreviewPage(file.Path, file.Stat, n, 0, 0); err == nil {
+			t.Errorf("%s: page %d (out of range) should error", name, n)
+		}
+	}
+}
+
 func TestConvertResize(t *testing.T) {
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "cbc")
 	if err != nil {

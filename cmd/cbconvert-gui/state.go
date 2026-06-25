@@ -10,6 +10,12 @@ func setActive() {
 	opts := options()
 	count := iup.GetHandle("Table").GetInt("NUMLIN")
 
+	if count > 0 && index != -1 {
+		iup.GetHandle("PageBox").SetAttribute("VISIBLE", "YES")
+	} else {
+		iup.GetHandle("PageBox").SetAttribute("VISIBLE", "NO")
+	}
+
 	if count == 0 {
 		iup.GetHandle("Remove").SetAttribute("ACTIVE", "NO")
 		iup.GetHandle("RemoveAll").SetAttribute("ACTIVE", "NO")

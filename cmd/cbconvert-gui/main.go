@@ -33,6 +33,10 @@ var (
 
 	activeConv *cbconvert.Converter
 	busy       bool
+
+	previewPage int    // 0-based page shown in the preview
+	previewPath string // path of the file whose page range is loaded
+	hasCover    bool   // whether a cover image is loaded for the preview canvas
 )
 
 func init() {
@@ -78,22 +82,13 @@ func main() {
 	img, _ := png.Decode(bytes.NewReader(appLogo))
 	iup.ImageFromImage(img).SetHandle("logo")
 
-	dlg := iup.Dialog(layout()).SetAttributes(fmt.Sprintf(`TITLE="CBconvert %s", ICON=logo, SHRINK=YES`, appVersion)).SetHandle("dlg")
+	dlg := iup.Dialog(layout()).SetAttributes(fmt.Sprintf(`TITLE="CBconvert %s", ICON=logo`, appVersion)).SetHandle("dlg")
 
 	dlg.SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(func(ih iup.Ihandle, s string, i int, p any) int {
 		sp := strings.Split(s, ": ")
 		if len(sp) > 1 {
 			iup.MessageError(ih, fmt.Sprintf("%s\n\n%s", sp[0], strings.Join(sp[1:], ": ")))
 		}
-
-		return iup.DEFAULT
-	}))
-
-	dlg.SetCallback("RESIZE_CB", iup.ResizeFunc(func(ih iup.Ihandle, width, height int) int {
-		iup.GetHandle("Preview").SetAttribute("IMAGE", "logo")
-		iup.Refresh(ih)
-
-		previewPost()
 
 		return iup.DEFAULT
 	}))

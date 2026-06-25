@@ -85,6 +85,132 @@ func (c *Converter) coverDirectory(dir string) (image.Image, error) {
 	return img, nil
 }
 
+// pageArchive extracts the page-th image (natural reading order) from an archive.
+func (c *Converter) pageArchive(fileName string, page int) (image.Image, error) {
+	contents, err := c.archiveList(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("pageArchive: %w", err)
+	}
+
+	images := imagesFromSlice(contents)
+	sort.Sort(sortorder.Natural(images))
+
+	if page < 0 || page >= len(images) {
+		return nil, fmt.Errorf("pageArchive: page %d out of range (%d pages)", page+1, len(images))
+	}
+
+	data, err := c.archiveFile(fileName, images[page])
+	if err != nil {
+		return nil, fmt.Errorf("pageArchive: %w", err)
+	}
+
+	img, err := c.imageDecode(bytes.NewReader(data))
+	if err != nil {
+		return nil, fmt.Errorf("pageArchive: %w", err)
+	}
+
+	return img, nil
+}
+
+// pageDocument extracts the page-th rendered page from a document.
+func (c *Converter) pageDocument(fileName string, page int) (image.Image, error) {
+	doc, err := fitz.New(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("pageDocument: %w", err)
+	}
+	defer doc.Close()
+
+	if page < 0 || page >= doc.NumPage() {
+		return nil, fmt.Errorf("pageDocument: page %d out of range (%d pages)", page+1, doc.NumPage())
+	}
+
+	img, err := doc.ImageDPI(page, c.renderDPI())
+	if err != nil {
+		return nil, fmt.Errorf("pageDocument: %w", err)
+	}
+
+	return img, nil
+}
+
+// pageDirectory extracts the page-th image (natural reading order) from a directory.
+func (c *Converter) pageDirectory(dir string, page int) (image.Image, error) {
+	contents, err := imagesFromPath(dir)
+	if err != nil {
+		return nil, fmt.Errorf("pageDirectory: %w", err)
+	}
+
+	images := imagesFromSlice(contents)
+	sort.Sort(sortorder.Natural(images))
+
+	if page < 0 || page >= len(images) {
+		return nil, fmt.Errorf("pageDirectory: page %d out of range (%d pages)", page+1, len(images))
+	}
+
+	file, err := os.Open(images[page])
+	if err != nil {
+		return nil, fmt.Errorf("pageDirectory: %w", err)
+	}
+	defer file.Close()
+
+	img, err := c.imageDecode(file)
+	if err != nil {
+		return nil, fmt.Errorf("pageDirectory: %w", err)
+	}
+
+	return img, nil
+}
+
+// pageImage returns the page-th image of a comic file, document or directory.
+func (c *Converter) pageImage(fileName string, fileInfo os.FileInfo, page int) (image.Image, error) {
+	var err error
+	var img image.Image
+
+	switch {
+	case fileInfo.IsDir():
+		img, err = c.pageDirectory(fileName, page)
+	case isDocument(fileName):
+		img, err = c.pageDocument(fileName, page)
+	case isArchive(fileName):
+		img, err = c.pageArchive(fileName, page)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("pageImage: %w", err)
+	}
+
+	return img, nil
+}
+
+// PageCount returns the number of pages (images) in a comic file, document or directory.
+func (c *Converter) PageCount(fileName string, fileInfo os.FileInfo) (int, error) {
+	switch {
+	case fileInfo.IsDir():
+		contents, err := imagesFromPath(fileName)
+		if err != nil {
+			return 0, fmt.Errorf("PageCount: %w", err)
+		}
+
+		return len(imagesFromSlice(contents)), nil
+	case isDocument(fileName):
+		doc, err := fitz.New(fileName)
+		if err != nil {
+			return 0, fmt.Errorf("PageCount: %w", err)
+		}
+		defer doc.Close()
+
+		return doc.NumPage(), nil
+	case isArchive(fileName):
+		contents, err := c.archiveList(fileName)
+		if err != nil {
+			return 0, fmt.Errorf("PageCount: %w", err)
+		}
+
+		return len(imagesFromSlice(contents)), nil
+	}
+
+	return 0, nil
+}
+
 // coverName returns the filename that is the most likely to be the cover.
 func (c *Converter) coverName(images []string) string {
 	if len(images) == 0 {

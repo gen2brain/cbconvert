@@ -43,7 +43,7 @@ type Options struct {
 	NoUpscale bool
 	// Document rendering resolution in DPI (PDF, EPUB, etc.); 0 uses the default
 	DPI int
-	// 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos
+	// 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 5=Gaussian, 6=Lanczos
 	Filter int
 	// Do not convert the cover image
 	NoCover bool
@@ -410,7 +410,7 @@ func (c *Converter) Thumbnail(file File) error {
 	if c.Opts.Width > 0 || c.Opts.Height > 0 {
 		cover = c.resizeFit(cover)
 	} else {
-		cover = resize(cover, 256, 0, filters[c.Opts.Filter])
+		cover = resize(cover, 256, 0, resampleFilter(c.Opts.Filter))
 	}
 
 	var buf bytes.Buffer
@@ -542,14 +542,29 @@ func (c *Converter) Meta(fileName string) (any, error) {
 	return "", nil
 }
 
-// Preview returns image preview.
+// Preview returns the cover as an image preview.
 func (c *Converter) Preview(fileName string, fileInfo os.FileInfo, width, height int) (Image, error) {
-	var img Image
-
 	i, err := c.coverImage(fileName, fileInfo)
 	if err != nil {
-		return img, fmt.Errorf("%s: %w", fileName, err)
+		return Image{}, fmt.Errorf("%s: %w", fileName, err)
 	}
+
+	return c.previewImage(fileName, i, width, height)
+}
+
+// PreviewPage returns the page-th image (0-based) as an image preview.
+func (c *Converter) PreviewPage(fileName string, fileInfo os.FileInfo, page, width, height int) (Image, error) {
+	i, err := c.pageImage(fileName, fileInfo, page)
+	if err != nil {
+		return Image{}, fmt.Errorf("%s: %w", fileName, err)
+	}
+
+	return c.previewImage(fileName, i, width, height)
+}
+
+// previewImage applies the configured transforms and fits the result into width x height.
+func (c *Converter) previewImage(fileName string, i image.Image, width, height int) (Image, error) {
+	var img Image
 
 	i = c.imageTransform(i)
 
@@ -563,15 +578,13 @@ func (c *Converter) Preview(fileName string, fileInfo os.FileInfo, width, height
 	img.Height = i.Bounds().Dy()
 	img.SizeHuman = humanize.IBytes(uint64(len(w.Bytes())))
 
-	r := bytes.NewReader(w.Bytes())
-
-	dec, err := c.imageDecode(r)
+	dec, err := c.imageDecode(bytes.NewReader(w.Bytes()))
 	if err != nil {
 		return img, fmt.Errorf("%s: %w", fileName, err)
 	}
 
 	if width != 0 && height != 0 {
-		dec = fit(dec, width, height, filters[c.Opts.Filter])
+		dec = fit(dec, width, height, resampleFilter(c.Opts.Filter))
 	}
 
 	img.Image = dec
