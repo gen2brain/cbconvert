@@ -1,6 +1,9 @@
 package main
 
-import "github.com/gen2brain/iup-go/iup"
+import (
+	"github.com/gen2brain/cbconvert/cmd/cbconvert-gui/i18n"
+	"github.com/gen2brain/iup-go/iup"
+)
 
 func setActive() {
 	if busy {
@@ -33,17 +36,17 @@ func setActive() {
 	var tip string
 	switch {
 	case count == 0 && opts.OutDir == "":
-		active, tip = "NO", "Add files and set output directory"
+		active, tip = "NO", i18n.Lng(i18n.StatusNeedFilesAndDir)
 	case count == 0:
-		active, tip = "NO", "Add files"
+		active, tip = "NO", i18n.Lng(i18n.StatusNeedFiles)
 	case opts.OutDir == "":
-		active, tip = "NO", "Set output directory"
+		active, tip = "NO", i18n.Lng(i18n.StatusNeedOutDir)
 	}
 
 	enabledTip := map[string]string{
-		"Thumbnail": "Extract cover thumbnails",
-		"Cover":     "Extract covers",
-		"Convert":   "Convert files to the selected format",
+		"Thumbnail": i18n.Lng(i18n.TipThumbnail),
+		"Cover":     i18n.Lng(i18n.TipCover),
+		"Convert":   i18n.Lng(i18n.TipConvert),
 	}
 
 	for _, h := range []string{"Thumbnail", "Cover", "Convert"} {
@@ -119,12 +122,12 @@ func setBusy(on bool) {
 			iup.GetHandle(h).SetAttribute("ACTIVE", "NO")
 		}
 		convert.SetAttribute("ACTIVE", "YES")
-		convert.SetAttribute("TITLE", "Cancel")
-		convert.SetAttribute("TIP", "Cancel the running operation (or press Esc)")
+		convert.SetAttribute("TITLE", i18n.Lng(i18n.BtnCancel))
+		convert.SetAttribute("TIP", i18n.Lng(i18n.TipCancel))
 	} else {
 		activeConv = nil
-		convert.SetAttribute("TITLE", "&Convert")
-		convert.SetAttribute("TIP", "Convert files to the selected format")
+		convert.SetAttribute("TITLE", i18n.Lng(i18n.BtnConvert))
+		convert.SetAttribute("TIP", i18n.Lng(i18n.TipConvert))
 		setActive() // restores the conditional buttons and option boxes
 	}
 }

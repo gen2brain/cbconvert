@@ -11,7 +11,9 @@ import (
 	"strconv"
 
 	"github.com/fvbommel/sortorder"
+
 	"github.com/gen2brain/cbconvert"
+	"github.com/gen2brain/cbconvert/cmd/cbconvert-gui/i18n"
 	"github.com/gen2brain/iup-go/iup"
 )
 
@@ -196,7 +198,7 @@ func onPageChanged() int {
 }
 
 func onAddFiles(ih iup.Ihandle) int {
-	args, err := fileDlg("Add Files", true, false, inputDirKey)
+	args, err := fileDlg(i18n.Lng(i18n.DlgAddFiles), true, false, inputDirKey)
 	if err != nil {
 		iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
 		fmt.Println(err)
@@ -222,7 +224,7 @@ func onAddFiles(ih iup.Ihandle) int {
 }
 
 func onAddDir(ih iup.Ihandle) int {
-	args, err := fileDlg("Add Directory", false, true, inputDirKey)
+	args, err := fileDlg(i18n.Lng(i18n.DlgAddDir), false, true, inputDirKey)
 	if err != nil {
 		iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
 		fmt.Println(err)
@@ -459,7 +461,7 @@ func onConvert(ih iup.Ihandle) int {
 }
 
 func onOutputDirectory(ih iup.Ihandle) int {
-	args, err := fileDlg("Output Directory", false, true, outputDirKey)
+	args, err := fileDlg(i18n.Lng(i18n.DlgOutputDir), false, true, outputDirKey)
 	if err != nil {
 		iup.PostMessage(iup.GetHandle("dlg"), err.Error(), 0, 0)
 		fmt.Println(err)
@@ -477,7 +479,7 @@ func onOutputDirectory(ih iup.Ihandle) int {
 }
 
 func onOutputFile(ih iup.Ihandle) int {
-	name := saveDlg("Output File", outputDirKey)
+	name := saveDlg(i18n.Lng(i18n.DlgOutputFile), outputDirKey)
 	if name != "" {
 		iup.GetHandle("OutFile").SetAttribute("VALUE", filepath.Base(name))
 		iup.GetHandle("OutDir").SetAttribute("VALUE", filepath.Dir(name))
@@ -490,19 +492,19 @@ func onOutputFile(ih iup.Ihandle) int {
 func onFilterChanged(ih iup.Ihandle) int {
 	switch ih.GetInt("VALUE") {
 	case 1:
-		ih.SetAttribute("TIP", "NearestNeighbor is the fastest resampling filter, no antialiasing")
+		ih.SetAttribute("TIP", i18n.Lng(i18n.FilterNearest))
 	case 2:
-		ih.SetAttribute("TIP", "Box filter (averaging pixels)")
+		ih.SetAttribute("TIP", i18n.Lng(i18n.FilterBox))
 	case 3:
-		ih.SetAttribute("TIP", "Linear is the bilinear filter, smooth and reasonably fast")
+		ih.SetAttribute("TIP", i18n.Lng(i18n.FilterLinear))
 	case 4:
-		ih.SetAttribute("TIP", "MitchellNetravali is a smooth bicubic filter")
+		ih.SetAttribute("TIP", i18n.Lng(i18n.FilterMitchell))
 	case 5:
-		ih.SetAttribute("TIP", "CatmullRom is a sharp bicubic filter")
+		ih.SetAttribute("TIP", i18n.Lng(i18n.FilterCatmull))
 	case 6:
-		ih.SetAttribute("TIP", "Gaussian is a blurring filter that uses gaussian function, useful for noise removal")
+		ih.SetAttribute("TIP", i18n.Lng(i18n.FilterGaussian))
 	case 7:
-		ih.SetAttribute("TIP", "Lanczos is a high-quality resampling filter, it's slower than cubic filters")
+		ih.SetAttribute("TIP", i18n.Lng(i18n.FilterLanczos))
 	}
 
 	previewPost()

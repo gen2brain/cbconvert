@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/gen2brain/cbconvert"
+	"github.com/gen2brain/cbconvert/cmd/cbconvert-gui/i18n"
 	"github.com/gen2brain/iup-go/iup"
 )
 
@@ -74,7 +75,11 @@ func main() {
 
 	iup.SetGlobal("APPNAME", "cbconvert")
 	iup.SetGlobal("APPID", "io.github.gen2brain.cbconvert")
+
 	iup.SetGlobal("AUTODARKMODE", "YES")
+	iup.SetGlobal("GSKRENDERER", "cairo")
+
+	i18n.Init()
 
 	config = iup.Config()
 	iup.ConfigLoad(config)

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gen2brain/cbconvert"
+	"github.com/gen2brain/cbconvert/cmd/cbconvert-gui/i18n"
 	"github.com/gen2brain/iup-go/iup"
 )
 
@@ -98,8 +99,9 @@ func previewCover() iup.FileFunc {
 				iup.DrawImage(ih, dlgPreviewName, (cw-iw)/2, (ch-iih)/2, iw, iih)
 			} else {
 				ih.SetAttribute("DRAWCOLOR", "128 128 128")
-				tw, th := iup.DrawGetTextSize(ih, "No preview")
-				iup.DrawText(ih, "No preview", (cw-tw)/2, (ch-th)/2, 0, 0)
+				noPreview := i18n.Str(i18n.NoPreview)
+				tw, th := iup.DrawGetTextSize(ih, noPreview)
+				iup.DrawText(ih, noPreview, (cw-tw)/2, (ch-th)/2, 0, 0)
 			}
 
 			iup.DrawEnd(ih)

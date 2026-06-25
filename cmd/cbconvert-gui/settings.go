@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gen2brain/cbconvert/cmd/cbconvert-gui/i18n"
 	"github.com/gen2brain/iup-go/iup"
 )
 
@@ -215,13 +216,13 @@ func onProfileSelect(ih iup.Ihandle) int {
 
 func onSave(iup.Ihandle) int {
 	name := currentProfile()
-	if iup.GetParam("Save Profile", nil, "Name: %s\n", &name) != 1 {
+	if iup.GetParam(i18n.Str(i18n.DlgSaveProfile), nil, i18n.Str(i18n.ParamName), &name) != 1 {
 		return iup.DEFAULT
 	}
 
 	name = strings.TrimSpace(name)
 	if name == "" || strings.ContainsAny(name, ".;") {
-		iup.Message("Invalid Name", "Profile name must not be empty or contain '.' or ';'.")
+		iup.Message(i18n.Str(i18n.MsgInvalidNameTitle), i18n.Str(i18n.MsgInvalidNameBody))
 
 		return iup.DEFAULT
 	}

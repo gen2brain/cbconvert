@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gen2brain/cbconvert"
+	"github.com/gen2brain/cbconvert/cmd/cbconvert-gui/i18n"
 	"github.com/gen2brain/iup-go/iup"
 )
 
@@ -70,7 +71,7 @@ func commandLine() string {
 }
 
 func onCommand(iup.Ihandle) int {
-	iup.GetText("Command Line", commandLine(), -1)
+	iup.GetText(i18n.Str(i18n.DlgCommandLine), commandLine(), -1)
 
 	return iup.DEFAULT
 }

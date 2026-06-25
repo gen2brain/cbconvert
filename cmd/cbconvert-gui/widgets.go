@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/gen2brain/cbconvert"
+	"github.com/gen2brain/cbconvert/cmd/cbconvert-gui/i18n"
 	"github.com/gen2brain/iup-go/iup"
 )
 
@@ -21,16 +22,16 @@ func setEffort(format string) {
 	switch format {
 	case "webp":
 		val.SetAttributes("MIN=0, MAX=6, SHOWTICKS=7, VALUE=4")
-		val.SetAttribute("TIP", "WEBP method, higher is better/slower (0-6, default 4)")
-		name = "Method"
+		val.SetAttribute("TIP", i18n.Lng(i18n.TipEffortWebp))
+		name = i18n.Str(i18n.EffortMethod)
 	case "avif":
 		val.SetAttributes("MIN=0, MAX=10, SHOWTICKS=11, VALUE=10")
-		val.SetAttribute("TIP", "AVIF speed, higher is faster/worse (0-10, default 10)")
-		name = "Speed"
+		val.SetAttribute("TIP", i18n.Lng(i18n.TipEffortAvif))
+		name = i18n.Str(i18n.EffortSpeed)
 	case "jxl":
 		val.SetAttributes("MIN=1, MAX=10, SHOWTICKS=10, VALUE=7")
-		val.SetAttribute("TIP", "JXL effort, higher is better/slower (1-10, default 7)")
-		name = "Effort"
+		val.SetAttribute("TIP", i18n.Lng(i18n.TipEffortJxl))
+		name = i18n.Str(i18n.EffortEffort)
 	default:
 		return
 	}
@@ -56,9 +57,9 @@ func list() iup.Ihandle {
 		"EXPAND":         "YES",
 		"NUMCOL":         "3",
 		"NUMLIN":         "0",
-		"TITLE1":         "Title",
-		"TITLE2":         "Type",
-		"TITLE3":         "Size (MiB)",
+		"TITLE1":         i18n.Lng(i18n.ColTitle),
+		"TITLE2":         i18n.Lng(i18n.ColType),
+		"TITLE3":         i18n.Lng(i18n.ColSize),
 		"WIDTH1":         "300",
 		"WIDTH2":         "50",
 		"WIDTH3":         "100",
@@ -186,10 +187,10 @@ func previewMessage(ih iup.Ihandle, s string, i int, p any) int {
 func pageBox() iup.Ihandle {
 	return iup.Hbox(
 		iup.Space().SetAttribute("SIZE", "5"),
-		iup.Label("Page:"),
+		iup.Label(i18n.Lng(i18n.LblPage)),
 		iup.Space().SetAttribute("SIZE", "3"),
 		iup.Text().SetAttributes(`SPIN=YES, SPINMIN=1, SPINMAX=1, VALUE=1, VISIBLECOLUMNS=3, MASK="/d*"`).SetHandle("Page").
-			SetAttribute("TIP", "Preview a different page of the selected comic").
+			SetAttribute("TIP", i18n.Lng(i18n.TipPage)).
 			SetCallback("SPIN_CB", iup.SpinFunc(func(ih iup.Ihandle, pos int) int {
 				return onPageChanged()
 			})).
@@ -212,6 +213,8 @@ func pageBox() iup.Ihandle {
 				}
 				ih.SetAttribute("VALUE", strconv.Itoa(previewPage+1))
 
+				iup.Refresh(iup.GetHandle("PageBox"))
+
 				previewRender()
 
 				return iup.DEFAULT
@@ -224,16 +227,16 @@ func pageBox() iup.Ihandle {
 func tabInput() iup.Ihandle {
 	return iup.Hbox(
 		iup.Vbox(
-			iup.Toggle(" Recurse SubDirectories").SetHandle("Recursive").
-				SetAttributes(`TIP="Process subdirectories recursively"`),
-			iup.Toggle(" Only Grayscale Images").SetHandle("NoRGB").
-				SetAttributes(`TIP="Do not convert images that have RGB colorspace"`),
-			iup.Toggle(" Exclude Cover").SetHandle("NoCover").
-				SetAttributes(`TIP="Do not convert the cover image"`),
-			iup.Toggle(" Remove Non-Image Files from the Archive").SetHandle("NoNonImage").
-				SetAttribute("TIP", "Remove .nfo, .xml, .txt files from the archive"),
-			iup.Toggle(" Do not Transform or Convert Images").SetHandle("NoConvert").
-				SetAttributes(`TIP="Copy images from archive or directory without modifications"`).
+			iup.Toggle(i18n.Lng(i18n.TglRecursive)).SetHandle("Recursive").
+				SetAttribute("TIP", i18n.Lng(i18n.TipRecursive)),
+			iup.Toggle(i18n.Lng(i18n.TglNoRGB)).SetHandle("NoRGB").
+				SetAttribute("TIP", i18n.Lng(i18n.TipNoRGB)),
+			iup.Toggle(i18n.Lng(i18n.TglNoCover)).SetHandle("NoCover").
+				SetAttribute("TIP", i18n.Lng(i18n.TipNoCover)),
+			iup.Toggle(i18n.Lng(i18n.TglNoNonImage)).SetHandle("NoNonImage").
+				SetAttribute("TIP", i18n.Lng(i18n.TipNoNonImage)),
+			iup.Toggle(i18n.Lng(i18n.TglNoConvert)).SetHandle("NoConvert").
+				SetAttribute("TIP", i18n.Lng(i18n.TipNoConvert)).
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					setActive()
 
@@ -243,12 +246,12 @@ func tabInput() iup.Ihandle {
 		iup.Space().SetAttribute("SIZE", "15"),
 		iup.Vbox(
 			iup.Vbox(
-				iup.Label("Minimum Size (MiB):"),
+				iup.Label(i18n.Lng(i18n.LblMinSize)),
 				iup.Text().SetAttributes(`SPIN=YES, SPINMAX=2048, VISIBLECOLUMNS=4, MASK="/d*"`).SetHandle("Size").
-					SetAttributes(`TIP="Process only files larger than minimum size"`),
+					SetAttribute("TIP", i18n.Lng(i18n.TipSize)),
 			),
 			iup.Vbox(
-				iup.Label("Document DPI:"),
+				iup.Label(i18n.Lng(i18n.LblDPI)),
 				iup.List().SetAttributes(map[string]string{
 					"DROPDOWN":       "YES",
 					"EDITBOX":        "YES",
@@ -260,7 +263,7 @@ func tabInput() iup.Ihandle {
 					"4":              "600",
 					"5":              "1200",
 				}).SetHandle("DPI").
-					SetAttribute("TIP", "Resolution for rendering documents (PDF, EPUB, etc.); Default is 300"),
+					SetAttribute("TIP", i18n.Lng(i18n.TipDPI)),
 			),
 		).SetAttributes("NGAP=10"),
 	).SetHandle("VboxInput")
@@ -270,32 +273,32 @@ func tabOutput() iup.Ihandle {
 	return iup.Hbox(
 		iup.Vbox(
 			iup.Vbox(
-				iup.Label("Output Directory:"),
+				iup.Label(i18n.Lng(i18n.LblOutDir)),
 				iup.Text().SetAttributes("VISIBLECOLUMNS=16, MINSIZE=100x").SetHandle("OutDir").
-					SetAttribute("TIP", "Directory where converted files are written (required)").
+					SetAttribute("TIP", i18n.Lng(i18n.TipOutDir)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						setActive()
 
 						return iup.DEFAULT
 					})),
 				iup.Space().SetAttribute("SIZE", "5x0"),
-				iup.Button("Browse...").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+				iup.Button(i18n.Lng(i18n.BtnBrowse)).SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 					SetCallback("ACTION", iup.ActionFunc(onOutputDirectory)),
 			),
 			iup.Vbox(
-				iup.Label("Add Suffix to Output File:"),
+				iup.Label(i18n.Lng(i18n.LblSuffix)),
 				iup.Text().SetAttributes("VISIBLECOLUMNS=16, MINSIZE=100x").SetHandle("Suffix").
-					SetAttribute("TIP", "Add suffix to filename, i.e. filename_suffix.cbz"),
+					SetAttribute("TIP", i18n.Lng(i18n.TipSuffix)),
 			),
 			iup.Vbox(
-				iup.Label("Archive Format:"),
+				iup.Label(i18n.Lng(i18n.LblArchive)),
 				iup.List().SetAttributes(map[string]string{
 					"DROPDOWN": "YES",
 					"VALUE":    "1",
 					"1":        "ZIP",
 					"2":        "TAR",
 				}).SetHandle("Archive").
-					SetAttribute("TIP", "Output container: ZIP (.cbz) or uncompressed TAR (.cbt)").
+					SetAttribute("TIP", i18n.Lng(i18n.TipArchive)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						setActive()
 
@@ -303,7 +306,7 @@ func tabOutput() iup.Ihandle {
 					})),
 			),
 			iup.Vbox(
-				iup.Label("Compression:"),
+				iup.Label(i18n.Lng(i18n.LblCompression)),
 				iup.List().SetAttributes(map[string]string{
 					"DROPDOWN": "YES",
 					"VALUE":    "1",
@@ -319,14 +322,14 @@ func tabOutput() iup.Ihandle {
 					"10":       "8",
 					"11":       "9",
 				}).SetHandle("ZipLevel").
-					SetAttribute("TIP", "ZIP compression: Store disables it, 1 is fastest, 9 is smallest"),
+					SetAttribute("TIP", i18n.Lng(i18n.TipZipLevel)),
 			).SetHandle("VboxZipLevel"),
 		).SetAttributes("NGAP=10"),
 		iup.Space().SetAttribute("SIZE", "15"),
 		iup.Vbox(
 			iup.Vbox(
-				iup.Toggle(" Combine into single file").SetHandle("Combine").
-					SetAttributes(`TIP="Merge all listed files into one archive"`).
+				iup.Toggle(i18n.Lng(i18n.TglCombine)).SetHandle("Combine").
+					SetAttribute("TIP", i18n.Lng(i18n.TipCombine)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						setActive()
 
@@ -334,11 +337,11 @@ func tabOutput() iup.Ihandle {
 					})),
 			),
 			iup.Vbox(
-				iup.Label("Output File:"),
+				iup.Label(i18n.Lng(i18n.LblOutFile)),
 				iup.Text().SetAttributes("VISIBLECOLUMNS=16, MINSIZE=100x").SetHandle("OutFile").
-					SetAttribute("TIP", "Combined file name (default: first input + -combined)"),
+					SetAttribute("TIP", i18n.Lng(i18n.TipOutFile)),
 				iup.Space().SetAttribute("SIZE", "5x0"),
-				iup.Button("Browse...").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+				iup.Button(i18n.Lng(i18n.BtnBrowse)).SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 					SetCallback("ACTION", iup.ActionFunc(onOutputFile)),
 			).SetHandle("VboxOutFile"),
 		).SetAttributes("NGAP=10"),
@@ -349,7 +352,7 @@ func tabImage() iup.Ihandle {
 	return iup.Hbox(
 		iup.Vbox(
 			iup.Vbox(
-				iup.Label("Format:"),
+				iup.Label(i18n.Lng(i18n.LblFormat)),
 				iup.List().SetAttributes(map[string]string{
 					"DROPDOWN": "YES",
 					"VALUE":    "1",
@@ -361,7 +364,7 @@ func tabImage() iup.Ihandle {
 					"6":        "AVIF",
 					"7":        "JXL",
 				}).SetHandle("Format").
-					SetAttribute("TIP", "Output image format for the converted pages").
+					SetAttribute("TIP", i18n.Lng(i18n.TipFormat)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						setEffort(strings.ToLower(ih.GetAttribute("VALUESTRING")))
 						setActive()
@@ -371,10 +374,11 @@ func tabImage() iup.Ihandle {
 					})),
 			),
 			iup.Vbox(
-				iup.Label("Size:"),
+				iup.Label(i18n.Lng(i18n.LblSize)),
 				iup.Hbox(
-					iup.Text().SetAttributes(`CUEBANNER="width", VISIBLECOLUMNS=6, MASK="/d*"`).SetHandle("Width").
-						SetAttribute("TIP", "If one of, width or height is not set, the image aspect ratio is preserved").
+					iup.Text().SetAttributes(`VISIBLECOLUMNS=6, MASK="/d*"`).SetHandle("Width").
+						SetAttribute("CUEBANNER", i18n.Lng(i18n.CueWidth)).
+						SetAttribute("TIP", i18n.Lng(i18n.TipWidthHeight)).
 						SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 							setActive()
 							ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
@@ -392,8 +396,9 @@ func tabImage() iup.Ihandle {
 					iup.Space().SetAttribute("SIZE", "2"),
 					iup.Label("x"),
 					iup.Space().SetAttribute("SIZE", "2"),
-					iup.Text().SetAttributes(`CUEBANNER="height", VISIBLECOLUMNS=6, MASK="/d*"`).SetHandle("Height").
-						SetAttribute("TIP", "If one of, width or height is not set, the image aspect ratio is preserved").
+					iup.Text().SetAttributes(`VISIBLECOLUMNS=6, MASK="/d*"`).SetHandle("Height").
+						SetAttribute("CUEBANNER", i18n.Lng(i18n.CueHeight)).
+						SetAttribute("TIP", i18n.Lng(i18n.TipWidthHeight)).
 						SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 							setActive()
 							ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
@@ -411,17 +416,17 @@ func tabImage() iup.Ihandle {
 				).SetAttributes("ALIGNMENT=ACENTER, NMARGIN=0"),
 			),
 			iup.Vbox(
-				iup.Toggle(" Best Fit").SetHandle("Fit").
-					SetAttributes(`TIP="Best fit for required width and height"`),
-				iup.Toggle(" No Upscale").SetHandle("NoUpscale").
-					SetAttribute("TIP", "Do not enlarge images already smaller than the requested size"),
+				iup.Toggle(i18n.Lng(i18n.TglFit)).SetHandle("Fit").
+					SetAttribute("TIP", i18n.Lng(i18n.TipFit)),
+				iup.Toggle(i18n.Lng(i18n.TglNoUpscale)).SetHandle("NoUpscale").
+					SetAttribute("TIP", i18n.Lng(i18n.TipNoUpscale)),
 			),
 			iup.Vbox(
-				iup.Label("Resize Filter:"),
+				iup.Label(i18n.Lng(i18n.LblFilter)),
 				iup.List().SetAttributes(map[string]string{
 					"DROPDOWN": "YES",
 					"VALUE":    "3",
-					"TIP":      "Linear is the bilinear filter, smooth and reasonably fast",
+					"TIP":      i18n.Lng(i18n.FilterLinear),
 					"1":        "NearestNeighbor",
 					"2":        "Box",
 					"3":        "Linear",
@@ -436,11 +441,11 @@ func tabImage() iup.Ihandle {
 		iup.Vbox(
 			iup.Vbox(
 				iup.Hbox(
-					iup.Label("Quality: "),
+					iup.Label(i18n.Lng(i18n.LblQuality)),
 					iup.Label("75").SetHandle("LabelQuality"),
 				).SetAttributes("NMARGIN=0"),
 				iup.Val("").SetAttributes(`MIN=0, MAX=100, VALUE=75, SHOWTICKS=10`).SetHandle("Quality").
-					SetAttribute("TIP", "Quality affects JPEG, WEBP, AVIF and JXL").
+					SetAttribute("TIP", i18n.Lng(i18n.TipQuality)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						iup.GetHandle("LabelQuality").SetAttribute("TITLE", ih.GetInt("VALUE"))
 						iup.Refresh(iup.GetHandle("LabelQuality"))
@@ -458,9 +463,9 @@ func tabImage() iup.Ihandle {
 					})),
 			).SetHandle("VboxQuality"),
 			iup.Vbox(
-				iup.Label("Effort:").SetHandle("LabelEffort"),
+				iup.Label(i18n.Lng(i18n.LblEffort)).SetHandle("LabelEffort"),
 				iup.Val("").SetAttributes(`MIN=0, MAX=10, VALUE=0, SHOWTICKS=11`).SetHandle("Effort").
-					SetAttribute("TIP", "Encoder speed/effort (WEBP, AVIF, JXL)").
+					SetAttribute("TIP", i18n.Lng(i18n.TipEffort)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						iup.GetHandle("LabelEffort").SetAttribute("TITLE", fmt.Sprintf("%s: %d", ih.GetAttribute("EFFORTNAME"), ih.GetInt("VALUE")))
 						iup.Refresh(iup.GetHandle("LabelEffort"))
@@ -478,8 +483,8 @@ func tabImage() iup.Ihandle {
 					})),
 			).SetHandle("VboxEffort"),
 			iup.Vbox(
-				iup.Toggle(" Lossless").SetHandle("Lossless").
-					SetAttributes(`TIP="Lossless compression (WEBP, AVIF, JXL), ignores quality"`).
+				iup.Toggle(i18n.Lng(i18n.TglLossless)).SetHandle("Lossless").
+					SetAttribute("TIP", i18n.Lng(i18n.TipLossless)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						setActive()
 						previewPost()
@@ -488,8 +493,8 @@ func tabImage() iup.Ihandle {
 					})),
 			),
 			iup.Vbox(
-				iup.Toggle(" Grayscale").SetHandle("Grayscale").
-					SetAttributes(`TIP="Convert images to grayscale (monochromatic)"`).
+				iup.Toggle(i18n.Lng(i18n.TglGrayscale)).SetHandle("Grayscale").
+					SetAttribute("TIP", i18n.Lng(i18n.TipGrayscale)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						previewPost()
 
@@ -504,11 +509,11 @@ func tabTransform() iup.Ihandle {
 	return iup.Vbox(
 		iup.Vbox(
 			iup.Hbox(
-				iup.Label("Brightness: "),
+				iup.Label(i18n.Lng(i18n.LblBrightness)),
 				iup.Label("0").SetHandle("LabelBrightness"),
 			).SetAttributes("ALIGNMENT=ACENTER, NMARGIN=0"),
 			iup.Val("").SetAttributes(`MIN=-100, MAX=100, VALUE=0, SHOWTICKS=10`).SetHandle("Brightness").
-				SetAttributes(`TIP="Adjust the brightness of the images"`).
+				SetAttribute("TIP", i18n.Lng(i18n.TipBrightness)).
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					iup.GetHandle("LabelBrightness").SetAttribute("TITLE", iup.GetHandle("Brightness").GetInt("VALUE"))
 					iup.Refresh(iup.GetHandle("LabelBrightness"))
@@ -527,11 +532,11 @@ func tabTransform() iup.Ihandle {
 		),
 		iup.Vbox(
 			iup.Hbox(
-				iup.Label("Contrast: "),
+				iup.Label(i18n.Lng(i18n.LblContrast)),
 				iup.Label("0").SetHandle("LabelContrast"),
 			).SetAttributes("ALIGNMENT=ACENTER, NMARGIN=0"),
 			iup.Val("").SetAttributes(`MIN=-100, MAX=100, VALUE=0, SHOWTICKS=10`).SetHandle("Contrast").
-				SetAttributes(`TIP="Adjust the contrast of the images"`).
+				SetAttribute("TIP", i18n.Lng(i18n.TipContrast)).
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					iup.GetHandle("LabelContrast").SetAttribute("TITLE", iup.GetHandle("Contrast").GetInt("VALUE"))
 					iup.Refresh(iup.GetHandle("LabelContrast"))
@@ -549,7 +554,7 @@ func tabTransform() iup.Ihandle {
 				})),
 		),
 		iup.Vbox(
-			iup.Label("Rotate:"),
+			iup.Label(i18n.Lng(i18n.LblRotate)),
 			iup.List().SetAttributes(map[string]string{
 				"DROPDOWN": "YES",
 				"VALUE":    "1",
@@ -558,7 +563,7 @@ func tabTransform() iup.Ihandle {
 				"3":        "180",
 				"4":        "270",
 			}).SetHandle("Rotate").
-				SetAttribute("TIP", "Rotate every page clockwise by the given angle in degrees").
+				SetAttribute("TIP", i18n.Lng(i18n.TipRotate)).
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					previewPost()
 
@@ -570,41 +575,41 @@ func tabTransform() iup.Ihandle {
 
 func tabs() iup.Ihandle {
 	return iup.Tabs(
-		tabInput().SetAttributes("TABTITLE=Input, NMARGIN=10x10"),
-		tabOutput().SetAttributes("TABTITLE=Output, NMARGIN=10x10"),
-		tabImage().SetAttributes("TABTITLE=Image, NMARGIN=10x10"),
-		tabTransform().SetAttributes("TABTITLE=Transform, NMARGIN=10x10"),
+		tabInput().SetAttributes("TABTITLE="+i18n.Lng(i18n.TabInput)+", NMARGIN=10x10"),
+		tabOutput().SetAttributes("TABTITLE="+i18n.Lng(i18n.TabOutput)+", NMARGIN=10x10"),
+		tabImage().SetAttributes("TABTITLE="+i18n.Lng(i18n.TabImage)+", NMARGIN=10x10"),
+		tabTransform().SetAttributes("TABTITLE="+i18n.Lng(i18n.TabTransform)+", NMARGIN=10x10"),
 	).SetHandle("Tabs")
 }
 
 func buttons() iup.Ihandle {
-	addFiles := iup.Button("Add &Files...").SetHandle("AddFiles").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+	addFiles := iup.Button(i18n.Lng(i18n.BtnAddFiles)).SetHandle("AddFiles").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 		SetCallback("ACTION", iup.ActionFunc(onAddFiles))
-	addDir := iup.Button("Add &Dir...").SetHandle("AddDir").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+	addDir := iup.Button(i18n.Lng(i18n.BtnAddDir)).SetHandle("AddDir").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 		SetCallback("ACTION", iup.ActionFunc(onAddDir))
-	remove := iup.Button("Remove").SetHandle("Remove").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+	remove := iup.Button(i18n.Lng(i18n.BtnRemove)).SetHandle("Remove").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 		SetCallback("ACTION", iup.ActionFunc(onRemove))
-	removeAll := iup.Button("Remove All").SetHandle("RemoveAll").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+	removeAll := iup.Button(i18n.Lng(i18n.BtnRemoveAll)).SetHandle("RemoveAll").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 		SetCallback("ACTION", iup.ActionFunc(onRemoveAll))
-	thumbnail := iup.Button("Thumbnail").SetHandle("Thumbnail").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+	thumbnail := iup.Button(i18n.Lng(i18n.BtnThumbnail)).SetHandle("Thumbnail").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 		SetCallback("ACTION", iup.ActionFunc(onThumbnail))
-	cover := iup.Button("Cover").SetHandle("Cover").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+	cover := iup.Button(i18n.Lng(i18n.BtnCover)).SetHandle("Cover").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 		SetCallback("ACTION", iup.ActionFunc(onCover))
-	convert := iup.Button("&Convert").SetHandle("Convert").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+	convert := iup.Button(i18n.Lng(i18n.BtnConvert)).SetHandle("Convert").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
 		SetCallback("ACTION", iup.ActionFunc(onConvert))
-	reset := iup.Button("Reset").SetHandle("Reset").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
-		SetAttribute("TIP", "Restore all settings to their defaults").
+	reset := iup.Button(i18n.Lng(i18n.BtnReset)).SetHandle("Reset").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetAttribute("TIP", i18n.Lng(i18n.TipReset)).
 		SetCallback("ACTION", iup.ActionFunc(onReset))
-	save := iup.Button("Save").SetHandle("Save").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
-		SetAttribute("TIP", "Save current settings to a profile").
+	save := iup.Button(i18n.Lng(i18n.BtnSave)).SetHandle("Save").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetAttribute("TIP", i18n.Lng(i18n.TipSave)).
 		SetCallback("ACTION", iup.ActionFunc(onSave))
 
-	command := iup.Button("Command").SetHandle("Command").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
-		SetAttribute("TIP", "Show the equivalent command line").
+	command := iup.Button(i18n.Lng(i18n.BtnCommand)).SetHandle("Command").SetAttributes("PADDING=DEFAULTBUTTONPADDING").
+		SetAttribute("TIP", i18n.Lng(i18n.TipCommand)).
 		SetCallback("ACTION", iup.ActionFunc(onCommand))
 
 	profile := iup.List().SetAttributes("DROPDOWN=YES").SetHandle("Profile").
-		SetAttribute("TIP", "Select a settings profile").
+		SetAttribute("TIP", i18n.Lng(i18n.TipProfile)).
 		SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(onProfileSelect))
 
 	iup.Normalizer(addFiles, addDir, remove, removeAll, thumbnail, cover, convert, reset, save, command).SetAttribute("NORMALIZE", "BOTH")
@@ -628,7 +633,7 @@ func buttons() iup.Ihandle {
 		),
 		iup.Fill(),
 		iup.Vbox(
-			iup.Label("Profile:"),
+			iup.Label(i18n.Lng(i18n.LblProfile)),
 			profile,
 			reset,
 			save,
@@ -654,7 +659,7 @@ func status() iup.Ihandle {
 					ih.SetAttributes("VALUE=0, VISIBLE=YES")
 					ih.SetAttribute("MAX", conv.Ncontents)
 
-					iup.GetHandle("LabelStatus1").SetAttribute("TITLE", fmt.Sprintf("File %d of %d", conv.CurrFile, conv.Nfiles))
+					iup.GetHandle("LabelStatus1").SetAttribute("TITLE", fmt.Sprintf(i18n.Str(i18n.StatusFileOf), conv.CurrFile, conv.Nfiles))
 					iup.GetHandle("LabelStatus1").SetAttributes("VISIBLE=YES")
 					iup.GetHandle("LabelStatus2").SetAttributes("VISIBLE=YES")
 
