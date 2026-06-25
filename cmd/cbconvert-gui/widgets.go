@@ -167,6 +167,7 @@ func previewMessage(ih iup.Ihandle, s string, i int, p any) int {
 		hasCover = true
 		iup.GetHandle("PreviewInfo").SetAttribute("TITLE", fmt.Sprintf("%s (%dx%d)", img.SizeHuman, img.Width, img.Height))
 	} else {
+		iup.Destroy(iup.GetHandle("cover"))
 		hasCover = false
 		iup.GetHandle("PreviewInfo").SetAttribute("TITLE", "")
 

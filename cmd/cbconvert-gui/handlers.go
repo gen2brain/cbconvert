@@ -271,6 +271,7 @@ func onRemove(ih iup.Ihandle) int {
 
 // clearPreview resets the preview state and repaints the canvas to its empty state.
 func clearPreview() {
+	iup.Destroy(iup.GetHandle("cover"))
 	hasCover = false
 	previewPath = ""
 	previewPage = 0
