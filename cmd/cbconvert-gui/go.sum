@@ -44,8 +44,8 @@ github.com/gen2brain/cbconvert v1.0.5-0.20260626071631-8155626dbb42 h1:p1K1jOk+r
 github.com/gen2brain/cbconvert v1.0.5-0.20260626071631-8155626dbb42/go.mod h1:qHzMhKZ7VBTffwDQ/9rc4yZ9FO5677ZSjSFZ7QNfaLw=
 github.com/gen2brain/go-fitz v1.24.15 h1:sJNB1MOWkqnzzENPHggFpgxTwW0+S5WF/rM5wUBpJWo=
 github.com/gen2brain/go-fitz v1.24.15/go.mod h1:SftkiVbTHqF141DuiLwBBM65zP7ig6AVDQpf2WlHamo=
-github.com/gen2brain/iup-go/iup v0.32.1-0.20260626072148-b7d27dd1e0f8 h1:unwpOGN77YqnOjRv3BNTXHHiJrR7kwtgH/2V8daeMT4=
-github.com/gen2brain/iup-go/iup v0.32.1-0.20260626072148-b7d27dd1e0f8/go.mod h1:V4f7tHOJAeHtjQ+ju795QKv6DGdLEb4L5cmWB1sjSzU=
+github.com/gen2brain/iup-go/iup v0.32.1-0.20260626100855-f328861e3291 h1:ad/nhBGhknOGDpiHnQ0ZLltZccG82t4tAKK94SrQ8OY=
+github.com/gen2brain/iup-go/iup v0.32.1-0.20260626100855-f328861e3291/go.mod h1:V4f7tHOJAeHtjQ+ju795QKv6DGdLEb4L5cmWB1sjSzU=
 github.com/gen2brain/jpegli v0.4.1 h1:qc11IQU0jTYFltroulT4MXmbu9YRftqHV0YBZ0Bqz5o=
 github.com/gen2brain/jpegli v0.4.1/go.mod h1:zJ++s4symmKCN1CLkrY0dGXTY3s0NWbd94Rz9KLdCzk=
 github.com/gen2brain/jpegxl v0.5.1 h1:UuBUIkZ35DErImU3bTA6rltfV5zSgVNOA/K5a6JibfE=

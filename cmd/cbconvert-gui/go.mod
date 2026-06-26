@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/fvbommel/sortorder v1.1.0
 	github.com/gen2brain/cbconvert v1.0.5-0.20260626071631-8155626dbb42
-	github.com/gen2brain/iup-go/iup v0.32.1-0.20260626072148-b7d27dd1e0f8
+	github.com/gen2brain/iup-go/iup v0.32.1-0.20260626100855-f328861e3291
 )
 
 require (
