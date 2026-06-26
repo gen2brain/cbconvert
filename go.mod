@@ -30,7 +30,7 @@ require (
 	github.com/dsoprea/go-utility v0.0.0-20221003172846-a3e1774ef349 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
-	github.com/golang/geo v0.0.0-20260622181633-f80708c60e82 // indirect
+	github.com/golang/geo v0.0.0-20260625163123-7c0e84413537 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/jupiterrider/ffi v0.7.0 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect

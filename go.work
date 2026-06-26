@@ -1,0 +1,7 @@
+go 1.26
+
+use (
+	.
+	./cmd/cbconvert
+	./cmd/cbconvert-gui
+)
