@@ -103,6 +103,7 @@ func main() {
 		t := iup.GetHandle("Table")
 		tableRowColors(t, darkMode == 1)
 		t.SetAttribute("REDRAW", "YES")
+		iup.Update(iup.GetHandle("Preview"))
 
 		return iup.DEFAULT
 	}))

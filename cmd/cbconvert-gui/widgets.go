@@ -123,34 +123,116 @@ func preview() iup.Ihandle {
 	)
 }
 
-// drawPreview draws the cover scaled to fit, else the logo centered.
+// previewTheme holds the preview canvas colors for light or dark mode.
+type previewTheme struct {
+	gradTop, gradBottom string
+	card, cardBorder    string
+	frame, shadow       string
+}
+
+func previewThemeFor(dark bool) previewTheme {
+	if dark {
+		return previewTheme{
+			gradTop: "#3A3F45", gradBottom: "#202327",
+			card: "#FFFFFF", cardBorder: "#16181B",
+			frame: "#101214", shadow: "#141619",
+		}
+	}
+
+	return previewTheme{
+		gradTop: "#F7F9FC", gradBottom: "#DBE2EA",
+		card: "#FFFFFF", cardBorder: "#CDD5DE",
+		frame: "#BFC8D2", shadow: "#B7C0CB",
+	}
+}
+
+// drawPreview paints a gradient background, then the cover framed with a drop shadow, or an empty page card with the logo.
 func drawPreview(ih iup.Ihandle) int {
 	iup.DrawBegin(ih)
 	defer iup.DrawEnd(ih)
 
 	cw, ch := iup.DrawGetSize(ih)
-	iup.DrawParentBackground(ih)
+	th := previewThemeFor(iup.GetGlobal("DARKMODE") == "YES" && iup.GetGlobal("AUTODARKMODE") == "YES")
 
-	name := "logo"
+	iup.DrawLinearGradient(ih, 0, 0, cw, ch, 90, th.gradTop, th.gradBottom)
+
+	margin := cw / 24
+	if m := ch / 24; m < margin {
+		margin = m
+	}
+	if margin < 12 {
+		margin = 12
+	}
+
 	if hasCover {
-		name = "cover"
+		drawCover(ih, th, cw, ch, margin)
+	} else {
+		drawPlaceholder(ih, th, cw, ch, margin)
 	}
-
-	iw, ihh, _ := iup.DrawGetImageInfo(name)
-	if iw <= 0 || ihh <= 0 {
-		return iup.DEFAULT
-	}
-
-	dw, dh := iw, ihh
-	if hasCover {
-		s := math.Min(float64(cw)/float64(iw), float64(ch)/float64(ihh))
-		dw = int(float64(iw) * s)
-		dh = int(float64(ihh) * s)
-	}
-
-	iup.DrawImage(ih, name, (cw-dw)/2, (ch-dh)/2, dw, dh)
 
 	return iup.DEFAULT
+}
+
+// drawCover draws the loaded cover scaled to fit, with a drop shadow and a thin frame.
+func drawCover(ih iup.Ihandle, th previewTheme, cw, ch, margin int) {
+	iw, ihh, _ := iup.DrawGetImageInfo("cover")
+	if iw <= 0 || ihh <= 0 {
+		return
+	}
+
+	s := math.Min(float64(cw-2*margin)/float64(iw), float64(ch-2*margin)/float64(ihh))
+	dw, dh := int(float64(iw)*s), int(float64(ihh)*s)
+	x, y := (cw-dw)/2, (ch-dh)/2
+
+	const off = 6
+	ih.SetAttribute("DRAWSTYLE", "FILL")
+	ih.SetAttribute("DRAWCOLOR", th.shadow)
+	iup.DrawRectangle(ih, x+off, y+off, x+dw+off, y+dh+off)
+
+	iup.DrawImage(ih, "cover", x, y, dw, dh)
+
+	ih.SetAttribute("DRAWSTYLE", "STROKE")
+	ih.SetAttribute("DRAWLINEWIDTH", "1")
+	ih.SetAttribute("DRAWCOLOR", th.frame)
+	iup.DrawRectangle(ih, x, y, x+dw, y+dh)
+}
+
+// drawPlaceholder draws an empty comic-page card with the logo centered, shown until a cover is loaded.
+func drawPlaceholder(ih iup.Ihandle, th previewTheme, cw, ch, margin int) {
+	cardH := ch - 2*margin
+	cardW := cardH * 2 / 3
+	if cardW > cw-2*margin {
+		cardW = cw - 2*margin
+		cardH = cardW * 3 / 2
+	}
+	x, y := (cw-cardW)/2, (ch-cardH)/2
+
+	r := cardW / 14
+	if r < 8 {
+		r = 8
+	}
+
+	const off = 7
+	ih.SetAttribute("DRAWSTYLE", "FILL")
+	ih.SetAttribute("DRAWCOLOR", th.shadow)
+	iup.DrawRoundedRectangle(ih, x+off, y+off, x+cardW+off, y+cardH+off, r)
+
+	ih.SetAttribute("DRAWCOLOR", th.card)
+	iup.DrawRoundedRectangle(ih, x, y, x+cardW, y+cardH, r)
+
+	ih.SetAttribute("DRAWSTYLE", "STROKE")
+	ih.SetAttribute("DRAWLINEWIDTH", "1")
+	ih.SetAttribute("DRAWCOLOR", th.cardBorder)
+	iup.DrawRoundedRectangle(ih, x, y, x+cardW, y+cardH, r)
+
+	lw, lh, _ := iup.DrawGetImageInfo("logo")
+	if lw <= 0 || lh <= 0 {
+		return
+	}
+
+	s := float64(cardW*2/5) / float64(lw)
+	dw, dh := int(float64(lw)*s), int(float64(lh)*s)
+	iup.DrawImage(ih, "logo", x+(cardW-dw)/2, y+(cardH-dh)/2, dw, dh)
 }
 
 // previewMessage receives a rendered cover from previewRender and triggers a canvas redraw.
