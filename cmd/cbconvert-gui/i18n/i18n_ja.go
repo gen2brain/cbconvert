@@ -27,7 +27,7 @@ func init() {
 		LblMinSize:    "最小サイズ (MiB)：",
 		TipSize:       "最小サイズより大きいファイルのみ処理する",
 		LblDPI:        "ドキュメント DPI：",
-		TipDPI:        "ドキュメント（PDF、EPUB など）をレンダリングする解像度。既定値は 300",
+		TipDPI:        "ドキュメント（PDF、EPUB など）をレンダリングする解像度。既定値は元の解像度を使用します",
 
 		LblOutDir:      "出力ディレクトリ：",
 		TipOutDir:      "変換されたファイルが書き込まれるディレクトリ（必須）",

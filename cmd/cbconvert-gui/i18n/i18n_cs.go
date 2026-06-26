@@ -27,7 +27,7 @@ func init() {
 		LblMinSize:    "Minimální velikost (MiB):",
 		TipSize:       "Zpracovat pouze soubory větší než minimální velikost",
 		LblDPI:        "DPI dokumentu:",
-		TipDPI:        "Rozlišení pro vykreslování dokumentů (PDF, EPUB atd.); výchozí je 300",
+		TipDPI:        "Rozlišení pro vykreslování dokumentů (PDF, EPUB atd.); výchozí používá původní rozlišení",
 
 		LblOutDir:      "Výstupní adresář:",
 		TipOutDir:      "Adresář, do kterého se zapisují převedené soubory (povinné)",

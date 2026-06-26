@@ -15,6 +15,7 @@ import (
 
 	pngstructure "github.com/dsoprea/go-png-image-structure"
 	"github.com/dustin/go-humanize"
+	"github.com/gen2brain/go-fitz"
 )
 
 // Options type.
@@ -41,7 +42,7 @@ type Options struct {
 	Fit bool
 	// Do not upscale images already smaller than the requested width/height
 	NoUpscale bool
-	// Document rendering resolution in DPI (PDF, EPUB, etc.); 0 uses the default
+	// Document rendering resolution in DPI (PDF, EPUB, etc.); 0 uses the page's native resolution
 	DPI int
 	// 0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 5=Gaussian, 6=Lanczos
 	Filter int
@@ -209,13 +210,14 @@ func (o Options) Args() []string {
 	return args
 }
 
-// renderDPI returns the document rendering resolution, falling back to 300 when unset.
-func (c *Converter) renderDPI() float64 {
+// renderPage renders document page n at the configured DPI, or at the page's
+// native resolution when DPI is unset.
+func (c *Converter) renderPage(doc *fitz.Document, n int) (*image.RGBA, error) {
 	if c.Opts.DPI > 0 {
-		return float64(c.Opts.DPI)
+		return doc.ImageDPI(n, float64(c.Opts.DPI))
 	}
 
-	return 300
+	return doc.Image(n)
 }
 
 // Cancel cancels the operation.

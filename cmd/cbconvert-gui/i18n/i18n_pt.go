@@ -27,7 +27,7 @@ func init() {
 		LblMinSize:    "Tamanho mínimo (MiB):",
 		TipSize:       "Processar apenas arquivos maiores que o tamanho mínimo",
 		LblDPI:        "DPI do documento:",
-		TipDPI:        "Resolução para renderizar documentos (PDF, EPUB, etc.); o padrão é 300",
+		TipDPI:        "Resolução para renderizar documentos (PDF, EPUB, etc.); o padrão usa a resolução original",
 
 		LblOutDir:      "Diretório de saída:",
 		TipOutDir:      "Diretório onde os arquivos convertidos são gravados (obrigatório)",

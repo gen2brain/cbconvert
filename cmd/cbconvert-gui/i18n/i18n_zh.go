@@ -27,7 +27,7 @@ func init() {
 		LblMinSize:    "最小大小 (MiB)：",
 		TipSize:       "仅处理大于最小大小的文件",
 		LblDPI:        "文档 DPI：",
-		TipDPI:        "渲染文档的分辨率（PDF、EPUB 等）；默认值为 300",
+		TipDPI:        "渲染文档的分辨率（PDF、EPUB 等）；默认使用原始分辨率",
 
 		LblOutDir:      "输出目录：",
 		TipOutDir:      "写入转换后文件的目录（必填）",

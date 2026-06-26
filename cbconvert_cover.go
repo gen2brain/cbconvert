@@ -52,7 +52,7 @@ func (c *Converter) coverDocument(fileName string) (image.Image, error) {
 	}
 	defer doc.Close()
 
-	img, err := doc.ImageDPI(0, c.renderDPI())
+	img, err := c.renderPage(doc, 0)
 	if err != nil {
 		return nil, fmt.Errorf("coverDocument: %w", err)
 	}
@@ -124,7 +124,7 @@ func (c *Converter) pageDocument(fileName string, page int) (image.Image, error)
 		return nil, fmt.Errorf("pageDocument: page %d out of range (%d pages)", page+1, doc.NumPage())
 	}
 
-	img, err := doc.ImageDPI(page, c.renderDPI())
+	img, err := c.renderPage(doc, page)
 	if err != nil {
 		return nil, fmt.Errorf("pageDocument: %w", err)
 	}
