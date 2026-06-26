@@ -9,7 +9,7 @@ require (
 	github.com/fvbommel/sortorder v1.1.0
 	github.com/gen2brain/avif v0.5.1
 	github.com/gen2brain/go-fitz v1.24.15
-	github.com/gen2brain/jpegli v0.4.0
+	github.com/gen2brain/jpegli v0.4.1
 	github.com/gen2brain/jpegxl v0.5.1
 	github.com/gen2brain/webp v0.6.1
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25

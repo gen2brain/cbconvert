@@ -3,8 +3,9 @@ module github.com/gen2brain/cbconvert/cmd/cbconvert-gui
 go 1.26
 
 require (
-	github.com/gen2brain/cbconvert v1.0.5-0.20260623161611-a5817c3ba5de
-	github.com/gen2brain/iup-go/iup v0.32.1-0.20260604112206-a19da6654449
+	github.com/fvbommel/sortorder v1.1.0
+	github.com/gen2brain/cbconvert v1.0.5-0.20260626071631-8155626dbb42
+	github.com/gen2brain/iup-go/iup v0.32.1-0.20260626072148-b7d27dd1e0f8
 )
 
 require (
@@ -21,14 +22,13 @@ require (
 	github.com/dsoprea/go-utility v0.0.0-20221003172846-a3e1774ef349 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
-	github.com/fvbommel/sortorder v1.1.0 // indirect
 	github.com/gen2brain/avif v0.5.1 // indirect
 	github.com/gen2brain/go-fitz v1.24.15 // indirect
-	github.com/gen2brain/jpegli v0.4.0 // indirect
+	github.com/gen2brain/jpegli v0.4.1 // indirect
 	github.com/gen2brain/jpegxl v0.5.1 // indirect
 	github.com/gen2brain/webp v0.6.1 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
-	github.com/golang/geo v0.0.0-20260622181633-f80708c60e82 // indirect
+	github.com/golang/geo v0.0.0-20260625163123-7c0e84413537 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25 // indirect
 	github.com/jupiterrider/ffi v0.7.0 // indirect
@@ -52,5 +52,3 @@ require (
 	golang.org/x/text v0.38.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
-
-replace github.com/gen2brain/cbconvert => ../..

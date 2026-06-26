@@ -40,7 +40,7 @@ For GUI app, check [IUP](https://github.com/gen2brain/iup-go) requirements, and 
 
 ### Build tags
 
-* `extlib` - use external `libmupdf` and `libunarr` libraries
+* `extlib` - use external `libmupdf` library
 * `pkgconfig` - enable pkg-config (used with `extlib`)
 
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
@@ -64,6 +64,8 @@ Commands:
   convert
     	Convert archive or document
 
+    --profile
+    	Load a saved GUI profile as defaults; explicit flags still override (default "")
     --width
     	Image width (default "0")
     --height
@@ -91,7 +93,7 @@ Commands:
     --outfile
     	Output file name for --combine (default: first input + -combined) (default "")
     --filter
-    	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
+    	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 5=Gaussian, 6=Lanczos (default "2")
     --no-cover
     	Do not convert the cover image (default "false")
     --no-rgb
@@ -122,6 +124,8 @@ Commands:
   cover
     	Extract cover
 
+    --profile
+    	Load a saved GUI profile as defaults; explicit flags still override (default "")
     --width
     	Image width (default "0")
     --height
@@ -141,7 +145,7 @@ Commands:
     --lossless
     	Lossless compression (webp, avif, jxl), ignores quality (default "false")
     --filter
-    	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
+    	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 5=Gaussian, 6=Lanczos (default "2")
     --outdir
     	Output directory (default ".")
     --size
@@ -154,6 +158,8 @@ Commands:
   thumbnail
     	Extract cover thumbnail (freedesktop spec.)
 
+    --profile
+    	Load a saved GUI profile as defaults; explicit flags still override (default "")
     --width
     	Image width (default "0")
     --height
@@ -165,7 +171,7 @@ Commands:
     --dpi
     	Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300) (default "0")
     --filter
-    	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 6=Gaussian, 7=Lanczos (default "2")
+    	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 5=Gaussian, 6=Lanczos (default "2")
     --outdir
     	Output directory (default ".")
     --outfile
