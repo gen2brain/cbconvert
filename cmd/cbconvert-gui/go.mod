@@ -4,8 +4,8 @@ go 1.26
 
 require (
 	github.com/fvbommel/sortorder v1.1.0
-	github.com/gen2brain/cbconvert v1.0.5-0.20260626071631-8155626dbb42
-	github.com/gen2brain/iup-go/iup v0.32.1-0.20260626100855-f328861e3291
+	github.com/gen2brain/cbconvert v1.0.5-0.20260627171227-5344970a55fe
+	github.com/gen2brain/iup-go/iup v0.32.1-0.20260627135200-7df674d35173
 )
 
 require (
@@ -25,7 +25,8 @@ require (
 	github.com/gen2brain/avif v0.5.1 // indirect
 	github.com/gen2brain/go-fitz v1.28.0 // indirect
 	github.com/gen2brain/jpegli v0.4.1 // indirect
-	github.com/gen2brain/jpegxl v0.5.1 // indirect
+	github.com/gen2brain/jpegn v0.4.2 // indirect
+	github.com/gen2brain/jpegxl v0.5.2 // indirect
 	github.com/gen2brain/webp v0.6.1 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/golang/geo v0.0.0-20260625163123-7c0e84413537 // indirect

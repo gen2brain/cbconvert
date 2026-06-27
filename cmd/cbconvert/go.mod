@@ -3,7 +3,7 @@ module github.com/gen2brain/cbconvert/cmd/cbconvert
 go 1.26
 
 require (
-	github.com/gen2brain/cbconvert v1.0.5-0.20260626071631-8155626dbb42
+	github.com/gen2brain/cbconvert v1.0.5-0.20260627171227-5344970a55fe
 	github.com/schollz/progressbar/v3 v3.19.0
 	golang.org/x/term v0.44.0
 )
@@ -26,7 +26,8 @@ require (
 	github.com/gen2brain/avif v0.5.1 // indirect
 	github.com/gen2brain/go-fitz v1.28.0 // indirect
 	github.com/gen2brain/jpegli v0.4.1 // indirect
-	github.com/gen2brain/jpegxl v0.5.1 // indirect
+	github.com/gen2brain/jpegn v0.4.2 // indirect
+	github.com/gen2brain/jpegxl v0.5.2 // indirect
 	github.com/gen2brain/webp v0.6.1 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/golang/geo v0.0.0-20260625163123-7c0e84413537 // indirect
