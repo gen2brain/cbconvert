@@ -102,6 +102,8 @@ type Converter struct {
 	prefix string
 	// Input root for the current file, used to build recursive output paths
 	root string
+	// Target size for fast previews; when set, JPEG covers are IDCT-downscaled while decoding
+	previewWidth, previewHeight int
 	// Number of files
 	Nfiles int
 	// Index of the current file
@@ -552,6 +554,27 @@ func (c *Converter) Preview(fileName string, fileInfo os.FileInfo, width, height
 	}
 
 	return c.previewImage(fileName, i, width, height)
+}
+
+// CoverPreview returns the cover fitted into width x height, skipping the output-codec round-trip.
+func (c *Converter) CoverPreview(fileName string, fileInfo os.FileInfo, width, height int) (Image, error) {
+	c.previewWidth, c.previewHeight = width, height
+
+	i, err := c.coverImage(fileName, fileInfo)
+	if err != nil {
+		return Image{}, fmt.Errorf("%s: %w", fileName, err)
+	}
+
+	if width != 0 && height != 0 {
+		i = fit(i, width, height, resampleFilter(c.Opts.Filter))
+	}
+
+	var img Image
+	img.Image = i
+	img.Width = i.Bounds().Dx()
+	img.Height = i.Bounds().Dy()
+
+	return img, nil
 }
 
 // PreviewPage returns the page-th image (0-based) as an image preview.

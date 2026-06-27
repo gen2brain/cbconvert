@@ -1,6 +1,7 @@
 package cbconvert
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 	"github.com/gen2brain/avif"
 	"github.com/gen2brain/go-fitz"
 	"github.com/gen2brain/jpegli"
+	"github.com/gen2brain/jpegn"
 	"github.com/gen2brain/jpegxl"
 	"github.com/gen2brain/webp"
 	"github.com/jsummers/gobmp"
@@ -356,13 +358,58 @@ func (c *Converter) imageTransform(img image.Image) image.Image {
 }
 
 // imageDecode decodes image from reader.
+// jpegnOptions decodes straight to RGBA with high-quality chroma upsampling.
+var jpegnOptions = jpegn.Options{ToRGBA: true, UpsampleMethod: jpegn.CatmullRom}
+
 func (c *Converter) imageDecode(reader io.Reader) (image.Image, error) {
-	img, _, err := image.Decode(reader)
+	br := bufio.NewReader(reader)
+
+	if magic, err := br.Peek(2); err == nil && magic[0] == 0xff && magic[1] == 0xd8 {
+		opts := jpegnOptions
+
+		if c.previewWidth > 0 && c.previewHeight > 0 {
+			data, err := io.ReadAll(br)
+			if err != nil {
+				return nil, fmt.Errorf("imageDecode: %w", err)
+			}
+
+			if cfg, err := jpegn.DecodeConfig(bytes.NewReader(data)); err == nil {
+				opts.ScaleDenom = scaleDenom(cfg.Width, cfg.Height, c.previewWidth, c.previewHeight)
+			}
+
+			img, err := jpegn.Decode(bytes.NewReader(data), &opts)
+			if err != nil {
+				return nil, fmt.Errorf("imageDecode: %w", err)
+			}
+
+			return img, nil
+		}
+
+		img, err := jpegn.Decode(br, &opts)
+		if err != nil {
+			return nil, fmt.Errorf("imageDecode: %w", err)
+		}
+
+		return img, nil
+	}
+
+	img, _, err := image.Decode(br)
 	if err != nil {
 		return img, fmt.Errorf("imageDecode: %w", err)
 	}
 
 	return img, nil
+}
+
+// scaleDenom returns the largest JPEG IDCT denominator (1, 2, 4, 8) that keeps w x h at or above tw x th.
+func scaleDenom(w, h, tw, th int) int {
+	for _, d := range []int{8, 4, 2} {
+		if w/d >= tw && h/d >= th {
+			return d
+		}
+	}
+
+	return 1
 }
 
 // imageEncode encodes image to file.

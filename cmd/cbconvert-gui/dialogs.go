@@ -70,10 +70,37 @@ func fileDlg(title string, multiple, directory bool, dirKey string) ([]string, e
 
 const dlgPreviewName = "_FILEDLGPREVIEW_"
 
+// previewPad insets the cover from the preview pane edges, in pixels per side.
+const previewPad = 8
+
 // previewCover returns a FILE_CB handler that draws the highlighted comic's cover in the dialog preview pane.
+// Extracted covers are cached by path so re-highlighting a file doesn't re-extract it.
 func previewCover() iup.FileFunc {
-	var image iup.Ihandle
-	var lastFile string
+	const maxCache = 32
+
+	cache := make(map[string]iup.Ihandle)
+	order := make([]string, 0, maxCache)
+
+	cover := func(path string, w, h int) iup.Ihandle {
+		if img, ok := cache[path]; ok {
+			return img
+		}
+
+		img := loadCover(path, w, h)
+		cache[path] = img
+		order = append(order, path)
+
+		if len(order) > maxCache {
+			old := order[0]
+			order = order[1:]
+			if oi := cache[old]; oi != 0 {
+				oi.Destroy()
+			}
+			delete(cache, old)
+		}
+
+		return img
+	}
 
 	return func(ih iup.Ihandle, filename, status string) int {
 		switch status {
@@ -82,19 +109,8 @@ func previewCover() iup.FileFunc {
 			cw, ch := iup.DrawGetSize(ih)
 			iup.DrawParentBackground(ih)
 
-			if filename != lastFile {
-				lastFile = filename
-				if image != 0 {
-					image.Destroy()
-					image = 0
-				}
-				if img := loadCover(filename, cw, ch); img != 0 {
-					image = img
-					iup.SetHandle(dlgPreviewName, image)
-				}
-			}
-
-			if image != 0 {
+			if image := cover(filename, cw-2*previewPad, ch-2*previewPad); image != 0 {
+				iup.SetHandle(dlgPreviewName, image)
 				iw, iih, _ := iup.DrawGetImageInfo(dlgPreviewName)
 				iup.DrawImage(ih, dlgPreviewName, (cw-iw)/2, (ch-iih)/2, iw, iih)
 			} else {
@@ -106,11 +122,13 @@ func previewCover() iup.FileFunc {
 
 			iup.DrawEnd(ih)
 		case "FINISH":
-			if image != 0 {
-				image.Destroy()
-				image = 0
+			for _, img := range cache {
+				if img != 0 {
+					img.Destroy()
+				}
 			}
-			lastFile = ""
+			cache = make(map[string]iup.Ihandle)
+			order = order[:0]
 		}
 
 		return iup.DEFAULT
@@ -131,7 +149,7 @@ func loadCover(path string, w, h int) iup.Ihandle {
 	opts := cbconvert.NewOptions()
 	opts.DPI = 96
 
-	img, err := cbconvert.New(opts).Preview(path, fi, w, h)
+	img, err := cbconvert.New(opts).CoverPreview(path, fi, w, h)
 	if err != nil || img.Image == nil {
 		return 0
 	}
