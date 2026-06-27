@@ -148,6 +148,8 @@ func settingsApply(group string) {
 		}
 	}
 
+	userLossless = iup.GetHandle("Lossless").GetAttribute("VALUE") == "ON"
+
 	syncLabels()
 	setActive()
 	previewPost()

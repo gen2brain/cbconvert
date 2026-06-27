@@ -60,7 +60,7 @@ func list() iup.Ihandle {
 		"TITLE1":         i18n.Lng(i18n.ColTitle),
 		"TITLE2":         i18n.Lng(i18n.ColType),
 		"TITLE3":         i18n.Lng(i18n.ColSize),
-		"WIDTH1":         "300",
+		"WIDTH1":         "250",
 		"WIDTH2":         "50",
 		"WIDTH3":         "100",
 		"ALIGNMENT2":     "ACENTER",
@@ -568,6 +568,7 @@ func tabImage() iup.Ihandle {
 				iup.Toggle(i18n.Lng(i18n.TglLossless)).SetHandle("Lossless").
 					SetAttribute("TIP", i18n.Lng(i18n.TipLossless)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
+						userLossless = ih.GetAttribute("VALUE") == "ON"
 						setActive()
 						previewPost()
 
