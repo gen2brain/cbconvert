@@ -10,8 +10,7 @@ require (
 	github.com/gen2brain/avif v0.5.1
 	github.com/gen2brain/go-fitz v1.28.0
 	github.com/gen2brain/jpegli v0.4.1
-	github.com/gen2brain/jpegn v0.4.2
-	github.com/gen2brain/jpegxl v0.5.1
+	github.com/gen2brain/jpegxl v0.5.2
 	github.com/gen2brain/webp v0.6.1
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25
 	github.com/mholt/archives v0.1.5
@@ -30,6 +29,7 @@ require (
 	github.com/dsoprea/go-logging v0.0.0-20200710184922-b02d349568dd // indirect
 	github.com/dsoprea/go-utility v0.0.0-20221003172846-a3e1774ef349 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
+	github.com/gen2brain/jpegn v0.4.2
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/golang/geo v0.0.0-20260625163123-7c0e84413537 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
