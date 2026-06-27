@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	github.com/fvbommel/sortorder v1.1.0
-	github.com/gen2brain/cbconvert v1.0.5-0.20260627172825-0f6e32c177ee
+	github.com/gen2brain/cbconvert v1.2.0
 	github.com/gen2brain/iup-go/iup v0.32.1-0.20260627135200-7df674d35173
 )
 
@@ -23,7 +23,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
 	github.com/gen2brain/avif v0.5.1 // indirect
-	github.com/gen2brain/go-fitz v1.28.0 // indirect
+	github.com/gen2brain/go-fitz v1.28.1 // indirect
 	github.com/gen2brain/jpegli v0.4.1 // indirect
 	github.com/gen2brain/jpegn v0.4.2 // indirect
 	github.com/gen2brain/jpegxl v0.5.2 // indirect

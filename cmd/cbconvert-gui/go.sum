@@ -40,10 +40,10 @@ github.com/fvbommel/sortorder v1.1.0 h1:fUmoe+HLsBTctBDoaBwpQo5N+nrCp8g/BjKb/6ZQ
 github.com/fvbommel/sortorder v1.1.0/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
 github.com/gen2brain/avif v0.5.1 h1:LQzLsJpWyGlsa4wuZ3D57qEbCiICIK7Yidz5ZPEwzTk=
 github.com/gen2brain/avif v0.5.1/go.mod h1:QgrYqdVE9y40PCfArK9VakcMIpYeDYpZmCSLkW6C1n8=
-github.com/gen2brain/cbconvert v1.0.5-0.20260627172825-0f6e32c177ee h1:9ggHORYXL+0zSdfC0bJA049amaH5wW6jZgO5dGisKm4=
-github.com/gen2brain/cbconvert v1.0.5-0.20260627172825-0f6e32c177ee/go.mod h1:KrAZdAzcMj1XQkfDz5bp0hotVFUB2k9hRT+9F4b5f2E=
-github.com/gen2brain/go-fitz v1.28.0 h1:RovqgQPAcOuyv5HZrWsTWl8qwlwbAHSKcAZXZUw0Vlk=
-github.com/gen2brain/go-fitz v1.28.0/go.mod h1:pY2hqAjp9Zy7qfPI2gwbJMHBFAdZpVXOLrRxD82l3Bs=
+github.com/gen2brain/cbconvert v1.2.0 h1:eUs5MPzft+Lo9ADMYYQ5AzydO54Pv0YYUTm2lPo3XDo=
+github.com/gen2brain/cbconvert v1.2.0/go.mod h1:/6QtSgf47bDBmtkidNoYwNMHaebsDhPTKnDMmyNUd9E=
+github.com/gen2brain/go-fitz v1.28.1 h1:ToEYb2vN4ByaL2VmRNGk92Sa1UAkCn8bsObpA3WkQ48=
+github.com/gen2brain/go-fitz v1.28.1/go.mod h1:pY2hqAjp9Zy7qfPI2gwbJMHBFAdZpVXOLrRxD82l3Bs=
 github.com/gen2brain/iup-go/iup v0.32.1-0.20260627135200-7df674d35173 h1:nBt0N1ixK8eg/7RXJIC4b0WDPxfENqyT+rH1/STZGj4=
 github.com/gen2brain/iup-go/iup v0.32.1-0.20260627135200-7df674d35173/go.mod h1:V4f7tHOJAeHtjQ+ju795QKv6DGdLEb4L5cmWB1sjSzU=
 github.com/gen2brain/jpegli v0.4.1 h1:qc11IQU0jTYFltroulT4MXmbu9YRftqHV0YBZ0Bqz5o=
