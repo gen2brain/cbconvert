@@ -3,7 +3,7 @@ module github.com/gen2brain/cbconvert/cmd/cbconvert
 go 1.26
 
 require (
-	github.com/gen2brain/cbconvert v1.0.5-0.20260627171227-5344970a55fe
+	github.com/gen2brain/cbconvert v1.0.5-0.20260627172825-0f6e32c177ee
 	github.com/schollz/progressbar/v3 v3.19.0
 	golang.org/x/term v0.44.0
 )
