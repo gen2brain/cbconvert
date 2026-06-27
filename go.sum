@@ -40,8 +40,8 @@ github.com/fvbommel/sortorder v1.1.0 h1:fUmoe+HLsBTctBDoaBwpQo5N+nrCp8g/BjKb/6ZQ
 github.com/fvbommel/sortorder v1.1.0/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
 github.com/gen2brain/avif v0.5.1 h1:LQzLsJpWyGlsa4wuZ3D57qEbCiICIK7Yidz5ZPEwzTk=
 github.com/gen2brain/avif v0.5.1/go.mod h1:QgrYqdVE9y40PCfArK9VakcMIpYeDYpZmCSLkW6C1n8=
-github.com/gen2brain/go-fitz v1.28.0 h1:RovqgQPAcOuyv5HZrWsTWl8qwlwbAHSKcAZXZUw0Vlk=
-github.com/gen2brain/go-fitz v1.28.0/go.mod h1:pY2hqAjp9Zy7qfPI2gwbJMHBFAdZpVXOLrRxD82l3Bs=
+github.com/gen2brain/go-fitz v1.28.1 h1:ToEYb2vN4ByaL2VmRNGk92Sa1UAkCn8bsObpA3WkQ48=
+github.com/gen2brain/go-fitz v1.28.1/go.mod h1:pY2hqAjp9Zy7qfPI2gwbJMHBFAdZpVXOLrRxD82l3Bs=
 github.com/gen2brain/jpegli v0.4.1 h1:qc11IQU0jTYFltroulT4MXmbu9YRftqHV0YBZ0Bqz5o=
 github.com/gen2brain/jpegli v0.4.1/go.mod h1:zJ++s4symmKCN1CLkrY0dGXTY3s0NWbd94Rz9KLdCzk=
 github.com/gen2brain/jpegn v0.4.2 h1:sxy2yolV1eNA02uYtnqBFm4EIC3ETnars98aG7Dc4LM=

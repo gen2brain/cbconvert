@@ -38,6 +38,23 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.2.0" date="2026-06-27" type="stable">
+      <description>
+        <ul>
+          <li>Support for RAR5</li>
+          <li>Lossless compression for WebP, AVIF, and JXL</li>
+          <li>Control over encoder effort and speed</li>
+          <li>Combine multiple comics into a single file</li>
+          <li>Save and switch between settings profiles</li>
+          <li>Multi-language interface</li>
+          <li>Choose the document rendering resolution (DPI)</li>
+          <li>Option to skip upscaling of smaller images</li>
+          <li>Refreshed interface with page-by-page preview and cover thumbnails in the file picker</li>
+          <li>Various fixes and smaller improvements</li>
+        </ul>
+      </description>
+      <url type="details">https://github.com/gen2brain/cbconvert/releases/tag/v1.2.0</url>
+    </release>
     <release version="1.1.0" date="2024-11-06" type="stable">
       <description>
         <ul>
