@@ -23,7 +23,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
 	github.com/gen2brain/avif v0.5.1 // indirect
-	github.com/gen2brain/go-fitz v1.28.1 // indirect
+	github.com/gen2brain/go-fitz v1.28.2 // indirect
 	github.com/gen2brain/jpegli v0.4.1 // indirect
 	github.com/gen2brain/jpegn v0.4.2 // indirect
 	github.com/gen2brain/jpegxl v0.5.2 // indirect
