@@ -1,17 +1,16 @@
 module github.com/gen2brain/cbconvert
 
-go 1.26
+go 1.26.4
 
 require (
 	github.com/anthonynsimon/bild v0.15.0
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fvbommel/sortorder v1.1.0
-	github.com/gen2brain/avif v0.5.1
+	github.com/gen2brain/gav1d v0.2.4
 	github.com/gen2brain/go-fitz v1.28.2
-	github.com/gen2brain/jpegli v0.4.1
-	github.com/gen2brain/jpegxl v0.5.2
-	github.com/gen2brain/webp v0.6.1
+	github.com/gen2brain/jxl v0.2.0
+	github.com/gen2brain/vpx v0.1.0
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25
 	github.com/mholt/archives v0.1.5
 	golang.org/x/image v0.43.0
@@ -29,7 +28,7 @@ require (
 	github.com/dsoprea/go-logging v0.0.0-20200710184922-b02d349568dd // indirect
 	github.com/dsoprea/go-utility v0.0.0-20221003172846-a3e1774ef349 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
-	github.com/gen2brain/jpegn v0.4.2
+	github.com/gen2brain/jpegn v0.6.0
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/golang/geo v0.0.0-20260625163123-7c0e84413537 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
@@ -42,7 +41,6 @@ require (
 	github.com/sorairolake/lzip-go v0.3.8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/stangelandcl/ppmd v0.1.1 // indirect
-	github.com/tetratelabs/wazero v1.12.0 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
 	go4.org v0.0.0-20260112195520-a5071408f32f // indirect
 	golang.org/x/net v0.56.0 // indirect

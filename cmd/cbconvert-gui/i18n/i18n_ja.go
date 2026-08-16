@@ -74,8 +74,8 @@ func init() {
 		EffortSpeed:   "速度",
 		EffortEffort:  "労力",
 		TipEffortWebp: "WEBP 方式、高いほど高品質/低速（0-6、既定 4）",
-		TipEffortAvif: "AVIF 速度、高いほど高速/低品質（0-10、既定 10）",
-		TipEffortJxl:  "JXL 労力、高いほど高品質/低速（1-10、既定 7）",
+		TipEffortAvif: "AVIF 速度、高いほど高速/低品質（0-10、既定 6）",
+		TipEffortJxl:  "JXL 労力、高いほど高品質/低速（1-7、既定 7）",
 
 		BtnAddFiles:  "ファイルを追加(&F)...",
 		BtnAddDir:    "ディレクトリを追加(&D)...",

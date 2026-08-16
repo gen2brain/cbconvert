@@ -1,38 +1,12 @@
 package main
 
 import (
-	"runtime/debug"
-	"strings"
-
 	"github.com/gen2brain/cbconvert/cmd/cbconvert-gui/i18n"
 	"github.com/gen2brain/iup-go/iup"
 )
 
-// jxlLosslessBuild reports whether wasm2go and nodynamic leave zune-jpegxl (lossless-only) as the only jxl encoder.
-var jxlLosslessBuild = func() bool {
-	info, ok := debug.ReadBuildInfo()
-	if !ok {
-		return false
-	}
-	var wasm2go, nodynamic bool
-	for _, kv := range info.Settings {
-		if kv.Key != "-tags" {
-			continue
-		}
-		for _, t := range strings.Split(kv.Value, ",") {
-			switch t {
-			case "wasm2go":
-				wasm2go = true
-			case "nodynamic":
-				nodynamic = true
-			}
-		}
-	}
-	return wasm2go && nodynamic
-}()
-
-// userLossless is the user's Lossless preference, tracked separately because a jxl
-// wasm2go build force-sets the widget on.
+// userLossless is the user's Lossless preference, kept so switching to a format
+// without lossless support and back does not clear it.
 var userLossless bool
 
 func setActive() {
@@ -98,15 +72,13 @@ func setActive() {
 	}
 
 	canLossless := opts.Format == "webp" || opts.Format == "avif" || opts.Format == "jxl"
-	jxlLossless := jxlLosslessBuild && opts.Format == "jxl"
 
-	// jxl wasm2go forces lossless on; otherwise show the user's preference so it doesn't stay stuck on.
 	losslessVal := "OFF"
-	if jxlLossless || userLossless {
+	if userLossless {
 		losslessVal = "ON"
 	}
 	iup.GetHandle("Lossless").SetAttribute("VALUE", losslessVal)
-	losslessOn := jxlLossless || (canLossless && userLossless)
+	losslessOn := canLossless && userLossless
 
 	if (opts.Format == "jpeg" || canLossless) && !opts.NoConvert && !losslessOn {
 		iup.GetHandle("VboxQuality").SetAttribute("ACTIVE", "YES")
@@ -120,11 +92,6 @@ func setActive() {
 	} else {
 		iup.GetHandle("VboxEffort").SetAttribute("ACTIVE", "NO")
 		iup.GetHandle("Lossless").SetAttribute("ACTIVE", "NO")
-	}
-
-	if jxlLossless {
-		iup.GetHandle("Lossless").SetAttribute("ACTIVE", "NO")
-		iup.GetHandle("VboxEffort").SetAttribute("ACTIVE", "NO")
 	}
 
 	if opts.Width != 0 && opts.Height != 0 && !opts.NoConvert {

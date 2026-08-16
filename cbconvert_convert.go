@@ -14,12 +14,11 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/gen2brain/avif"
+	"github.com/gen2brain/gav1d/avif"
 	"github.com/gen2brain/go-fitz"
-	"github.com/gen2brain/jpegli"
 	"github.com/gen2brain/jpegn"
-	"github.com/gen2brain/jpegxl"
-	"github.com/gen2brain/webp"
+	"github.com/gen2brain/jxl"
+	"github.com/gen2brain/vpx/webp"
 	"github.com/jsummers/gobmp"
 	"github.com/mholt/archives"
 	"golang.org/x/image/tiff"
@@ -422,13 +421,13 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 	case "tiff":
 		err = tiff.Encode(w, img, &tiff.Options{Compression: tiff.Uncompressed})
 	case "jpeg":
-		opts := &jpegli.EncodingOptions{}
+		opts := &jpegn.EncodeOptions{}
 		opts.Quality = c.Opts.Quality
-		opts.ChromaSubsampling = image.YCbCrSubsampleRatio420
-		opts.ProgressiveLevel = 2
+		opts.Subsampling = jpegn.Subsample420
+		opts.Progressive = true
+		opts.OptimizeCoding = true
 		opts.AdaptiveQuantization = true
-		opts.DCTMethod = jpegli.DefaultDCTMethod
-		err = jpegli.Encode(w, img, opts)
+		err = jpegn.Encode(w, img, opts)
 	case "webp":
 		method := webp.DefaultMethod
 		if c.Opts.Effort >= 0 {
@@ -440,13 +439,13 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 		if c.Opts.Effort >= 0 {
 			speed = min(max(c.Opts.Effort, 0), 10)
 		}
-		err = avif.Encode(w, img, avif.Options{Quality: c.Opts.Quality, Speed: speed, Lossless: c.Opts.Lossless})
+		err = avif.Encode(w, img, avif.EncodeOptions{Quality: c.Opts.Quality, Speed: speed, Lossless: c.Opts.Lossless})
 	case "jxl":
-		effort := jpegxl.DefaultEffort
+		effort := jxl.DefaultEffort
 		if c.Opts.Effort >= 0 {
-			effort = min(max(c.Opts.Effort, 1), 10)
+			effort = min(max(c.Opts.Effort, 1), jxl.MaxEffort)
 		}
-		err = jpegxl.Encode(w, img, jpegxl.Options{Quality: c.Opts.Quality, Effort: effort, Lossless: c.Opts.Lossless})
+		err = jxl.Encode(w, img, jxl.EncodeOptions{Quality: c.Opts.Quality, Effort: effort, Lossless: c.Opts.Lossless})
 	case "bmp":
 		opts := &gobmp.EncoderOptions{}
 		opts.SupportTransparency(false)

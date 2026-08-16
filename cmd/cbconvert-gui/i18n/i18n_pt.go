@@ -74,8 +74,8 @@ func init() {
 		EffortSpeed:   "Velocidade",
 		EffortEffort:  "Esforço",
 		TipEffortWebp: "Método WEBP, mais alto é melhor/mais lento (0-6, padrão 4)",
-		TipEffortAvif: "Velocidade AVIF, mais alto é mais rápido/pior (0-10, padrão 10)",
-		TipEffortJxl:  "Esforço JXL, mais alto é melhor/mais lento (1-10, padrão 7)",
+		TipEffortAvif: "Velocidade AVIF, mais alto é mais rápido/pior (0-10, padrão 6)",
+		TipEffortJxl:  "Esforço JXL, mais alto é melhor/mais lento (1-7, padrão 7)",
 
 		BtnAddFiles:  "Adicionar &arquivos...",
 		BtnAddDir:    "Adicionar &diretório...",

@@ -74,8 +74,8 @@ func init() {
 		EffortSpeed:   "Rychlost",
 		EffortEffort:  "Úsilí",
 		TipEffortWebp: "Metoda WEBP, vyšší je lepší/pomalejší (0-6, výchozí 4)",
-		TipEffortAvif: "Rychlost AVIF, vyšší je rychlejší/horší (0-10, výchozí 10)",
-		TipEffortJxl:  "Úsilí JXL, vyšší je lepší/pomalejší (1-10, výchozí 7)",
+		TipEffortAvif: "Rychlost AVIF, vyšší je rychlejší/horší (0-10, výchozí 6)",
+		TipEffortJxl:  "Úsilí JXL, vyšší je lepší/pomalejší (1-7, výchozí 7)",
 
 		BtnAddFiles:  "Přidat &soubory...",
 		BtnAddDir:    "Přidat &adresář...",

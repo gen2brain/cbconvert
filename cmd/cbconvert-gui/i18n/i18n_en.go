@@ -74,8 +74,8 @@ func init() {
 		EffortSpeed:   "Speed",
 		EffortEffort:  "Effort",
 		TipEffortWebp: "WEBP method, higher is better/slower (0-6, default 4)",
-		TipEffortAvif: "AVIF speed, higher is faster/worse (0-10, default 10)",
-		TipEffortJxl:  "JXL effort, higher is better/slower (1-10, default 7)",
+		TipEffortAvif: "AVIF speed, higher is faster/worse (0-10, default 6)",
+		TipEffortJxl:  "JXL effort, higher is better/slower (1-7, default 7)",
 
 		BtnAddFiles:  "Add &Files...",
 		BtnAddDir:    "Add &Dir...",

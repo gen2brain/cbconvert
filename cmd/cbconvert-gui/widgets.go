@@ -25,11 +25,11 @@ func setEffort(format string) {
 		val.SetAttribute("TIP", i18n.Lng(i18n.TipEffortWebp))
 		name = i18n.Str(i18n.EffortMethod)
 	case "avif":
-		val.SetAttributes("MIN=0, MAX=10, SHOWTICKS=11, VALUE=10")
+		val.SetAttributes("MIN=0, MAX=10, SHOWTICKS=11, VALUE=6")
 		val.SetAttribute("TIP", i18n.Lng(i18n.TipEffortAvif))
 		name = i18n.Str(i18n.EffortSpeed)
 	case "jxl":
-		val.SetAttributes("MIN=1, MAX=10, SHOWTICKS=10, VALUE=7")
+		val.SetAttributes("MIN=1, MAX=7, SHOWTICKS=7, VALUE=7")
 		val.SetAttribute("TIP", i18n.Lng(i18n.TipEffortJxl))
 		name = i18n.Str(i18n.EffortEffort)
 	default:

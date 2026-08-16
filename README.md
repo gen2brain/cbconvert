@@ -85,7 +85,7 @@ Commands:
     --quality
     	Image quality (default "75")
     --effort
-    	Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-10), -1 uses the format default (default "-1")
+    	Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-7), -1 uses the format default (default "-1")
     --lossless
     	Lossless compression (webp, avif, jxl), ignores quality (default "false")
     --combine
@@ -141,7 +141,7 @@ Commands:
     --quality
     	Image quality (default "75")
     --effort
-    	Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-10), -1 uses the format default (default "-1")
+    	Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-7), -1 uses the format default (default "-1")
     --lossless
     	Lossless compression (webp, avif, jxl), ignores quality (default "false")
     --filter

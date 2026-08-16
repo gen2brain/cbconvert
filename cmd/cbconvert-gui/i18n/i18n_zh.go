@@ -74,8 +74,8 @@ func init() {
 		EffortSpeed:   "速度",
 		EffortEffort:  "强度",
 		TipEffortWebp: "WEBP 方法，越高越好/越慢（0-6，默认 4）",
-		TipEffortAvif: "AVIF 速度，越高越快/越差（0-10，默认 10）",
-		TipEffortJxl:  "JXL 强度，越高越好/越慢（1-10，默认 7）",
+		TipEffortAvif: "AVIF 速度，越高越快/越差（0-10，默认 6）",
+		TipEffortJxl:  "JXL 强度，越高越好/越慢（1-7，默认 7）",
 
 		BtnAddFiles:  "添加文件(&F)...",
 		BtnAddDir:    "添加目录(&D)...",
