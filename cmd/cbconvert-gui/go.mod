@@ -4,7 +4,7 @@ go 1.26.4
 
 require (
 	github.com/fvbommel/sortorder v1.1.0
-	github.com/gen2brain/cbconvert v1.2.1-0.20260816220619-38cb375a93fb
+	github.com/gen2brain/cbconvert v1.2.1-0.20260824134038-b8bf8fa9df3e
 	github.com/gen2brain/iup-go/iup v0.32.1-0.20260627135200-7df674d35173
 )
 
@@ -21,9 +21,8 @@ require (
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d // indirect
 	github.com/dsoprea/go-utility v0.0.0-20221003172846-a3e1774ef349 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/ebitengine/purego v0.10.2 // indirect
+	github.com/gen2brain/folio v0.2.3 // indirect
 	github.com/gen2brain/gav1d v0.2.5 // indirect
-	github.com/gen2brain/go-fitz v1.28.2 // indirect
 	github.com/gen2brain/jpegn v0.6.1 // indirect
 	github.com/gen2brain/jxl v0.2.0 // indirect
 	github.com/gen2brain/vpx v0.2.1 // indirect
@@ -46,7 +45,6 @@ require (
 	golang.org/x/image v0.45.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
