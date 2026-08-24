@@ -4,7 +4,7 @@ go 1.26.4
 
 require (
 	github.com/fvbommel/sortorder v1.1.0
-	github.com/gen2brain/cbconvert v1.2.1-0.20260824134038-b8bf8fa9df3e
+	github.com/gen2brain/cbconvert v1.2.1-0.20260824143641-01a205a07eb9
 	github.com/gen2brain/iup-go/iup v0.32.1-0.20260627135200-7df674d35173
 )
 
@@ -21,7 +21,7 @@ require (
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d // indirect
 	github.com/dsoprea/go-utility v0.0.0-20221003172846-a3e1774ef349 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/gen2brain/folio v0.2.3 // indirect
+	github.com/gen2brain/folio v0.2.4 // indirect
 	github.com/gen2brain/gav1d v0.2.5 // indirect
 	github.com/gen2brain/jpegn v0.6.1 // indirect
 	github.com/gen2brain/jxl v0.2.0 // indirect

@@ -3,7 +3,7 @@ module github.com/gen2brain/cbconvert/cmd/cbconvert
 go 1.26.4
 
 require (
-	github.com/gen2brain/cbconvert v1.2.1-0.20260824134038-b8bf8fa9df3e
+	github.com/gen2brain/cbconvert v1.2.1-0.20260824143641-01a205a07eb9
 	github.com/schollz/progressbar/v3 v3.19.0
 	golang.org/x/term v0.45.0
 )
@@ -22,7 +22,7 @@ require (
 	github.com/dsoprea/go-utility v0.0.0-20221003172846-a3e1774ef349 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fvbommel/sortorder v1.1.0 // indirect
-	github.com/gen2brain/folio v0.2.3 // indirect
+	github.com/gen2brain/folio v0.2.4 // indirect
 	github.com/gen2brain/gav1d v0.2.5 // indirect
 	github.com/gen2brain/jpegn v0.6.1 // indirect
 	github.com/gen2brain/jxl v0.2.0 // indirect

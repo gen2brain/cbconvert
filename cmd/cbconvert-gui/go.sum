@@ -36,10 +36,10 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/fvbommel/sortorder v1.1.0 h1:fUmoe+HLsBTctBDoaBwpQo5N+nrCp8g/BjKb/6ZQmYw=
 github.com/fvbommel/sortorder v1.1.0/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
-github.com/gen2brain/cbconvert v1.2.1-0.20260824134038-b8bf8fa9df3e h1:/KlA1X4qD46KlseZU+NxLUVsp8Sjh29xbQneEUw736g=
-github.com/gen2brain/cbconvert v1.2.1-0.20260824134038-b8bf8fa9df3e/go.mod h1:NxyRZZlBpTG7tIXqtenMD+DDYqDfv3euseDDcEersQw=
-github.com/gen2brain/folio v0.2.3 h1:xsGu0e1S/v7MA2gKZCI12mXYsf0Ov55NpIcBz61seIk=
-github.com/gen2brain/folio v0.2.3/go.mod h1:4/PcXfaXIYmW1nwQ4bJeE+aG5ybG58Aw9xrwODXaXII=
+github.com/gen2brain/cbconvert v1.2.1-0.20260824143641-01a205a07eb9 h1:2TiqgdtITwiBQ+Qnr59LmtBXkRMgHSUeVE6NXDzQSr8=
+github.com/gen2brain/cbconvert v1.2.1-0.20260824143641-01a205a07eb9/go.mod h1:sTJ79ib1Bn1C2lUdvDtHnTeW7AD+o3ZG8Cd/eLqkpfc=
+github.com/gen2brain/folio v0.2.4 h1:c1eZYBucycynbyF1UkAXC8Zm/NbWMjHQhckDrz5gBWg=
+github.com/gen2brain/folio v0.2.4/go.mod h1:4/PcXfaXIYmW1nwQ4bJeE+aG5ybG58Aw9xrwODXaXII=
 github.com/gen2brain/gav1d v0.2.5 h1:Zg5/DE1JBdf8kxZqIvNo2ZEizF9DVF9jdPTAKJQZbOY=
 github.com/gen2brain/gav1d v0.2.5/go.mod h1:ReFKjHq7pvRhEk+pgRPAo9gOlcrf51sdzVcAbbX7e0E=
 github.com/gen2brain/iup-go/iup v0.32.1-0.20260627135200-7df674d35173 h1:nBt0N1ixK8eg/7RXJIC4b0WDPxfENqyT+rH1/STZGj4=
