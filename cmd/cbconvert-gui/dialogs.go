@@ -160,7 +160,7 @@ func loadCover(path string, w, h int) iup.Ihandle {
 func isComic(path string) bool {
 	switch strings.ToLower(filepath.Ext(path)) {
 	case ".rar", ".zip", ".7z", ".tar", ".cbr", ".cbz", ".cb7", ".cbt",
-		".pdf", ".xps", ".epub", ".mobi", ".docx", ".pptx", ".xlsx":
+		".pdf", ".epub", ".mobi", ".chm", ".fb2", ".docx", ".pptx", ".xlsx":
 		return true
 	}
 

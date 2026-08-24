@@ -12,7 +12,7 @@ See more [screenshots](https://github.com/gen2brain/cbconvert/blob/master/cmd/cb
 
 ### Features
 
-* reads CBR (RAR), CBZ (ZIP), CB7 (7Z), CBT (TAR), PDF, XPS, EPUB, MOBI, DOCX, PPTX and plain directory
+* reads CBR (RAR), CBZ (ZIP), CB7 (7Z), CBT (TAR), PDF, EPUB, MOBI, CHM, DOCX, PPTX and plain directory
 * saves processed files in ZIP archive format or TAR
 * images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL, or 4-Bit BMP (16 colors) image format
 * rotate, adjust brightness/contrast or grayscale images
@@ -28,8 +28,6 @@ Linux Flatpak is available at [Flathub](https://flathub.org/apps/io.github.gen2b
 
 ### Compile
 
-You must have `CGO_ENABLED=1`. Note that `Go` will disable cgo when cross-compiling.
-
 Install to `GOBIN` (you can point `GOBIN` to e.g. `/usr/local/bin` or `~/.local/bin`):
 
 `go install github.com/gen2brain/cbconvert/cmd/cbconvert@latest`
@@ -37,11 +35,6 @@ Install to `GOBIN` (you can point `GOBIN` to e.g. `/usr/local/bin` or `~/.local/
 For GUI app, check [IUP](https://github.com/gen2brain/iup-go) requirements, and then install:
 
 `go install github.com/gen2brain/cbconvert/cmd/cbconvert-gui@latest`
-
-### Build tags
-
-* `extlib` - use external `libmupdf` library
-* `pkgconfig` - enable pkg-config (used with `extlib`)
 
 ### Using cbconvert in file managers to generate FreeDesktop thumbnails
 

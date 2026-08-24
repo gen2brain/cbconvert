@@ -18,7 +18,7 @@ jobs:
       run: go build -v ./...
       working-directory: cmd/cbconvert
       env:
-        CGO_ENABLED: 1
+        CGO_ENABLED: 0
 
   gui:
     strategy:

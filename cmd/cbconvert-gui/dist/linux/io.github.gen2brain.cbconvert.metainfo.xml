@@ -10,7 +10,7 @@
 
   <description>
     <p>
-      A comic book converter with support for .cb*, .pdf, .xps, .epub, .mobi and directories.
+      A comic book converter with support for .cb*, .pdf, .epub, .mobi, .chm and directories.
       Images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL or 4-Bit BMP (16 colors) file format.
     </p>
   </description>

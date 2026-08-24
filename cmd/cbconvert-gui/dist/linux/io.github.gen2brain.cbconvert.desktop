@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=CBconvert
 GenericName=A Comic Book converter
-Comment=A comic converter with support for .cb*, .pdf, .xps, .epub, .mobi and directories.
+Comment=A comic converter with support for .cb*, .pdf, .epub, .mobi, .chm and directories.
 Exec=cbconvert-gui
 Icon=io.github.gen2brain.cbconvert
 Terminal=false

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/fvbommel/sortorder"
-	"github.com/gen2brain/go-fitz"
+	folio "github.com/gen2brain/folio/doc"
 )
 
 // coverArchive extracts cover from archive.
@@ -46,7 +46,7 @@ func (c *Converter) coverArchive(fileName string) (image.Image, error) {
 
 // coverDocument extracts cover from document.
 func (c *Converter) coverDocument(fileName string) (image.Image, error) {
-	doc, err := fitz.New(fileName)
+	doc, err := folio.Open(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("coverDocument: %w", err)
 	}
@@ -114,14 +114,14 @@ func (c *Converter) pageArchive(fileName string, page int) (image.Image, error) 
 
 // pageDocument extracts the page-th rendered page from a document.
 func (c *Converter) pageDocument(fileName string, page int) (image.Image, error) {
-	doc, err := fitz.New(fileName)
+	doc, err := folio.Open(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("pageDocument: %w", err)
 	}
 	defer doc.Close()
 
-	if page < 0 || page >= doc.NumPage() {
-		return nil, fmt.Errorf("pageDocument: page %d out of range (%d pages)", page+1, doc.NumPage())
+	if page < 0 || page >= doc.NumPages() {
+		return nil, fmt.Errorf("pageDocument: page %d out of range (%d pages)", page+1, doc.NumPages())
 	}
 
 	img, err := c.renderPage(doc, page)
@@ -192,13 +192,13 @@ func (c *Converter) PageCount(fileName string, fileInfo os.FileInfo) (int, error
 
 		return len(imagesFromSlice(contents)), nil
 	case isDocument(fileName):
-		doc, err := fitz.New(fileName)
+		doc, err := folio.Open(fileName)
 		if err != nil {
 			return 0, fmt.Errorf("PageCount: %w", err)
 		}
 		defer doc.Close()
 
-		return doc.NumPage(), nil
+		return doc.NumPages(), nil
 	case isArchive(fileName):
 		contents, err := c.archiveList(fileName)
 		if err != nil {

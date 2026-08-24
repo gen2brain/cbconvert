@@ -14,8 +14,8 @@ import (
 	"strings"
 	"sync/atomic"
 
+	folio "github.com/gen2brain/folio/doc"
 	"github.com/gen2brain/gav1d/avif"
-	"github.com/gen2brain/go-fitz"
 	"github.com/gen2brain/jpegn"
 	"github.com/gen2brain/jxl"
 	"github.com/gen2brain/vpx/webp"
@@ -27,14 +27,14 @@ import (
 
 // convertDocument converts PDF/EPUB document to CBZ.
 func (c *Converter) convertDocument(ctx context.Context, fileName string) error {
-	doc, err := fitz.New(fileName)
+	doc, err := folio.Open(fileName)
 	if err != nil {
 		return fmt.Errorf("convertDocument: %w", err)
 	}
 
 	defer doc.Close()
 
-	c.Ncontents = doc.NumPage()
+	c.Ncontents = doc.NumPages()
 	c.CurrContent = 0
 
 	if c.OnStart != nil {
@@ -433,7 +433,7 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 		if c.Opts.Effort >= 0 {
 			method = min(max(c.Opts.Effort, 0), 6)
 		}
-		err = webp.Encode(w, img, webp.Options{Quality: c.Opts.Quality, Method: method, Lossless: c.Opts.Lossless})
+		err = webp.Encode(w, img, webp.EncodeOptions{Quality: c.Opts.Quality, Method: method, Lossless: c.Opts.Lossless})
 	case "avif":
 		speed := avif.DefaultSpeed
 		if c.Opts.Effort >= 0 {

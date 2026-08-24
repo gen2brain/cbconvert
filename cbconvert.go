@@ -15,7 +15,7 @@ import (
 
 	pngstructure "github.com/dsoprea/go-png-image-structure"
 	"github.com/dustin/go-humanize"
-	"github.com/gen2brain/go-fitz"
+	folio "github.com/gen2brain/folio/doc"
 )
 
 // Options type.
@@ -214,12 +214,17 @@ func (o Options) Args() []string {
 
 // renderPage renders document page n at the configured DPI, or at the page's
 // native resolution when DPI is unset.
-func (c *Converter) renderPage(doc *fitz.Document, n int) (*image.RGBA, error) {
-	if c.Opts.DPI > 0 {
-		return doc.ImageDPI(n, float64(c.Opts.DPI))
+func (c *Converter) renderPage(doc folio.Document, n int) (*image.RGBA, error) {
+	page, err := doc.Page(n)
+	if err != nil {
+		return nil, err
 	}
 
-	return doc.Image(n)
+	if c.Opts.DPI > 0 {
+		return page.ImageDPI(float64(c.Opts.DPI))
+	}
+
+	return page.Image()
 }
 
 // Cancel cancels the operation.
