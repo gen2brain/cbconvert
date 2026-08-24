@@ -7,7 +7,7 @@ require (
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fvbommel/sortorder v1.1.0
-	github.com/gen2brain/folio v0.2.3
+	github.com/gen2brain/folio v0.2.4
 	github.com/gen2brain/gav1d v0.2.4
 	github.com/gen2brain/jxl v0.2.0
 	github.com/gen2brain/vpx v0.2.1

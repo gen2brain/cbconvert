@@ -360,6 +360,12 @@ func (c *Converter) imageTransform(img image.Image) image.Image {
 // jpegnOptions decodes straight to RGBA with high-quality chroma upsampling.
 var jpegnOptions = jpegn.Options{ToRGBA: true, UpsampleMethod: jpegn.CatmullRom}
 
+func init() {
+	folio.RegisterPictureDecoder("jpeg", "\xff\xd8", func(b []byte) (image.Image, error) {
+		return jpegn.Decode(bytes.NewReader(b), nil)
+	})
+}
+
 func (c *Converter) imageDecode(reader io.Reader) (image.Image, error) {
 	br := bufio.NewReader(reader)
 

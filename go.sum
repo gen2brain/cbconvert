@@ -36,8 +36,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/fvbommel/sortorder v1.1.0 h1:fUmoe+HLsBTctBDoaBwpQo5N+nrCp8g/BjKb/6ZQmYw=
 github.com/fvbommel/sortorder v1.1.0/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
-github.com/gen2brain/folio v0.2.3 h1:xsGu0e1S/v7MA2gKZCI12mXYsf0Ov55NpIcBz61seIk=
-github.com/gen2brain/folio v0.2.3/go.mod h1:4/PcXfaXIYmW1nwQ4bJeE+aG5ybG58Aw9xrwODXaXII=
+github.com/gen2brain/folio v0.2.4 h1:c1eZYBucycynbyF1UkAXC8Zm/NbWMjHQhckDrz5gBWg=
+github.com/gen2brain/folio v0.2.4/go.mod h1:4/PcXfaXIYmW1nwQ4bJeE+aG5ybG58Aw9xrwODXaXII=
 github.com/gen2brain/gav1d v0.2.4 h1:Fe+Hpvul5I+svHQ1FqWmvgTeNPWYNCulox7pSoY4M+8=
 github.com/gen2brain/gav1d v0.2.4/go.mod h1:ReFKjHq7pvRhEk+pgRPAo9gOlcrf51sdzVcAbbX7e0E=
 github.com/gen2brain/jpegn v0.6.0 h1:MYVzF8A4Y5GoDNUotAq4uT4dUDQ0yEVYbcw9xFZgKk8=
