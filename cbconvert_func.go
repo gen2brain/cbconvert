@@ -59,6 +59,37 @@ func imagesFromSlice(files []string) []string {
 	return images
 }
 
+// filesFromPath returns list of all found files for given directory.
+func filesFromPath(path string) ([]string, error) {
+	var files []string
+
+	walkFiles := func(fp string, f os.FileInfo, err error) error {
+		if !f.IsDir() && f.Mode()&os.ModeType == 0 && f.Size() > 0 {
+			files = append(files, fp)
+		}
+
+		return nil
+	}
+
+	f, err := filepath.Abs(path)
+	if err != nil {
+		return files, fmt.Errorf("filesFromPath: %w", err)
+	}
+
+	stat, err := os.Stat(f)
+	if err != nil {
+		return files, fmt.Errorf("filesFromPath: %w", err)
+	}
+
+	if !stat.IsDir() && stat.Mode()&os.ModeType == 0 {
+		files = append(files, f)
+	} else if err = filepath.Walk(f, walkFiles); err != nil {
+		return files, fmt.Errorf("filesFromPath: %w", err)
+	}
+
+	return files, nil
+}
+
 // isArchive checks if a file is archive.
 func isArchive(f string) bool {
 	var types = []string{".rar", ".zip", ".7z", ".tar", ".cbr", ".cbz", ".cb7", ".cbt"}

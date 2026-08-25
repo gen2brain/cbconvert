@@ -187,7 +187,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 
 // convertDirectory converts directory to CBZ.
 func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error {
-	contents, err := imagesFromPath(dirPath)
+	contents, err := filesFromPath(dirPath)
 	if err != nil {
 		return fmt.Errorf("convertDirectory: %w", err)
 	}
@@ -215,13 +215,7 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 		}
 		defer file.Close()
 
-		if isNonImage(img) && c.prefix == "" && !c.Opts.NoNonImage {
-			if err = copyFile(file, c.workPath(flatName(rel))); err != nil {
-				return fmt.Errorf("convertDirectory: %w", err)
-			}
-
-			return nil
-		} else if isImage(img) {
+		if isImage(img) {
 			if c.Opts.NoConvert {
 				if err = copyFile(file, c.workPath(flatName(rel))); err != nil {
 					return fmt.Errorf("convertDirectory: %w", err)
@@ -248,6 +242,18 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 				eg.Go(func() error {
 					return c.imageConvert(ctx, i, index, rel)
 				})
+			}
+
+			return nil
+		}
+
+		if filepath.Ext(img) == ".DS_Store" || strings.Contains(img, "__MACOSX") {
+			return nil
+		}
+
+		if c.prefix == "" && !c.Opts.NoNonImage {
+			if err = copyFile(file, c.workPath(flatName(rel))); err != nil {
+				return fmt.Errorf("convertDirectory: %w", err)
 			}
 		}
 
