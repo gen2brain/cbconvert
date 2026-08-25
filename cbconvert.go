@@ -212,6 +212,9 @@ func (o Options) Args() []string {
 	return args
 }
 
+// fallbackDPI is the resolution a page renders at when its own is too large.
+const fallbackDPI = 300
+
 // renderPage renders document page n at the configured DPI, or at the page's
 // native resolution when DPI is unset.
 func (c *Converter) renderPage(doc folio.Document, n int) (*image.RGBA, error) {
@@ -224,7 +227,16 @@ func (c *Converter) renderPage(doc folio.Document, n int) (*image.RGBA, error) {
 		return page.ImageDPI(float64(c.Opts.DPI))
 	}
 
-	return page.Image()
+	img, err := page.Image()
+	if err == nil {
+		return img, nil
+	}
+
+	if img, retry := page.ImageDPI(fallbackDPI); retry == nil {
+		return img, nil
+	}
+
+	return nil, err
 }
 
 // Cancel cancels the operation.
