@@ -363,13 +363,16 @@ func (c *Converter) imageTransform(img image.Image) image.Image {
 // jpegnOptions decodes straight to RGBA with high-quality chroma upsampling.
 var jpegnOptions = jpegn.Options{ToRGBA: true, UpsampleMethod: jpegn.CatmullRom}
 
+// pngnOptions keeps the rows a truncated file did carry.
+var pngnOptions = pngn.Options{Partial: true}
+
 func init() {
 	folio.RegisterPictureDecoder("jpeg", "\xff\xd8", func(b []byte) (image.Image, error) {
 		return jpegn.Decode(bytes.NewReader(b), nil)
 	})
 
 	folio.RegisterPictureDecoder("png", "\x89PNG\r\n\x1a\n", func(b []byte) (image.Image, error) {
-		return pngn.Decode(bytes.NewReader(b))
+		return pngn.Decode(bytes.NewReader(b), &pngnOptions)
 	})
 }
 
@@ -406,7 +409,7 @@ func (c *Converter) imageDecode(reader io.Reader) (image.Image, error) {
 	}
 
 	if magic, err := br.Peek(8); err == nil && string(magic) == "\x89PNG\r\n\x1a\n" {
-		img, err := pngn.Decode(br)
+		img, err := pngn.Decode(br, &pngnOptions)
 		if err != nil {
 			return nil, fmt.Errorf("imageDecode: %w", err)
 		}
