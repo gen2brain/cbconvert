@@ -367,6 +367,10 @@ func init() {
 	folio.RegisterPictureDecoder("jpeg", "\xff\xd8", func(b []byte) (image.Image, error) {
 		return jpegn.Decode(bytes.NewReader(b), nil)
 	})
+
+	folio.RegisterPictureDecoder("png", "\x89PNG\r\n\x1a\n", func(b []byte) (image.Image, error) {
+		return pngn.Decode(bytes.NewReader(b))
+	})
 }
 
 func (c *Converter) imageDecode(reader io.Reader) (image.Image, error) {
