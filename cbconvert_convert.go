@@ -46,23 +46,24 @@ func (c *Converter) convertDocument(ctx context.Context, fileName string) error 
 
 	for n := 0; n < c.Ncontents; n++ {
 		if ctx.Err() != nil {
-			return fmt.Errorf("convertDocument: %w", ctx.Err())
+			break
 		}
 
-		img, err := c.renderPage(doc, n)
-		if err != nil {
-			return fmt.Errorf("convertDocument: %w", err)
-		}
+		eg.Go(func() error {
+			img, err := c.renderPage(doc, n)
+			if err != nil {
+				return err
+			}
 
-		if img != nil {
-			eg.Go(func() error {
-				return c.imageConvert(ctx, img, n, "")
-			})
-		}
+			if img == nil {
+				return nil
+			}
+
+			return c.imageConvert(ctx, img, n, "")
+		})
 	}
 
-	err = eg.Wait()
-	if err != nil {
+	if err = eg.Wait(); err != nil {
 		return fmt.Errorf("convertDocument: %w", err)
 	}
 
@@ -202,11 +203,7 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.SetLimit(runtime.NumCPU() + 1)
 
-	for index, img := range contents {
-		if ctx.Err() != nil {
-			return fmt.Errorf("convertDirectory: %w", ctx.Err())
-		}
-
+	convertOne := func(index int, img string) error {
 		rel, rerr := filepath.Rel(dirPath, img)
 		if rerr != nil {
 			rel = filepath.Base(img)
@@ -216,28 +213,21 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 		if err != nil {
 			return fmt.Errorf("convertDirectory: %w", err)
 		}
+		defer file.Close()
 
 		if isNonImage(img) && c.prefix == "" && !c.Opts.NoNonImage {
 			if err = copyFile(file, c.workPath(flatName(rel))); err != nil {
 				return fmt.Errorf("convertDirectory: %w", err)
 			}
 
-			if err = file.Close(); err != nil {
-				return fmt.Errorf("convertDirectory: %w", err)
-			}
-
-			continue
+			return nil
 		} else if isImage(img) {
 			if c.Opts.NoConvert {
 				if err = copyFile(file, c.workPath(flatName(rel))); err != nil {
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
-				if err = file.Close(); err != nil {
-					return fmt.Errorf("convertDirectory: %w", err)
-				}
-
-				continue
+				return nil
 			}
 
 			var i image.Image
@@ -251,15 +241,7 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 					return fmt.Errorf("convertDirectory: %w", err)
 				}
 
-				if err = file.Close(); err != nil {
-					return fmt.Errorf("convertDirectory: %w", err)
-				}
-
-				continue
-			}
-
-			if err = file.Close(); err != nil {
-				return fmt.Errorf("convertDirectory: %w", err)
+				return nil
 			}
 
 			if i != nil {
@@ -268,11 +250,26 @@ func (c *Converter) convertDirectory(ctx context.Context, dirPath string) error 
 				})
 			}
 		}
+
+		return nil
 	}
 
-	err = eg.Wait()
+	for index, img := range contents {
+		if ctx.Err() != nil {
+			break
+		}
+
+		if err = convertOne(index, img); err != nil {
+			break
+		}
+	}
+
+	if werr := eg.Wait(); werr != nil {
+		return fmt.Errorf("convertDirectory: %w", werr)
+	}
+
 	if err != nil {
-		return fmt.Errorf("convertDirectory: %w", err)
+		return err
 	}
 
 	return nil
