@@ -4,10 +4,10 @@ go 1.26.4
 
 require (
 	github.com/anthonynsimon/bild v0.15.0
-	github.com/dustin/go-humanize v1.0.1
 	github.com/fvbommel/sortorder v1.1.0
 	github.com/gen2brain/folio v0.2.4
 	github.com/gen2brain/gav1d v0.2.4
+	github.com/gen2brain/jpegn v0.6.0
 	github.com/gen2brain/jxl v0.2.0
 	github.com/gen2brain/pngn v0.1.2
 	github.com/gen2brain/vpx v0.2.1
@@ -24,7 +24,6 @@ require (
 	github.com/bodgit/sevenzip v1.6.4 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707 // indirect
-	github.com/gen2brain/jpegn v0.6.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect

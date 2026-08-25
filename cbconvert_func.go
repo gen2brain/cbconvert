@@ -3,6 +3,7 @@ package cbconvert
 import (
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -88,6 +89,24 @@ func filesFromPath(path string) ([]string, error) {
 	}
 
 	return files, nil
+}
+
+// sizeHuman formats a size in IEC units.
+func sizeHuman(s uint64) string {
+	if s < 10 {
+		return fmt.Sprintf("%d B", s)
+	}
+
+	sizes := []string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"}
+	e := math.Floor(math.Log(float64(s)) / math.Log(1024))
+	val := math.Floor(float64(s)/math.Pow(1024, e)*10+0.5) / 10
+
+	f := "%.0f %s"
+	if val < 10 {
+		f = "%.1f %s"
+	}
+
+	return fmt.Sprintf(f, val, sizes[int(e)])
 }
 
 // isArchive checks if a file is archive.

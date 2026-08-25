@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dustin/go-humanize"
 	folio "github.com/gen2brain/folio/doc"
 	"github.com/gen2brain/pngn"
 )
@@ -256,7 +255,7 @@ func (c *Converter) Files(args []string) ([]File, error) {
 		file.Path = fp
 		file.Root = root
 		file.Stat = f
-		file.SizeHuman = humanize.IBytes(uint64(f.Size()))
+		file.SizeHuman = sizeHuman(uint64(f.Size()))
 		return file
 	}
 
@@ -579,7 +578,7 @@ func (c *Converter) previewImage(fileName string, i image.Image, width, height i
 
 	img.Width = i.Bounds().Dx()
 	img.Height = i.Bounds().Dy()
-	img.SizeHuman = humanize.IBytes(uint64(len(w.Bytes())))
+	img.SizeHuman = sizeHuman(uint64(len(w.Bytes())))
 
 	dec, err := c.imageDecode(bytes.NewReader(w.Bytes()))
 	if err != nil {
