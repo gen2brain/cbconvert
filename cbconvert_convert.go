@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"image"
-	"image/png"
 	"io"
 	"os"
 	"path/filepath"
@@ -18,6 +17,7 @@ import (
 	"github.com/gen2brain/gav1d/avif"
 	"github.com/gen2brain/jpegn"
 	"github.com/gen2brain/jxl"
+	"github.com/gen2brain/pngn"
 	"github.com/gen2brain/vpx/webp"
 	"github.com/jsummers/gobmp"
 	"github.com/mholt/archives"
@@ -401,6 +401,15 @@ func (c *Converter) imageDecode(reader io.Reader) (image.Image, error) {
 		return img, nil
 	}
 
+	if magic, err := br.Peek(8); err == nil && string(magic) == "\x89PNG\r\n\x1a\n" {
+		img, err := pngn.Decode(br)
+		if err != nil {
+			return nil, fmt.Errorf("imageDecode: %w", err)
+		}
+
+		return img, nil
+	}
+
 	img, _, err := image.Decode(br)
 	if err != nil {
 		return img, fmt.Errorf("imageDecode: %w", err)
@@ -426,7 +435,7 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 
 	switch c.Opts.Format {
 	case "png":
-		err = png.Encode(w, img)
+		err = pngn.Encode(w, img)
 	case "tiff":
 		err = tiff.Encode(w, img, &tiff.Options{Compression: tiff.Uncompressed})
 	case "jpeg":

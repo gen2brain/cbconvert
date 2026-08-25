@@ -48,6 +48,8 @@ github.com/gen2brain/jpegn v0.6.1 h1:S+Em15BvqCl/cTvebB6JU67ndDVdFWPhB0GbxNkWlOE
 github.com/gen2brain/jpegn v0.6.1/go.mod h1:43hks+w5VNTUDU34uk0tsXYJ97nbYL2idAlZF0D66+A=
 github.com/gen2brain/jxl v0.2.0 h1:cXSQnfbcC0JGFzaI344VzPMbe7mh6rYc0tjPcBUsE4U=
 github.com/gen2brain/jxl v0.2.0/go.mod h1:VjJHRai/8I8Es01mULqyiOihRBOjJr1Zo+NoN/MyIwo=
+github.com/gen2brain/pngn v0.1.2 h1:j1ikFmwRpJnVxnFcwekIMYzBLOsEXDVrOSHCwqQcnV8=
+github.com/gen2brain/pngn v0.1.2/go.mod h1:jmw3LV2MHgoK4PBdsLC3YTiLUBaY5Nlfi3UFvxqJc9E=
 github.com/gen2brain/vpx v0.2.1 h1:UD6tibcs/zlaIOKNFXeVyZuHBEaW9GYfxKSxvAN9cc8=
 github.com/gen2brain/vpx v0.2.1/go.mod h1:EVIdqguMSiapbtjDm4AWgFgYYJ4d+k8trXqjxYZ/4XE=
 github.com/go-errors/errors v1.0.1/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm6/TyX73Q=

@@ -7,15 +7,14 @@ import (
 	"fmt"
 	"image"
 	_ "image/gif"
-	"image/png"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
-	pngstructure "github.com/dsoprea/go-png-image-structure"
 	"github.com/dustin/go-humanize"
 	folio "github.com/gen2brain/folio/doc"
+	"github.com/gen2brain/pngn"
 )
 
 // Options type.
@@ -434,23 +433,6 @@ func (c *Converter) Thumbnail(file File) error {
 		cover = resize(cover, 256, 0, resampleFilter(c.Opts.Filter))
 	}
 
-	var buf bytes.Buffer
-	err = png.Encode(&buf, cover)
-	if err != nil {
-		return fmt.Errorf("%s: %w", fileName, err)
-	}
-
-	pmp := pngstructure.NewPngMediaParser()
-	csTmp, err := pmp.ParseBytes(buf.Bytes())
-	if err != nil {
-		return fmt.Errorf("%s: %w", fileName, err)
-	}
-
-	cs, ok := csTmp.(*pngstructure.ChunkSlice)
-	if !ok {
-		return fmt.Errorf("%s: type is not ChunkSlice", fileName)
-	}
-
 	var fName string
 	var fURI string
 
@@ -473,33 +455,13 @@ func (c *Converter) Thumbnail(file File) error {
 		fName = abs
 	}
 
-	chunks := cs.Chunks()
-	textChunks := []*pngstructure.Chunk{
-		{Type: `tEXt`, Data: []uint8("Software\x00" + "CBconvert")},
-		{Type: `tEXt`, Data: []uint8("Description\x00" + "Thumbnail of " + fileName)},
-		{Type: `tEXt`, Data: []uint8("Thumb::URI\x00" + fURI)},
-		{Type: `tEXt`, Data: []uint8("Thumb::MTime\x00" + strconv.FormatInt(fileInfo.ModTime().Unix(), 10))},
-		{Type: `tEXt`, Data: []uint8("Thumb::Size\x00" + strconv.FormatInt(fileInfo.Size(), 10))},
-	}
-
-	for _, textChunk := range textChunks {
-		textChunk.Length = uint32(len(textChunk.Data))
-		textChunk.UpdateCrc32()
-	}
-
-	chunks = append(
-		chunks[:1],
-		append(
-			textChunks,
-			chunks[1:]...,
-		)...,
-	)
-
-	cs = pngstructure.NewChunkSlice(chunks)
-	err = cs.WriteTo(&buf)
-	if err != nil {
-		return fmt.Errorf("%s: %w", fileName, err)
-	}
+	meta := &pngn.Metadata{Text: []pngn.Text{
+		{Keyword: "Software", Value: "CBconvert"},
+		{Keyword: "Description", Value: "Thumbnail of " + fileName},
+		{Keyword: "Thumb::URI", Value: fURI},
+		{Keyword: "Thumb::MTime", Value: strconv.FormatInt(fileInfo.ModTime().Unix(), 10)},
+		{Keyword: "Thumb::Size", Value: strconv.FormatInt(fileInfo.Size(), 10)},
+	}}
 
 	f, err := os.Create(fName)
 	if err != nil {
@@ -508,8 +470,7 @@ func (c *Converter) Thumbnail(file File) error {
 
 	defer f.Close()
 
-	_, err = buf.WriteTo(f)
-	if err != nil {
+	if err = pngn.Encode(f, cover, &pngn.EncodeOptions{Metadata: meta}); err != nil {
 		return fmt.Errorf("%s: %w", fileName, err)
 	}
 

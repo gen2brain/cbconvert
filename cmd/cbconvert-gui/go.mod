@@ -6,6 +6,7 @@ require (
 	github.com/fvbommel/sortorder v1.1.0
 	github.com/gen2brain/cbconvert v1.2.1-0.20260824143641-01a205a07eb9
 	github.com/gen2brain/iup-go/iup v0.32.1-0.20260627135200-7df674d35173
+	github.com/gen2brain/pngn v0.1.2
 )
 
 require (

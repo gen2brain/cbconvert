@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
-	"image/png"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -14,6 +13,7 @@ import (
 	"github.com/gen2brain/cbconvert"
 	"github.com/gen2brain/cbconvert/cmd/cbconvert-gui/i18n"
 	"github.com/gen2brain/iup-go/iup"
+	"github.com/gen2brain/pngn"
 )
 
 //go:generate rsrc --ico dist/windows/icon.ico --arch amd64 -o main_windows_amd64.syso
@@ -85,7 +85,7 @@ func main() {
 	config = iup.Config()
 	iup.ConfigLoad(config)
 
-	img, _ := png.Decode(bytes.NewReader(appLogo))
+	img, _ := pngn.Decode(bytes.NewReader(appLogo))
 	iup.ImageFromImage(img).SetHandle("logo")
 
 	dlg := iup.Dialog(layout()).SetAttributes(fmt.Sprintf(`TITLE="CBconvert %s", ICON=logo`, appVersion)).SetHandle("dlg")
