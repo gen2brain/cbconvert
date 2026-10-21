@@ -26,7 +26,7 @@ func fileDlg(title string, multiple, directory bool, dirKey string) ([]string, e
 			"DIALOGTYPE":     "OPEN",
 			"MULTIPLEFILES":  mf,
 			"MULTIVALUEPATH": "YES",
-			"EXTFILTER":      "Comic Files|*.rar;*.zip;*.7z;*.tar;*.cbr;*.cbz;*.cb7;*.cbt;*.pdf;*.epub;*.mobi;*.docx;*.pptx|",
+			"EXTFILTER":      "Comic Files|*.rar;*.zip;*.7z;*.tar;*.cbr;*.cbz;*.cb7;*.cbt;*.pdf;*.epub;*.mobi;*.azw;*.azw3;*.chm;*.fb2;*.docx;*.pptx;*.xlsx|",
 			"FILTER":         "*.cb*", // for Motif
 			"TITLE":          title,
 			"SHOWPREVIEW":    "YES",
@@ -160,7 +160,7 @@ func loadCover(path string, w, h int) iup.Ihandle {
 func isComic(path string) bool {
 	switch strings.ToLower(filepath.Ext(path)) {
 	case ".rar", ".zip", ".7z", ".tar", ".cbr", ".cbz", ".cb7", ".cbt",
-		".pdf", ".epub", ".mobi", ".chm", ".fb2", ".docx", ".pptx", ".xlsx":
+		".pdf", ".epub", ".mobi", ".azw", ".azw3", ".chm", ".fb2", ".docx", ".pptx", ".xlsx":
 		return true
 	}
 

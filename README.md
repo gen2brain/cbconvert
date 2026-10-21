@@ -12,7 +12,7 @@ See more [screenshots](https://github.com/gen2brain/cbconvert/blob/master/cmd/cb
 
 ### Features
 
-* reads CBR (RAR), CBZ (ZIP), CB7 (7Z), CBT (TAR), PDF, EPUB, MOBI, CHM, DOCX, PPTX and plain directory
+* reads CBR (RAR), CBZ (ZIP), CB7 (7Z), CBT (TAR), PDF, EPUB, MOBI, AZW, AZW3, CHM, FB2, DOCX, PPTX, XLSX and plain directory
 * saves processed files in ZIP archive format or TAR
 * images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL, or 4-Bit BMP (16 colors) image format
 * rotate, adjust brightness/contrast or grayscale images

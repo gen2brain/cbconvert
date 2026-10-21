@@ -123,7 +123,7 @@ func isArchive(f string) bool {
 
 // isDocument checks if file is document.
 func isDocument(f string) bool {
-	var types = []string{".pdf", ".epub", ".mobi", ".chm", ".fb2", ".docx", ".pptx", ".xlsx"}
+	var types = []string{".pdf", ".epub", ".mobi", ".azw", ".azw3", ".chm", ".fb2", ".docx", ".pptx", ".xlsx"}
 	for _, t := range types {
 		if strings.ToLower(filepath.Ext(f)) == t {
 			return true
