@@ -102,7 +102,7 @@ func (c *Converter) convertArchive(ctx context.Context, fileName string) error {
 			return err
 		}
 
-		if f.IsDir() {
+		if f.IsDir() || isMacMeta(f.NameInArchive) {
 			return nil
 		}
 

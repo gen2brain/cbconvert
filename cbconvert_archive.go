@@ -239,7 +239,7 @@ func (c *Converter) archiveList(fileName string) ([]string, error) {
 	defer file.Close()
 
 	err = ex.Extract(ctx, input, func(ctx context.Context, f archives.FileInfo) error {
-		if f.IsDir() {
+		if f.IsDir() || isMacMeta(f.NameInArchive) {
 			return nil
 		}
 

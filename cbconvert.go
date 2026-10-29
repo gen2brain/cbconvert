@@ -312,7 +312,7 @@ func (c *Converter) Files(args []string) ([]File, error) {
 
 			count := 0
 			for _, fn := range fs {
-				if !fn.IsDir() && isImage(fn.Name()) {
+				if !fn.IsDir() && isImage(fn.Name()) && !isMacMeta(fn.Name()) {
 					count++
 				}
 			}

@@ -674,6 +674,87 @@ func TestSubfolders(t *testing.T) {
 	}
 }
 
+func TestMacMetadata(t *testing.T) {
+	page0, err := os.ReadFile("testdata/test/00.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	page1, err := os.ReadFile("testdata/test/01.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	appleDouble := []byte("\x00\x05\x16\x07\x00\x02\x00\x00Mac OS X        ")
+
+	inDir, err := os.MkdirTemp(os.TempDir(), "cbc-in")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(inDir)
+
+	src := filepath.Join(inDir, "mac.cbz")
+	buildZip(t, src, []zipEntry{
+		{"00.jpg", page0},
+		{"01.jpg", page1},
+		{"__MACOSX/._00.jpg", appleDouble},
+		{"__MACOSX/._01.jpg", appleDouble},
+		{"._02.jpg", appleDouble},
+	})
+
+	dir := filepath.Join(inDir, "macdir")
+	if err := os.Mkdir(dir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	for name, data := range map[string][]byte{"00.jpg": page0, "01.jpg": page1, "._00.jpg": appleDouble} {
+		if err := os.WriteFile(filepath.Join(dir, name), data, 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	tmpDir, err := os.MkdirTemp(os.TempDir(), "cbc-out")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	opts := NewOptions()
+	opts.OutDir = tmpDir
+
+	conv := New(opts)
+
+	var files []File
+	for _, arg := range []string{src, dir} {
+		f, err := conv.Files([]string{arg})
+		if err != nil {
+			t.Fatal(err)
+		}
+		files = append(files, f...)
+	}
+
+	for _, file := range files {
+		n, err := conv.PageCount(file.Path, file.Stat)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if n != 2 {
+			t.Errorf("%s: expected 2 pages, got %d", file.Name, n)
+		}
+
+		if err := conv.Convert(file); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	for _, out := range []string{"mac.cbz", "macdir.cbz"} {
+		list, err := conv.archiveList(filepath.Join(tmpDir, out))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(list) != 2 {
+			t.Errorf("%s: expected 2 pages, got %v", out, list)
+		}
+	}
+}
+
 func TestMeta(t *testing.T) {
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "cbc")
 	if err != nil {

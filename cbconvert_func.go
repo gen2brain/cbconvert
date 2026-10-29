@@ -15,7 +15,7 @@ func imagesFromPath(path string) ([]string, error) {
 
 	walkFiles := func(fp string, f os.FileInfo, err error) error {
 		if !f.IsDir() && f.Mode()&os.ModeType == 0 {
-			if f.Size() > 0 && (isImage(fp)) {
+			if f.Size() > 0 && isImage(fp) && !isMacMeta(fp) {
 				images = append(images, fp)
 			}
 		}
@@ -65,7 +65,7 @@ func filesFromPath(path string) ([]string, error) {
 	var files []string
 
 	walkFiles := func(fp string, f os.FileInfo, err error) error {
-		if !f.IsDir() && f.Mode()&os.ModeType == 0 && f.Size() > 0 {
+		if !f.IsDir() && f.Mode()&os.ModeType == 0 && f.Size() > 0 && !isMacMeta(fp) {
 			files = append(files, fp)
 		}
 
@@ -143,6 +143,17 @@ func isImage(f string) bool {
 	}
 
 	return false
+}
+
+// isMacMeta checks for macOS metadata, files under __MACOSX and AppleDouble "._" files.
+func isMacMeta(f string) bool {
+	for _, p := range strings.Split(filepath.ToSlash(f), "/") {
+		if p == "__MACOSX" {
+			return true
+		}
+	}
+
+	return strings.HasPrefix(filepath.Base(f), "._")
 }
 
 // isNonImage checks for allowed files in archive.
