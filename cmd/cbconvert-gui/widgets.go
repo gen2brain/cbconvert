@@ -41,16 +41,6 @@ func setEffort(format string) {
 	iup.Refresh(iup.GetHandle("LabelEffort"))
 }
 
-// tableRowColors sets the alternating row colors for dark or light mode.
-func tableRowColors(t iup.Ihandle, dark bool) {
-	even, odd := "#F0F0F0", "#FFFFFF"
-	if dark {
-		even, odd = "#3A3A3A", "#2D2D2D"
-	}
-	t.SetAttribute("EVENROWCOLOR", even)
-	t.SetAttribute("ODDROWCOLOR", odd)
-}
-
 func list() iup.Ihandle {
 	t := iup.Table().SetHandle("Table")
 	t.SetAttributes(map[string]string{
@@ -72,8 +62,6 @@ func list() iup.Ihandle {
 		"SORTABLE":       "YES",
 		"ALTERNATECOLOR": "YES",
 	})
-
-	tableRowColors(t, iup.GetGlobal("DARKMODE") == "YES" && iup.GetGlobal("AUTODARKMODE") == "YES")
 
 	t.SetCallback("ENTERITEM_CB", iup.EnterItemFunc(func(ih iup.Ihandle, lin, col int) int {
 		index = lin - 1
@@ -137,7 +125,7 @@ func preview() iup.Ihandle {
 	iup.Timer().SetAttribute("TIME", "300").SetHandle("PreviewTimer").
 		SetCallback("ACTION_CB", iup.TimerActionFunc(func(ih iup.Ihandle) int {
 			ih.SetAttribute("RUN", "NO")
-			previewRender()
+			previewPost()
 
 			return iup.DEFAULT
 		}))
@@ -501,15 +489,7 @@ func tabImage() iup.Ihandle {
 						SetAttribute("TIP", i18n.Lng(i18n.TipWidthHeight)).
 						SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 							setActive()
-							ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-							return iup.DEFAULT
-						})).
-						SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-							if ih.GetAttribute("MYVALUE") != "" {
-								previewPost()
-							}
-							ih.SetAttribute("MYVALUE", "")
+							previewLater()
 
 							return iup.DEFAULT
 						})),
@@ -521,15 +501,7 @@ func tabImage() iup.Ihandle {
 						SetAttribute("TIP", i18n.Lng(i18n.TipWidthHeight)).
 						SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 							setActive()
-							ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-							return iup.DEFAULT
-						})).
-						SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-							if ih.GetAttribute("MYVALUE") != "" {
-								previewPost()
-							}
-							ih.SetAttribute("MYVALUE", "")
+							previewLater()
 
 							return iup.DEFAULT
 						})),
@@ -569,15 +541,7 @@ func tabImage() iup.Ihandle {
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						iup.GetHandle("LabelQuality").SetAttribute("TITLE", ih.GetInt("VALUE"))
 						iup.Refresh(iup.GetHandle("LabelQuality"))
-						ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-						return iup.DEFAULT
-					})).
-					SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-						if ih.GetAttribute("MYVALUE") != "" {
-							previewPost()
-						}
-						ih.SetAttribute("MYVALUE", "")
+						previewLater()
 
 						return iup.DEFAULT
 					})),
@@ -589,15 +553,7 @@ func tabImage() iup.Ihandle {
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						iup.GetHandle("LabelEffort").SetAttribute("TITLE", fmt.Sprintf("%s: %d", ih.GetAttribute("EFFORTNAME"), ih.GetInt("VALUE")))
 						iup.Refresh(iup.GetHandle("LabelEffort"))
-						ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-						return iup.DEFAULT
-					})).
-					SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-						if ih.GetAttribute("MYVALUE") != "" {
-							previewPost()
-						}
-						ih.SetAttribute("MYVALUE", "")
+						previewLater()
 
 						return iup.DEFAULT
 					})),
@@ -638,15 +594,7 @@ func tabTransform() iup.Ihandle {
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					iup.GetHandle("LabelBrightness").SetAttribute("TITLE", iup.GetHandle("Brightness").GetInt("VALUE"))
 					iup.Refresh(iup.GetHandle("LabelBrightness"))
-					ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-					return iup.DEFAULT
-				})).
-				SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-					if ih.GetAttribute("MYVALUE") != "" {
-						previewPost()
-					}
-					ih.SetAttribute("MYVALUE", "")
+					previewLater()
 
 					return iup.DEFAULT
 				})),
@@ -661,15 +609,7 @@ func tabTransform() iup.Ihandle {
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					iup.GetHandle("LabelContrast").SetAttribute("TITLE", iup.GetHandle("Contrast").GetInt("VALUE"))
 					iup.Refresh(iup.GetHandle("LabelContrast"))
-					ih.SetAttribute("MYVALUE", ih.GetInt("VALUE"))
-
-					return iup.DEFAULT
-				})).
-				SetCallback("KILLFOCUS_CB", iup.KillFocusFunc(func(ih iup.Ihandle) int {
-					if ih.GetAttribute("MYVALUE") != "" {
-						previewPost()
-					}
-					ih.SetAttribute("MYVALUE", "")
+					previewLater()
 
 					return iup.DEFAULT
 				})),

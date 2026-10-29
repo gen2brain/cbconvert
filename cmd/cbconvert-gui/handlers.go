@@ -216,11 +216,16 @@ func onPreviewResize(ih iup.Ihandle, width, height int) int {
 		return iup.DEFAULT
 	}
 
+	previewLater()
+
+	return iup.DEFAULT
+}
+
+// previewLater renders the preview once the changes stop arriving for a moment.
+func previewLater() {
 	t := iup.GetHandle("PreviewTimer")
 	t.SetAttribute("RUN", "NO")
 	t.SetAttribute("RUN", "YES")
-
-	return iup.DEFAULT
 }
 
 // previewRender renders the current file at previewPage off the UI thread.

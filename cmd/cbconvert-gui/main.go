@@ -103,9 +103,6 @@ func main() {
 	}))
 
 	dlg.SetCallback("THEMECHANGED_CB", iup.ThemeChangedFunc(func(ih iup.Ihandle, darkMode int) int {
-		t := iup.GetHandle("Table")
-		tableRowColors(t, darkMode == 1)
-		t.SetAttribute("REDRAW", "YES")
 		iup.Update(iup.GetHandle("Preview"))
 
 		return iup.DEFAULT
