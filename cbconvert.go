@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"image"
 	_ "image/gif"
+	"math"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -226,6 +228,11 @@ func (c *Converter) renderPage(doc folio.Document, n int) (*image.RGBA, error) {
 		return nil, err
 	}
 
+	return c.render(page)
+}
+
+// render renders a page at the configured DPI, or at its native resolution when DPI is unset.
+func (c *Converter) render(page folio.Page) (*image.RGBA, error) {
 	if c.Opts.DPI > 0 {
 		return page.ImageDPI(float64(c.Opts.DPI))
 	}
@@ -240,6 +247,36 @@ func (c *Converter) renderPage(doc folio.Document, n int) (*image.RGBA, error) {
 	}
 
 	return nil, err
+}
+
+// pagePixels bounds the pixels of the document pages rendered at once.
+const pagePixels = 1 << 26
+
+// pageBytes is about what a rendered pixel costs until its page is written out.
+const pageBytes = 40
+
+// pageBudget is the pixels the pages rendered at once may hold, lower under a GOMEMLIMIT.
+func pageBudget() int64 {
+	n := int64(pagePixels)
+	if lim := debug.SetMemoryLimit(-1); lim < math.MaxInt64 {
+		n = min(n, lim/pageBytes)
+	}
+	return max(n, 1)
+}
+
+// pageWeight is the pixels a page renders to, at most budget.
+func (c *Converter) pageWeight(page folio.Page, budget int64) int64 {
+	dpi := float64(c.Opts.DPI)
+	if dpi <= 0 {
+		dpi = page.NaturalDPI()
+	}
+	b := page.Bounds()
+	s := dpi / 72
+	px := float64(b.X1-b.X0) * s * float64(b.Y1-b.Y0) * s
+	if !(px >= 1) {
+		return 1
+	}
+	return int64(min(px, float64(budget)))
 }
 
 // Cancel cancels the running operation and the ones started after it, then calls OnCancel.

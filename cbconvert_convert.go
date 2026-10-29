@@ -23,6 +23,7 @@ import (
 	"github.com/mholt/archives"
 	"golang.org/x/image/tiff"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
 
 // convertDocument converts PDF/EPUB document to CBZ.
@@ -44,13 +45,27 @@ func (c *Converter) convertDocument(ctx context.Context, fileName string) error 
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.SetLimit(runtime.NumCPU() + 1)
 
+	budget := pageBudget()
+	sem := semaphore.NewWeighted(budget)
+
 	for n := 0; n < c.Ncontents; n++ {
 		if ctx.Err() != nil {
 			break
 		}
 
 		eg.Go(func() error {
-			img, err := c.renderPage(doc, n)
+			page, err := doc.Page(n)
+			if err != nil {
+				return err
+			}
+
+			w := c.pageWeight(page, budget)
+			if err := sem.Acquire(ctx, w); err != nil {
+				return err
+			}
+			defer sem.Release(w)
+
+			img, err := c.render(page)
 			if err != nil {
 				return err
 			}
