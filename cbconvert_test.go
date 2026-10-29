@@ -2,6 +2,8 @@ package cbconvert
 
 import (
 	"archive/zip"
+	"context"
+	"errors"
 	"fmt"
 	"image"
 	"os"
@@ -37,6 +39,49 @@ func TestConvert(t *testing.T) {
 				t.Errorf("format %s: file %s: %v", format, file.Name, err)
 			}
 		}
+	}
+
+	err = os.RemoveAll(tmpDir)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestCancel(t *testing.T) {
+	tmpDir, err := os.MkdirTemp(os.TempDir(), "cbc")
+	if err != nil {
+		t.Error(err)
+	}
+
+	opts := NewOptions()
+	opts.OutDir = tmpDir
+
+	conv := New(opts)
+
+	files, err := conv.Files([]string{"testdata/test.cbz", "testdata/test.pdf"})
+	if err != nil {
+		t.Error(err)
+	}
+
+	called := false
+	conv.OnCancel = func() {
+		called = true
+	}
+
+	done := make(chan error, 1)
+	go func() {
+		done <- conv.Convert(files[0])
+	}()
+	conv.Cancel()
+	<-done
+
+	if !called {
+		t.Error("OnCancel was not called")
+	}
+
+	err = conv.Convert(files[1])
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("Convert after Cancel: got %v, want context.Canceled", err)
 	}
 
 	err = os.RemoveAll(tmpDir)

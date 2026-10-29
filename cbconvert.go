@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	folio "github.com/gen2brain/folio/doc"
 	"github.com/gen2brain/pngn"
@@ -118,6 +119,10 @@ type Converter struct {
 	OnCompress func()
 	// Cancel function
 	OnCancel func()
+
+	mu       sync.Mutex
+	cancel   context.CancelFunc
+	canceled bool
 }
 
 // File type.
@@ -237,10 +242,36 @@ func (c *Converter) renderPage(doc folio.Document, n int) (*image.RGBA, error) {
 	return nil, err
 }
 
-// Cancel cancels the operation.
+// Cancel cancels the running operation and the ones started after it, then calls OnCancel.
 func (c *Converter) Cancel() {
+	c.mu.Lock()
+	c.canceled = true
+	if c.cancel != nil {
+		c.cancel()
+	}
+	c.mu.Unlock()
+
 	if c.OnCancel != nil {
 		c.OnCancel()
+	}
+}
+
+// begin returns the context of one operation, already canceled after Cancel, and the func that ends it.
+func (c *Converter) begin() (context.Context, func()) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	c.mu.Lock()
+	c.cancel = cancel
+	if c.canceled {
+		cancel()
+	}
+	c.mu.Unlock()
+
+	return ctx, func() {
+		c.mu.Lock()
+		c.cancel = nil
+		c.mu.Unlock()
+		cancel()
 	}
 }
 
@@ -600,10 +631,13 @@ func (c *Converter) Convert(file File) error {
 	c.root = file.Root
 	fileName, fileInfo := file.Path, file.Stat
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx, done := c.begin()
+	defer done()
 
-	c.OnCancel = cancel
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("%s: %w", fileName, err)
+	}
+
 	c.prefix = ""
 
 	var err error
@@ -631,8 +665,6 @@ func (c *Converter) Convert(file File) error {
 		return fmt.Errorf("%s: %w", fileName, err)
 	}
 
-	c.OnCancel = nil
-
 	return nil
 }
 
@@ -644,10 +676,12 @@ func (c *Converter) Combine(files []File) error {
 
 	c.root = ""
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx, done := c.begin()
+	defer done()
 
-	c.OnCancel = cancel
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("Combine: %w", err)
+	}
 
 	var err error
 	c.Workdir, err = os.MkdirTemp(os.TempDir(), "cbc")
@@ -681,8 +715,6 @@ func (c *Converter) Combine(files []File) error {
 	if err := c.archiveSave(out); err != nil {
 		return fmt.Errorf("Combine: %w", err)
 	}
-
-	c.OnCancel = nil
 
 	return nil
 }
