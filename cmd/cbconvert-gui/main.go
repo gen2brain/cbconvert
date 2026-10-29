@@ -87,7 +87,6 @@ func main() {
 	iup.SetGlobal("APPNAME", "cbconvert")
 	iup.SetGlobal("APPID", "io.github.gen2brain.cbconvert")
 
-	iup.SetGlobal("AUTODARKMODE", "YES")
 	iup.SetGlobal("GSKRENDERER", "cairo")
 
 	i18n.Init()

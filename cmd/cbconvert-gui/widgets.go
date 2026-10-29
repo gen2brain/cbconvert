@@ -144,28 +144,29 @@ func preview() iup.Ihandle {
 	)
 }
 
-// previewTheme holds the preview canvas colors for light or dark mode.
+// previewTheme holds the preview canvas colors, taken from the IUP palette of the current appearance.
 type previewTheme struct {
-	gradTop, gradBottom string
-	card, cardBorder    string
-	frame, shadow       string
+	bg, card          string
+	cardBorder, frame string
 }
 
-func previewThemeFor(dark bool) previewTheme {
-	if dark {
-		return previewTheme{
-			gradTop: "#3A3F45", gradBottom: "#202327",
-			card: "#FFFFFF", cardBorder: "#16181B",
-			frame: "#101214", shadow: "#141619",
-		}
-	}
+func previewThemeOf(ih iup.Ihandle) previewTheme {
+	fg := iup.GetGlobal("DLGFGCOLOR")
 
 	return previewTheme{
-		gradTop: "#F7F9FC", gradBottom: "#DBE2EA",
-		card: "#FFFFFF", cardBorder: "#CDD5DE",
-		frame: "#BFC8D2", shadow: "#B7C0CB",
+		bg:         ih.GetAttribute("BGCOLOR"),
+		card:       iup.GetGlobal("TXTBGCOLOR"),
+		cardBorder: fg + " 64",
+		frame:      fg + " 96",
 	}
 }
+
+// Light and shadow are drawn as translucent white and black over the theme colors.
+const (
+	previewLight  = "255 255 255 20"
+	previewShade  = "0 0 0 32"
+	previewShadow = "0 0 0 72"
+)
 
 // drawPreview paints a gradient background, then the cover framed with a drop shadow, or an empty page card with the logo.
 func drawPreview(ih iup.Ihandle) int {
@@ -173,9 +174,12 @@ func drawPreview(ih iup.Ihandle) int {
 	defer iup.DrawEnd(ih)
 
 	cw, ch := iup.DrawGetSize(ih)
-	th := previewThemeFor(iup.GetGlobal("DARKMODE") == "YES" && iup.GetGlobal("AUTODARKMODE") == "YES")
+	th := previewThemeOf(ih)
 
-	iup.DrawLinearGradient(ih, 0, 0, cw, ch, 90, th.gradTop, th.gradBottom)
+	ih.SetAttribute("DRAWSTYLE", "FILL")
+	ih.SetAttribute("DRAWCOLOR", th.bg)
+	iup.DrawRectangle(ih, 0, 0, cw, ch)
+	iup.DrawLinearGradient(ih, 0, 0, cw, ch, 90, previewLight, previewShade)
 
 	margin := previewMargin(cw, ch)
 
@@ -324,7 +328,7 @@ func drawCover(ih iup.Ihandle, th previewTheme, cw, ch, margin int) {
 
 	const off = 6
 	ih.SetAttribute("DRAWSTYLE", "FILL")
-	ih.SetAttribute("DRAWCOLOR", th.shadow)
+	ih.SetAttribute("DRAWCOLOR", previewShadow)
 	iup.DrawRectangle(ih, x+off, y+off, x+dw+off, y+dh+off)
 
 	iup.DrawImage(ih, "cover", x, y, dw, dh)
@@ -352,7 +356,7 @@ func drawPlaceholder(ih iup.Ihandle, th previewTheme, cw, ch, margin int) {
 
 	const off = 7
 	ih.SetAttribute("DRAWSTYLE", "FILL")
-	ih.SetAttribute("DRAWCOLOR", th.shadow)
+	ih.SetAttribute("DRAWCOLOR", previewShadow)
 	iup.DrawRoundedRectangle(ih, x+off, y+off, x+cardW+off, y+cardH+off, r)
 
 	ih.SetAttribute("DRAWCOLOR", th.card)

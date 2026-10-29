@@ -114,7 +114,7 @@ func previewCover() iup.FileFunc {
 				iw, iih, _ := iup.DrawGetImageInfo(dlgPreviewName)
 				iup.DrawImage(ih, dlgPreviewName, (cw-iw)/2, (ch-iih)/2, iw, iih)
 			} else {
-				ih.SetAttribute("DRAWCOLOR", "128 128 128")
+				ih.SetAttribute("DRAWCOLOR", iup.GetGlobal("DLGFGCOLOR")+" 128")
 				noPreview := i18n.Str(i18n.NoPreview)
 				tw, th := iup.DrawGetTextSize(ih, noPreview)
 				iup.DrawText(ih, noPreview, (cw-tw)/2, (ch-th)/2, 0, 0)
