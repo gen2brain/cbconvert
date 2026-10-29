@@ -179,6 +179,7 @@ func previewPost() {
 	// On a new file, fetch the count first; the Page POSTMESSAGE handler clamps previewPage and renders.
 	if file.Path != previewPath {
 		previewPath = file.Path
+		resetZoom()
 		iup.GetHandle("Loading").SetAttributes("VISIBLE=YES, START=YES")
 		go pageCountPost(file)
 
@@ -188,7 +189,7 @@ func previewPost() {
 	previewRender()
 }
 
-// previewSize returns the box in screen pixels that the cover is fitted into on the preview canvas.
+// previewSize returns the box in screen pixels that the cover is fitted into on the preview canvas, at the current zoom.
 func previewSize() (int, int) {
 	_, cw, ch := iup.GetHandle("Preview").GetIntInt("DRAWSIZE")
 	margin := previewMargin(cw, ch)
@@ -198,8 +199,8 @@ func previewSize() (int, int) {
 		scale = 1
 	}
 
-	w := int(math.Ceil(float64(cw-2*margin) * scale))
-	h := int(math.Ceil(float64(ch-2*margin) * scale))
+	w := int(math.Ceil(float64(cw-2*margin) * scale * previewZoom))
+	h := int(math.Ceil(float64(ch-2*margin) * scale * previewZoom))
 
 	return max(w, 1), max(h, 1)
 }
@@ -278,6 +279,7 @@ func onPageChanged() int {
 	}
 
 	previewPage = page
+	resetZoom()
 	previewRender()
 
 	return iup.DEFAULT
@@ -383,6 +385,7 @@ func clearPreview() {
 	hasCover = false
 	previewPath = ""
 	previewPage = 0
+	resetZoom()
 
 	iup.GetHandle("PreviewInfo").SetAttribute("TITLE", "")
 	iup.Update(iup.GetHandle("Preview"))
@@ -503,6 +506,8 @@ func onConvert(ih iup.Ihandle) int {
 	activeConv = conv
 	setBusy(true)
 
+	done := make(chan struct{})
+
 	conv.OnStart = func() {
 		iup.PostMessage(iup.GetHandle("ProgressBar"), "convert", 0, conv)
 	}
@@ -518,9 +523,8 @@ func onConvert(ih iup.Ihandle) int {
 
 		return iup.DEFAULT
 	})).SetCallback("CLOSE_CB", iup.CloseFunc(func(ih iup.Ihandle) int {
-		if err := os.RemoveAll(conv.Workdir); err != nil {
-			fmt.Println(err)
-		}
+		conv.Cancel()
+		<-done
 
 		return iup.DEFAULT
 	}))
@@ -543,6 +547,8 @@ func onConvert(ih iup.Ihandle) int {
 	}
 
 	go func(c *cbconvert.Converter) {
+		defer close(done)
+
 		if c.Opts.Combine {
 			if err := c.Combine(files); err != nil {
 				convertErr(err)

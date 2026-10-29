@@ -42,6 +42,13 @@ var (
 	coverFull   bool   // whether the loaded cover has all the pixels of the rendered page
 	sortCol     int    // table column the files are sorted by, 0 for the natural name order
 	sortDesc    bool   // whether sortCol is sorted in descending order
+
+	previewZoom  = 1.0 // preview zoom, 1 fits the whole page in the canvas
+	previewPanX  int   // horizontal pan of the zoomed preview
+	previewPanY  int   // vertical pan of the zoomed preview
+	previewDrag  bool  // whether the zoomed preview is being dragged
+	previewDragX int   // last pointer position of the drag
+	previewDragY int
 )
 
 func init() {

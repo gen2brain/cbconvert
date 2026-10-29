@@ -135,6 +135,9 @@ func preview() iup.Ihandle {
 			iup.Canvas().SetAttributes("EXPAND=YES, MINSIZE=400x, BORDER=NO").SetHandle("Preview").
 				SetCallback("ACTION", iup.ActionFunc(drawPreview)).
 				SetCallback("RESIZE_CB", iup.ResizeFunc(onPreviewResize)).
+				SetCallback("WHEEL_CB", iup.WheelFunc(onPreviewWheel)).
+				SetCallback("BUTTON_CB", iup.ButtonFunc(onPreviewButton)).
+				SetCallback("MOTION_CB", iup.MotionFunc(onPreviewMotion)).
 				SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(previewMessage)),
 			iup.Label("").SetAttributes("EXPAND=HORIZONTAL, ALIGNMENT=ACENTER").SetHandle("PreviewInfo"),
 		),
@@ -198,6 +201,118 @@ func previewMargin(cw, ch int) int {
 	return margin
 }
 
+// coverRect is where the cover is drawn: fitted inside the margins, then zoomed and panned.
+func coverRect(cw, ch, margin, iw, ihh int) (x, y, dw, dh int) {
+	s := math.Min(float64(cw-2*margin)/float64(iw), float64(ch-2*margin)/float64(ihh)) * previewZoom
+	dw, dh = int(float64(iw)*s), int(float64(ihh)*s)
+
+	return (cw-dw)/2 + previewPanX, (ch-dh)/2 + previewPanY, dw, dh
+}
+
+// clampPan keeps a zoomed cover covering the canvas inside the margins, and a fitted cover centered.
+func clampPan(cw, ch, margin, dw, dh int) {
+	limit := func(pan, size, view int) int {
+		m := max((size-view)/2, 0)
+		return min(max(pan, -m), m)
+	}
+
+	previewPanX = limit(previewPanX, dw, cw-2*margin)
+	previewPanY = limit(previewPanY, dh, ch-2*margin)
+}
+
+// setZoom zooms the preview around the canvas point x, y, keeping the cover point under it in place.
+func setZoom(ih iup.Ihandle, zoom float64, x, y int) {
+	zoom = min(max(zoom, 1), 8)
+	if zoom == previewZoom {
+		return
+	}
+
+	iw, ihh, _ := iup.DrawGetImageInfo("cover")
+	if !hasCover || iw <= 0 || ihh <= 0 {
+		return
+	}
+
+	_, cw, ch := ih.GetIntInt("DRAWSIZE")
+	margin := previewMargin(cw, ch)
+
+	ox, oy, dw, dh := coverRect(cw, ch, margin, iw, ihh)
+	fx, fy := float64(x-ox)/float64(dw), float64(y-oy)/float64(dh)
+
+	previewZoom = zoom
+	previewPanX, previewPanY = 0, 0
+	nx, ny, ndw, ndh := coverRect(cw, ch, margin, iw, ihh)
+	previewPanX = x - int(fx*float64(ndw)) - nx
+	previewPanY = y - int(fy*float64(ndh)) - ny
+	clampPan(cw, ch, margin, ndw, ndh)
+
+	if previewZoom > 1 {
+		ih.SetAttribute("CURSOR", "MOVE")
+	} else {
+		ih.SetAttribute("CURSOR", "ARROW")
+	}
+
+	iup.Update(ih)
+	onPreviewResize(ih, cw, ch)
+}
+
+// resetZoom shows the whole page again.
+func resetZoom() {
+	previewZoom = 1
+	previewPanX, previewPanY = 0, 0
+	iup.GetHandle("Preview").SetAttribute("CURSOR", "ARROW")
+}
+
+// onPreviewWheel zooms the preview around the mouse pointer.
+func onPreviewWheel(ih iup.Ihandle, delta float64, x, y int, status string) int {
+	setZoom(ih, previewZoom*math.Pow(1.25, delta), x, y)
+
+	return iup.DEFAULT
+}
+
+// onPreviewButton starts and ends a drag of the zoomed preview; a double-click shows the whole page.
+func onPreviewButton(ih iup.Ihandle, button, pressed, x, y int, status string) int {
+	if button != iup.BUTTON1 {
+		return iup.DEFAULT
+	}
+
+	if pressed == 1 && iup.IsDouble(status) {
+		resetZoom()
+		iup.Update(ih)
+
+		return iup.DEFAULT
+	}
+
+	previewDrag = pressed == 1 && previewZoom > 1
+	previewDragX, previewDragY = x, y
+
+	return iup.DEFAULT
+}
+
+// onPreviewMotion pans the zoomed preview while the left button is held.
+func onPreviewMotion(ih iup.Ihandle, x, y int, status string) int {
+	if !previewDrag || !iup.IsButton1(status) {
+		return iup.DEFAULT
+	}
+
+	iw, ihh, _ := iup.DrawGetImageInfo("cover")
+	if !hasCover || iw <= 0 || ihh <= 0 {
+		return iup.DEFAULT
+	}
+
+	_, cw, ch := ih.GetIntInt("DRAWSIZE")
+	margin := previewMargin(cw, ch)
+
+	previewPanX += x - previewDragX
+	previewPanY += y - previewDragY
+	previewDragX, previewDragY = x, y
+
+	_, _, dw, dh := coverRect(cw, ch, margin, iw, ihh)
+	clampPan(cw, ch, margin, dw, dh)
+	iup.Update(ih)
+
+	return iup.DEFAULT
+}
+
 // drawCover draws the loaded cover scaled to fit, with a drop shadow and a thin frame.
 func drawCover(ih iup.Ihandle, th previewTheme, cw, ch, margin int) {
 	iw, ihh, _ := iup.DrawGetImageInfo("cover")
@@ -205,9 +320,7 @@ func drawCover(ih iup.Ihandle, th previewTheme, cw, ch, margin int) {
 		return
 	}
 
-	s := math.Min(float64(cw-2*margin)/float64(iw), float64(ch-2*margin)/float64(ihh))
-	dw, dh := int(float64(iw)*s), int(float64(ihh)*s)
-	x, y := (cw-dw)/2, (ch-dh)/2
+	x, y, dw, dh := coverRect(cw, ch, margin, iw, ihh)
 
 	const off = 6
 	ih.SetAttribute("DRAWSTYLE", "FILL")
@@ -536,7 +649,7 @@ func tabImage() iup.Ihandle {
 					iup.Label(i18n.Lng(i18n.LblQuality)),
 					iup.Label("75").SetHandle("LabelQuality"),
 				).SetAttributes("NMARGIN=0"),
-				iup.Val("").SetAttributes(`MIN=0, MAX=100, VALUE=75, SHOWTICKS=10`).SetHandle("Quality").
+				iup.Val("").SetAttributes(`MIN=0, MAX=100, VALUE=75, SHOWTICKS=10, EXPAND=HORIZONTAL`).SetHandle("Quality").
 					SetAttribute("TIP", i18n.Lng(i18n.TipQuality)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						iup.GetHandle("LabelQuality").SetAttribute("TITLE", ih.GetInt("VALUE"))
@@ -548,7 +661,7 @@ func tabImage() iup.Ihandle {
 			).SetHandle("VboxQuality"),
 			iup.Vbox(
 				iup.Label(i18n.Lng(i18n.LblEffort)).SetHandle("LabelEffort"),
-				iup.Val("").SetAttributes(`MIN=0, MAX=10, VALUE=0, SHOWTICKS=11`).SetHandle("Effort").
+				iup.Val("").SetAttributes(`MIN=0, MAX=10, VALUE=0, SHOWTICKS=11, EXPAND=HORIZONTAL`).SetHandle("Effort").
 					SetAttribute("TIP", i18n.Lng(i18n.TipEffort)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 						iup.GetHandle("LabelEffort").SetAttribute("TITLE", fmt.Sprintf("%s: %d", ih.GetAttribute("EFFORTNAME"), ih.GetInt("VALUE")))
@@ -589,7 +702,7 @@ func tabTransform() iup.Ihandle {
 				iup.Label(i18n.Lng(i18n.LblBrightness)),
 				iup.Label("0").SetHandle("LabelBrightness"),
 			).SetAttributes("ALIGNMENT=ACENTER, NMARGIN=0"),
-			iup.Val("").SetAttributes(`MIN=-100, MAX=100, VALUE=0, SHOWTICKS=10`).SetHandle("Brightness").
+			iup.Val("").SetAttributes(`MIN=-100, MAX=100, VALUE=0, SHOWTICKS=10, EXPAND=HORIZONTAL`).SetHandle("Brightness").
 				SetAttribute("TIP", i18n.Lng(i18n.TipBrightness)).
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					iup.GetHandle("LabelBrightness").SetAttribute("TITLE", iup.GetHandle("Brightness").GetInt("VALUE"))
@@ -604,7 +717,7 @@ func tabTransform() iup.Ihandle {
 				iup.Label(i18n.Lng(i18n.LblContrast)),
 				iup.Label("0").SetHandle("LabelContrast"),
 			).SetAttributes("ALIGNMENT=ACENTER, NMARGIN=0"),
-			iup.Val("").SetAttributes(`MIN=-100, MAX=100, VALUE=0, SHOWTICKS=10`).SetHandle("Contrast").
+			iup.Val("").SetAttributes(`MIN=-100, MAX=100, VALUE=0, SHOWTICKS=10, EXPAND=HORIZONTAL`).SetHandle("Contrast").
 				SetAttribute("TIP", i18n.Lng(i18n.TipContrast)).
 				SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {
 					iup.GetHandle("LabelContrast").SetAttribute("TITLE", iup.GetHandle("Contrast").GetInt("VALUE"))
