@@ -39,6 +39,7 @@ var (
 	previewPage int    // 0-based page shown in the preview
 	previewPath string // path of the file whose page range is loaded
 	hasCover    bool   // whether a cover image is loaded for the preview canvas
+	coverFull   bool   // whether the loaded cover has all the pixels of the rendered page
 )
 
 func init() {

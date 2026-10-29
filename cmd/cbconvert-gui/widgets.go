@@ -113,10 +113,19 @@ func list() iup.Ihandle {
 }
 
 func preview() iup.Ihandle {
+	iup.Timer().SetAttribute("TIME", "300").SetHandle("PreviewTimer").
+		SetCallback("ACTION_CB", iup.TimerActionFunc(func(ih iup.Ihandle) int {
+			ih.SetAttribute("RUN", "NO")
+			previewRender()
+
+			return iup.DEFAULT
+		}))
+
 	return iup.Frame(
 		iup.Vbox(
 			iup.Canvas().SetAttributes("EXPAND=YES, MINSIZE=400x, BORDER=NO").SetHandle("Preview").
 				SetCallback("ACTION", iup.ActionFunc(drawPreview)).
+				SetCallback("RESIZE_CB", iup.ResizeFunc(onPreviewResize)).
 				SetCallback("POSTMESSAGE_CB", iup.PostMessageFunc(previewMessage)),
 			iup.Label("").SetAttributes("EXPAND=HORIZONTAL, ALIGNMENT=ACENTER").SetHandle("PreviewInfo"),
 		),
@@ -156,13 +165,7 @@ func drawPreview(ih iup.Ihandle) int {
 
 	iup.DrawLinearGradient(ih, 0, 0, cw, ch, 90, th.gradTop, th.gradBottom)
 
-	margin := cw / 24
-	if m := ch / 24; m < margin {
-		margin = m
-	}
-	if margin < 12 {
-		margin = 12
-	}
+	margin := previewMargin(cw, ch)
 
 	if hasCover {
 		drawCover(ih, th, cw, ch, margin)
@@ -171,6 +174,19 @@ func drawPreview(ih iup.Ihandle) int {
 	}
 
 	return iup.DEFAULT
+}
+
+// previewMargin is the space kept around the cover or the placeholder card.
+func previewMargin(cw, ch int) int {
+	margin := cw / 24
+	if m := ch / 24; m < margin {
+		margin = m
+	}
+	if margin < 12 {
+		margin = 12
+	}
+
+	return margin
 }
 
 // drawCover draws the loaded cover scaled to fit, with a drop shadow and a thin frame.
@@ -248,6 +264,7 @@ func previewMessage(ih iup.Ihandle, s string, i int, p any) int {
 		iup.Destroy(iup.GetHandle("cover"))
 		iup.ImageFromImage(img.Image).SetHandle("cover")
 		hasCover = true
+		coverFull = img.Image.Bounds().Dx() >= img.Width
 		iup.GetHandle("PreviewInfo").SetAttribute("TITLE", fmt.Sprintf("%s (%dx%d)", img.SizeHuman, img.Width, img.Height))
 	} else {
 		iup.Destroy(iup.GetHandle("cover"))

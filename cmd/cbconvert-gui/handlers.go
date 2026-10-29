@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"slices"
@@ -141,8 +142,40 @@ func previewPost() {
 	previewRender()
 }
 
-// previewRenderSize is the size the cover is rendered at.
-const previewRenderSize = 1200
+// previewSize returns the box in screen pixels that the cover is fitted into on the preview canvas.
+func previewSize() (int, int) {
+	_, cw, ch := iup.GetHandle("Preview").GetIntInt("DRAWSIZE")
+	margin := previewMargin(cw, ch)
+
+	scale, err := strconv.ParseFloat(iup.GetGlobal("SCREENSCALE"), 64)
+	if err != nil || scale <= 0 {
+		scale = 1
+	}
+
+	w := int(math.Ceil(float64(cw-2*margin) * scale))
+	h := int(math.Ceil(float64(ch-2*margin) * scale))
+
+	return max(w, 1), max(h, 1)
+}
+
+// onPreviewResize renders the page again, after the resizing settles, when the cover is too small for the canvas.
+func onPreviewResize(ih iup.Ihandle, width, height int) int {
+	if !hasCover || coverFull {
+		return iup.DEFAULT
+	}
+
+	iw, ihh, _ := iup.DrawGetImageInfo("cover")
+	w, h := previewSize()
+	if iw >= w || ihh >= h {
+		return iup.DEFAULT
+	}
+
+	t := iup.GetHandle("PreviewTimer")
+	t.SetAttribute("RUN", "NO")
+	t.SetAttribute("RUN", "YES")
+
+	return iup.DEFAULT
+}
 
 // previewRender renders the current file at previewPage off the UI thread.
 func previewRender() {
@@ -156,13 +189,14 @@ func previewRender() {
 
 	opts := options()
 	page := previewPage
+	w, h := previewSize()
 
 	go func(opts cbconvert.Options) {
 		conv := cbconvert.New(opts)
 
 		var s string
 
-		img, err := conv.PreviewPage(file.Path, file.Stat, page, previewRenderSize, previewRenderSize)
+		img, err := conv.PreviewPage(file.Path, file.Stat, page, w, h)
 		if err != nil {
 			s = err.Error()
 			fmt.Println(err)
