@@ -9,6 +9,7 @@ import (
 	"slices"
 	"sort"
 	"strconv"
+	"sync/atomic"
 
 	"github.com/fvbommel/sortorder"
 
@@ -303,9 +304,9 @@ func onThumbnail(ih iup.Ihandle) int {
 		iup.PostMessage(iup.GetHandle("ProgressBar"), "progress2", 0, conv)
 	}
 
-	var canceled = false
+	var canceled atomic.Bool
 	conv.OnCancel = func() {
-		canceled = true
+		canceled.Store(true)
 	}
 
 	iup.GetHandle("dlg").SetCallback("K_ANY", iup.KAnyFunc(func(ih iup.Ihandle, c int) int {
@@ -320,7 +321,7 @@ func onThumbnail(ih iup.Ihandle) int {
 
 	go func(c *cbconvert.Converter) {
 		for _, file := range files {
-			if canceled {
+			if canceled.Load() {
 				break
 			}
 
@@ -348,9 +349,9 @@ func onCover(ih iup.Ihandle) int {
 		iup.PostMessage(iup.GetHandle("ProgressBar"), "progress2", 0, conv)
 	}
 
-	var canceled = false
+	var canceled atomic.Bool
 	conv.OnCancel = func() {
-		canceled = true
+		canceled.Store(true)
 	}
 
 	iup.GetHandle("dlg").SetCallback("K_ANY", iup.KAnyFunc(func(ih iup.Ihandle, c int) int {
@@ -365,7 +366,7 @@ func onCover(ih iup.Ihandle) int {
 
 	go func(c *cbconvert.Converter) {
 		for _, file := range files {
-			if canceled {
+			if canceled.Load() {
 				break
 			}
 
