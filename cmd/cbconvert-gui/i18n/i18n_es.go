@@ -6,6 +6,8 @@ func init() {
 		ColType:  "Tipo",
 		ColSize:  "Tamaño (MiB)",
 
+		MenuOpenFolder: "Abrir carpeta",
+
 		TabInput:     "Entrada",
 		TabOutput:    "Salida",
 		TabImage:     "Imagen",

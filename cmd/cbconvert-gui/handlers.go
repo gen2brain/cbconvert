@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -8,8 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strconv"
+	"strings"
 	"sync/atomic"
 
 	"github.com/fvbommel/sortorder"
@@ -29,97 +30,142 @@ func selectRow(i int) {
 	iup.GetHandle("Table").SetAttribute("FOCUSCELL", fmt.Sprintf("%d:1", i+1))
 }
 
-// onSort re-syncs the files slice to the table's displayed order after a sort.
+// onSort sorts the files by the clicked column, toggling the direction on a second click, and refills the table.
 func onSort(ih iup.Ihandle, col int) int {
-	n := len(files)
-	if n < 2 {
-		return iup.DEFAULT
+	if col == sortCol {
+		sortDesc = !sortDesc
+	} else {
+		sortCol, sortDesc = col, false
 	}
 
-	rowKey := func(name, size string) string {
-		return name + "\x00" + size
+	focus, selected := tableState()
+	sortFiles()
+	fillTable(focus, selected)
+
+	sign := "UP"
+	if sortDesc {
+		sign = "DOWN"
 	}
+	ih.SetAttribute(fmt.Sprintf("SORTSIGN%d", col), sign)
 
-	buckets := make(map[string][]int, n)
-	for i, f := range files {
-		size := strconv.FormatFloat(float64(f.Stat.Size())/(1024*1024), 'f', 2, 64)
-		k := rowKey(f.Name, size)
-		buckets[k] = append(buckets[k], i)
-	}
-
-	var selPath string
-	if index >= 0 && index < len(files) {
-		selPath = files[index].Path
-	}
-
-	reordered := make([]cbconvert.File, 0, n)
-	for lin := 1; lin <= n; lin++ {
-		k := rowKey(iup.GetAttributeId2(ih, "", lin, 1), iup.GetAttributeId2(ih, "", lin, 3))
-		idxs := buckets[k]
-		if len(idxs) == 0 {
-			return iup.DEFAULT
-		}
-		reordered = append(reordered, files[idxs[0]])
-		buckets[k] = idxs[1:]
-	}
-
-	files = reordered
-
-	index = -1
-	if selPath != "" {
-		for i, f := range files {
-			if f.Path == selPath {
-				selectRow(i)
-				break
-			}
-		}
-	}
-
-	return iup.DEFAULT
+	return iup.IGNORE
 }
 
-// addFiles appends files, natural-sorts the list, and rebuilds the table.
+// sortFiles orders the files by sortCol, the natural name order breaking ties.
+func sortFiles() {
+	slices.SortStableFunc(files, func(a, b cbconvert.File) int {
+		var c int
+		switch sortCol {
+		case 2:
+			c = strings.Compare(cbconvert.FileType(a.Path), cbconvert.FileType(b.Path))
+		case 3:
+			c = cmp.Compare(a.Stat.Size(), b.Stat.Size())
+		default:
+			c = naturalCompare(a.Name, b.Name)
+		}
+		if sortDesc {
+			c = -c
+		}
+		if c == 0 {
+			c = naturalCompare(a.Name, b.Name)
+		}
+
+		return c
+	})
+}
+
+// naturalCompare compares two names in natural order.
+func naturalCompare(a, b string) int {
+	switch {
+	case sortorder.NaturalLess(a, b):
+		return -1
+	case sortorder.NaturalLess(b, a):
+		return 1
+	}
+
+	return 0
+}
+
+// tableState returns the path of the focused file and the paths of the selected files.
+func tableState() (string, map[string]bool) {
+	var focus string
+	if index >= 0 && index < len(files) {
+		focus = files[index].Path
+	}
+
+	selected := make(map[string]bool)
+	for _, i := range selectedRows() {
+		selected[files[i].Path] = true
+	}
+
+	return focus, selected
+}
+
+// selectedRows returns the 0-based rows selected in the table, in ascending order.
+func selectedRows() []int {
+	var rows []int
+	for i, c := range iup.GetHandle("Table").GetAttribute("SELECTEDLINES") {
+		if c == '+' && i < len(files) {
+			rows = append(rows, i)
+		}
+	}
+
+	return rows
+}
+
+// fillTable writes the files into the table and restores the focused and the selected files.
+func fillTable(focus string, selected map[string]bool) {
+	t := iup.GetHandle("Table")
+	t.SetAttribute("NUMLIN", strconv.Itoa(len(files)))
+
+	var lines strings.Builder
+	for i, f := range files {
+		lin := i + 1
+		iup.SetAttributeId2(t, "", lin, 1, f.Name)
+		iup.SetAttributeId2(t, "", lin, 2, cbconvert.FileType(f.Path))
+		iup.SetAttributeId2(t, "", lin, 3, strconv.FormatFloat(float64(f.Stat.Size())/(1024*1024), 'f', 2, 64))
+
+		if selected[f.Path] {
+			lines.WriteByte('+')
+		} else {
+			lines.WriteByte('-')
+		}
+	}
+
+	index = -1
+	for i, f := range files {
+		if f.Path == focus {
+			selectRow(i)
+			break
+		}
+	}
+
+	if len(selected) > 0 {
+		t.SetAttribute("SELECTEDLINES", lines.String())
+	}
+}
+
+// addFiles appends files, sorts the list, and refills the table.
 func addFiles(fs []cbconvert.File) {
 	if len(fs) == 0 {
 		return
 	}
 
 	wasEmpty := len(files) == 0
-
-	var selPath string
-	if index >= 0 && index < len(files) {
-		selPath = files[index].Path
-	}
+	focus, selected := tableState()
 
 	files = append(files, fs...)
-	sort.Slice(files, func(i, j int) bool {
-		return sortorder.NaturalLess(files[i].Name, files[j].Name)
-	})
-
-	t := iup.GetHandle("Table")
-	t.SetAttribute("NUMLIN", strconv.Itoa(len(files)))
-	for i, f := range files {
-		lin := i + 1
-		iup.SetAttributeId2(t, "", lin, 1, f.Name)
-		iup.SetAttributeId2(t, "", lin, 2, cbconvert.FileType(f.Path))
-		iup.SetAttributeId2(t, "", lin, 3, strconv.FormatFloat(float64(f.Stat.Size())/(1024*1024), 'f', 2, 64))
-	}
+	sortFiles()
 
 	if wasEmpty {
-		selectRow(0)
+		fillTable(files[0].Path, nil)
 		setActive()
 		previewPost()
 
 		return
 	}
 
-	index = -1
-	for i, f := range files {
-		if f.Path == selPath {
-			selectRow(i)
-			break
-		}
-	}
+	fillTable(focus, selected)
 	setActive()
 }
 
@@ -284,16 +330,25 @@ func onAddDir(ih iup.Ihandle) int {
 	return iup.DEFAULT
 }
 
+// onRemove removes the selected files, or the focused file when none is selected.
 func onRemove(ih iup.Ihandle) int {
-	if index < 0 || index >= len(files) {
+	rows := selectedRows()
+	if len(rows) == 0 && index >= 0 && index < len(files) {
+		rows = []int{index}
+	}
+	if len(rows) == 0 {
 		return iup.IGNORE
 	}
 
-	iup.GetHandle("Table").SetAttribute("DELLIN", strconv.Itoa(index+1))
-	files = slices.Delete(files, index, index+1)
+	t := iup.GetHandle("Table")
+	for _, i := range slices.Backward(rows) {
+		t.SetAttribute("DELLIN", strconv.Itoa(i+1))
+		files = slices.Delete(files, i, i+1)
+	}
 
-	if index >= len(files) {
-		index = len(files) - 1
+	index = -1
+	if len(files) > 0 {
+		selectRow(min(rows[0], len(files)-1))
 	}
 
 	setActive()
@@ -302,6 +357,17 @@ func onRemove(ih iup.Ihandle) int {
 	} else {
 		previewPost()
 	}
+
+	return iup.DEFAULT
+}
+
+// onOpenFolder opens the folder of the focused file in the file manager.
+func onOpenFolder(ih iup.Ihandle) int {
+	if index < 0 || index >= len(files) {
+		return iup.DEFAULT
+	}
+
+	iup.Help(filepath.Dir(files[index].Path))
 
 	return iup.DEFAULT
 }

@@ -8,6 +8,8 @@ const (
 	ColType  = "COL_TYPE"
 	ColSize  = "COL_SIZE"
 
+	MenuOpenFolder = "MENU_OPENFOLDER"
+
 	TabInput     = "TAB_INPUT"
 	TabOutput    = "TAB_OUTPUT"
 	TabImage     = "TAB_IMAGE"

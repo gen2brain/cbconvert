@@ -65,7 +65,7 @@ func list() iup.Ihandle {
 		"WIDTH3":         "100",
 		"ALIGNMENT2":     "ACENTER",
 		"ALIGNMENT3":     "ARIGHT",
-		"SELECTIONMODE":  "SINGLE",
+		"SELECTIONMODE":  "MULTIPLE",
 		"USERRESIZE":     "YES",
 		"STRETCHLAST":    "NO",
 		"FOCUSRECT":      "NO",
@@ -84,6 +84,27 @@ func list() iup.Ihandle {
 	}))
 
 	t.SetCallback("SORT_CB", iup.TableSortFunc(onSort))
+
+	t.SetCallback("K_ANY", iup.KAnyFunc(func(ih iup.Ihandle, c int) int {
+		if c == iup.K_DEL {
+			return onRemove(ih)
+		}
+
+		return iup.DEFAULT
+	}))
+
+	t.SetCallback("RIGHTCLICK_CB", iup.TableRightClickFunc(func(ih iup.Ihandle, lin, col int) int {
+		menu := iup.Menu(
+			iup.MenuItem(i18n.Lng(i18n.MenuOpenFolder)).SetCallback("ACTION", iup.ActionFunc(onOpenFolder)),
+			iup.MenuSeparator(),
+			iup.MenuItem(i18n.Lng(i18n.BtnRemove)).SetCallback("ACTION", iup.ActionFunc(onRemove)),
+			iup.MenuItem(i18n.Lng(i18n.BtnRemoveAll)).SetCallback("ACTION", iup.ActionFunc(onRemoveAll)),
+		)
+		iup.Popup(menu, iup.MOUSEPOS, iup.MOUSEPOS)
+		menu.Destroy()
+
+		return iup.DEFAULT
+	}))
 
 	t.SetCallback("DROPFILES_CB", iup.DropFilesFunc(func(ih iup.Ihandle, fileName string, num, x, y int) int {
 		dec, err := url.QueryUnescape(fileName)

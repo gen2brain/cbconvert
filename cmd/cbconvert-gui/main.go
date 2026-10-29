@@ -40,6 +40,8 @@ var (
 	previewPath string // path of the file whose page range is loaded
 	hasCover    bool   // whether a cover image is loaded for the preview canvas
 	coverFull   bool   // whether the loaded cover has all the pixels of the rendered page
+	sortCol     int    // table column the files are sorted by, 0 for the natural name order
+	sortDesc    bool   // whether sortCol is sorted in descending order
 )
 
 func init() {

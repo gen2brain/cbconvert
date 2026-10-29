@@ -6,6 +6,8 @@ func init() {
 		ColType:  "Typ",
 		ColSize:  "Velikost (MiB)",
 
+		MenuOpenFolder: "Otevřít složku",
+
 		TabInput:     "Vstup",
 		TabOutput:    "Výstup",
 		TabImage:     "Obrázek",
