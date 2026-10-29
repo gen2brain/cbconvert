@@ -27,7 +27,6 @@ func setActive() {
 		iup.GetHandle("Remove").SetAttribute("ACTIVE", "NO")
 		iup.GetHandle("RemoveAll").SetAttribute("ACTIVE", "NO")
 
-		iup.GetHandle("Preview").SetAttribute("IMAGE", "logo")
 		iup.GetHandle("PreviewInfo").SetAttribute("TITLE", "")
 	} else {
 		if index != -1 {
