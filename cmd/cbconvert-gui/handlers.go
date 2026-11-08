@@ -191,7 +191,7 @@ func previewPost() {
 
 // previewSize returns the box in screen pixels that the cover is fitted into on the preview canvas, at the current zoom.
 func previewSize() (int, int) {
-	_, cw, ch := iup.GetHandle("Preview").GetIntInt("DRAWSIZE")
+	_, cw, ch := iup.GetHandle("Preview").GetInt2("DRAWSIZE")
 	margin := previewMargin(cw, ch)
 
 	scale, err := strconv.ParseFloat(iup.GetGlobal("SCREENSCALE"), 64)

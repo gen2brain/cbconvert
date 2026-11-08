@@ -44,23 +44,23 @@ func setEffort(format string) {
 func list() iup.Ihandle {
 	t := iup.Table().SetHandle("Table")
 	t.SetAttributes(map[string]string{
-		"EXPAND":         "YES",
-		"NUMCOL":         "3",
-		"NUMLIN":         "0",
-		"TITLE1":         i18n.Lng(i18n.ColTitle),
-		"TITLE2":         i18n.Lng(i18n.ColType),
-		"TITLE3":         i18n.Lng(i18n.ColSize),
-		"WIDTH1":         "250",
-		"WIDTH2":         "50",
-		"WIDTH3":         "100",
-		"ALIGNMENT2":     "ACENTER",
-		"ALIGNMENT3":     "ARIGHT",
-		"SELECTIONMODE":  "MULTIPLE",
-		"USERRESIZE":     "YES",
-		"STRETCHLAST":    "NO",
-		"FOCUSRECT":      "NO",
-		"SORTABLE":       "YES",
-		"ALTERNATECOLOR": "YES",
+		"EXPAND":        "YES",
+		"NUMCOL":        "3",
+		"NUMLIN":        "0",
+		"TITLE1":        i18n.Lng(i18n.ColTitle),
+		"TITLE2":        i18n.Lng(i18n.ColType),
+		"TITLE3":        i18n.Lng(i18n.ColSize),
+		"WIDTH1":        "250",
+		"WIDTH2":        "50",
+		"WIDTH3":        "100",
+		"ALIGNMENT2":    "ACENTER",
+		"ALIGNMENT3":    "ARIGHT",
+		"SELECTIONMODE": "MULTIPLE",
+		"USERRESIZE":    "YES",
+		"STRETCHLAST":   "NO",
+		"FOCUSFEEDBACK": "NO",
+		"SORTABLE":      "YES",
+		"ALTERNATEROWS": "YES",
 	})
 
 	t.SetCallback("ENTERITEM_CB", iup.EnterItemFunc(func(ih iup.Ihandle, lin, col int) int {
@@ -179,7 +179,7 @@ func drawPreview(ih iup.Ihandle) int {
 	ih.SetAttribute("DRAWSTYLE", "FILL")
 	ih.SetAttribute("DRAWCOLOR", th.bg)
 	iup.DrawRectangle(ih, 0, 0, cw, ch)
-	iup.DrawLinearGradient(ih, 0, 0, cw, ch, 90, previewLight, previewShade)
+	iup.DrawLinearGradient(ih, 0, 0, cw, ch, 270, previewLight, previewShade)
 
 	margin := previewMargin(cw, ch)
 
@@ -236,7 +236,7 @@ func setZoom(ih iup.Ihandle, zoom float64, x, y int) {
 		return
 	}
 
-	_, cw, ch := ih.GetIntInt("DRAWSIZE")
+	_, cw, ch := ih.GetInt2("DRAWSIZE")
 	margin := previewMargin(cw, ch)
 
 	ox, oy, dw, dh := coverRect(cw, ch, margin, iw, ihh)
@@ -303,7 +303,7 @@ func onPreviewMotion(ih iup.Ihandle, x, y int, status string) int {
 		return iup.DEFAULT
 	}
 
-	_, cw, ch := ih.GetIntInt("DRAWSIZE")
+	_, cw, ch := ih.GetInt2("DRAWSIZE")
 	margin := previewMargin(cw, ch)
 
 	previewPanX += x - previewDragX

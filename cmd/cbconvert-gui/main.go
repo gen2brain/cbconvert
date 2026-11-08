@@ -108,7 +108,7 @@ func main() {
 		return iup.DEFAULT
 	}))
 
-	dlg.SetCallback("THEMECHANGED_CB", iup.ThemeChangedFunc(func(ih iup.Ihandle, darkMode int) int {
+	dlg.SetCallback("APPEARANCECHANGED_CB", iup.AppearanceChangedFunc(func(ih iup.Ihandle, darkMode int) int {
 		iup.Update(iup.GetHandle("Preview"))
 
 		return iup.DEFAULT
