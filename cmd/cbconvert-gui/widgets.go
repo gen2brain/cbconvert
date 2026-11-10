@@ -179,7 +179,7 @@ func drawPreview(ih iup.Ihandle) int {
 	ih.SetAttribute("DRAWSTYLE", "FILL")
 	ih.SetAttribute("DRAWCOLOR", th.bg)
 	iup.DrawRectangle(ih, 0, 0, cw, ch)
-	iup.DrawLinearGradient(ih, 0, 0, cw, ch, 270, previewLight, previewShade)
+	iup.DrawLinearGradient(ih, 0, 0, cw, ch, 90, previewLight, previewShade)
 
 	margin := previewMargin(cw, ch)
 
