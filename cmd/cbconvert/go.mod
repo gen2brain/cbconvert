@@ -17,7 +17,7 @@ require (
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707 // indirect
 	github.com/fvbommel/sortorder v1.2.1 // indirect
-	github.com/gen2brain/folio v0.2.8 // indirect
+	github.com/gen2brain/folio v0.2.10 // indirect
 	github.com/gen2brain/gav1d v0.2.6 // indirect
 	github.com/gen2brain/jpegn v0.6.2 // indirect
 	github.com/gen2brain/jxl v0.2.0 // indirect

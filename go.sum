@@ -18,8 +18,8 @@ github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707/go.mod h1:qssHWj6
 github.com/dsnet/golib v0.0.0-20171103203638-1ea166775780/go.mod h1:Lj+Z9rebOhdfkVLjJ8T6VcRQv3SXugXy999NBtR9aFY=
 github.com/fvbommel/sortorder v1.2.1 h1:ASc85RbthwLEqzuiCk7WQQiopfyGWQiEYZVJ3Qa4A+U=
 github.com/fvbommel/sortorder v1.2.1/go.mod h1:LbhO04ijZIeUuvz9B9BkI/qYrpZZEn1gWhxv4QjUKVs=
-github.com/gen2brain/folio v0.2.8 h1:9iDI7h+zt4mjwEnzm1x8Pl9BrWqLwUwB74X/fnc1PZs=
-github.com/gen2brain/folio v0.2.8/go.mod h1:4/PcXfaXIYmW1nwQ4bJeE+aG5ybG58Aw9xrwODXaXII=
+github.com/gen2brain/folio v0.2.10 h1:+NjEsT0r7bo/nCC2BCvPFGO0eHtcY72mCn/+WJpqUgM=
+github.com/gen2brain/folio v0.2.10/go.mod h1:4/PcXfaXIYmW1nwQ4bJeE+aG5ybG58Aw9xrwODXaXII=
 github.com/gen2brain/gav1d v0.2.6 h1:7TSkrWTdE22k5Ul7vYZML7Nu80gNW6OovV7FSCITSE0=
 github.com/gen2brain/gav1d v0.2.6/go.mod h1:ReFKjHq7pvRhEk+pgRPAo9gOlcrf51sdzVcAbbX7e0E=
 github.com/gen2brain/jpegn v0.6.2 h1:U69MV6ZkRg6yWn5xTehCgUxQRq+eJNkdvuNuCOgGMik=
