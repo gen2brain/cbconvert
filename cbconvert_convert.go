@@ -14,6 +14,7 @@ import (
 	"sync/atomic"
 
 	folio "github.com/gen2brain/folio/doc"
+	"github.com/gen2brain/folio/pdf"
 	"github.com/gen2brain/gav1d/avif"
 	"github.com/gen2brain/jpegn"
 	"github.com/gen2brain/jxl"
@@ -388,6 +389,15 @@ func init() {
 
 	folio.RegisterPictureDecoder("png", "\x89PNG\r\n\x1a\n", func(b []byte) (image.Image, error) {
 		return pngn.Decode(bytes.NewReader(b), &pngnOptions)
+	})
+
+	pdf.RegisterRowDecoder("DCTDecode", func(b []byte, _ pdf.Dict) (pdf.ImageRows, error) {
+		r, err := jpegn.NewRowReader(b)
+		if err != nil {
+			return nil, err
+		}
+
+		return r, nil
 	})
 }
 

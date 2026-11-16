@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	folio "github.com/gen2brain/folio/doc"
 )
 
 func TestConvert(t *testing.T) {
@@ -937,4 +939,56 @@ func archiveHas(t *testing.T, conv *Converter, archive, name string) bool {
 	}
 
 	return false
+}
+
+// TestRenderBands checks pages drawn in bands against the same pages drawn
+// whole, natural and at a DPI: the same bounds, and the same pixels but for a
+// coverage unit or two where a band edge crosses a path.
+func TestRenderBands(t *testing.T) {
+	for _, name := range []string{"testdata/test.pdf", "testdata/test.epub"} {
+		doc, err := folio.Open(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for n := 0; n < min(doc.NumPages(), 3); n++ {
+			page, err := doc.Page(n)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, dpi := range []float64{0, 150} {
+				var want *image.RGBA
+				if dpi == 0 {
+					want, err = page.Image()
+				} else {
+					want, err = page.ImageDPI(dpi)
+				}
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				got, err := renderBands(page, dpi)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if got.Rect != want.Rect {
+					t.Fatalf("%s page %d at %v dpi: bands cover %v, the whole page %v", name, n, dpi, got.Rect, want.Rect)
+				}
+
+				for y := want.Rect.Min.Y; y < want.Rect.Max.Y; y++ {
+					a := got.Pix[got.PixOffset(want.Rect.Min.X, y):got.PixOffset(want.Rect.Max.X, y)]
+					b := want.Pix[want.PixOffset(want.Rect.Min.X, y):want.PixOffset(want.Rect.Max.X, y)]
+					for i := range a {
+						if d := int(a[i]) - int(b[i]); d > 2 || d < -2 {
+							t.Fatalf("%s page %d at %v dpi: row %d byte %d is %d, whole %d", name, n, dpi, y, i, a[i], b[i])
+						}
+					}
+				}
+			}
+		}
+
+		doc.Close()
+	}
 }

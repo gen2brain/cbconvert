@@ -16,6 +16,8 @@ import (
 	"sync"
 
 	folio "github.com/gen2brain/folio/doc"
+	"github.com/gen2brain/folio/pdf"
+	"github.com/gen2brain/folio/raster"
 	"github.com/gen2brain/pngn"
 )
 
@@ -234,19 +236,71 @@ func (c *Converter) renderPage(doc folio.Document, n int) (*image.RGBA, error) {
 // render renders a page at the configured DPI, or at its native resolution when DPI is unset.
 func (c *Converter) render(page folio.Page) (*image.RGBA, error) {
 	if c.Opts.DPI > 0 {
-		return page.ImageDPI(float64(c.Opts.DPI))
+		return renderBands(page, float64(c.Opts.DPI))
 	}
 
-	img, err := page.Image()
+	img, err := renderBands(page, 0)
 	if err == nil {
 		return img, nil
 	}
 
-	if img, retry := page.ImageDPI(fallbackDPI); retry == nil {
+	if img, retry := renderBands(page, fallbackDPI); retry == nil {
 		return img, nil
 	}
 
 	return nil, err
+}
+
+// bandRows is the height of the bands a page is drawn in.
+const bandRows = 256
+
+// renderBands renders a page as ImageDPI does, or as Image does for a zero dpi,
+// drawing it a band of rows at a time into the image it returns.
+func renderBands(page folio.Page, dpi float64) (*image.RGBA, error) {
+	whole := func() (*image.RGBA, error) {
+		if dpi > 0 {
+			return page.ImageDPI(dpi)
+		}
+		return page.Image()
+	}
+
+	db, ok := page.(interface{ DeviceBounds(float64) raster.Rect })
+	if !ok {
+		return whole()
+	}
+
+	at := dpi
+	if at <= 0 {
+		at = page.NaturalDPI()
+	}
+
+	x0, y0, x1, y1 := db.DeviceBounds(at).Outer()
+	w, h := x1-x0, y1-y0
+	if w <= 0 || h <= 0 || int64(w)*int64(h) > pdf.DefaultPixelLimit {
+		return whole()
+	}
+
+	img := image.NewRGBA(image.Rect(0, 0, w, h))
+	var drawn image.Rectangle
+
+	err := page.ImageBands(dpi, bandRows, func(band *image.RGBA) error {
+		b := band.Rect.Intersect(img.Rect)
+		for y := b.Min.Y; y < b.Max.Y; y++ {
+			copy(img.Pix[img.PixOffset(b.Min.X, y):img.PixOffset(b.Max.X, y)], band.Pix[band.PixOffset(b.Min.X, y):])
+		}
+		drawn = drawn.Union(b)
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if !drawn.Empty() && drawn != img.Rect {
+		return img.SubImage(drawn).(*image.RGBA), nil
+	}
+
+	return img, nil
 }
 
 // pagePixels bounds the pixels of the document pages rendered at once.
