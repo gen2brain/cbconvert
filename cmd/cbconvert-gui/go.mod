@@ -18,9 +18,9 @@ require (
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
-	github.com/gen2brain/folio v0.2.10 // indirect
+	github.com/gen2brain/folio v0.3.0 // indirect
 	github.com/gen2brain/gav1d v0.2.6 // indirect
-	github.com/gen2brain/jpegn v0.6.2 // indirect
+	github.com/gen2brain/jpegn v0.7.0 // indirect
 	github.com/gen2brain/jxl v0.2.0 // indirect
 	github.com/gen2brain/vpx v0.2.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect

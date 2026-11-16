@@ -24,12 +24,12 @@ github.com/fvbommel/sortorder v1.2.1 h1:ASc85RbthwLEqzuiCk7WQQiopfyGWQiEYZVJ3Qa4
 github.com/fvbommel/sortorder v1.2.1/go.mod h1:LbhO04ijZIeUuvz9B9BkI/qYrpZZEn1gWhxv4QjUKVs=
 github.com/gen2brain/cbconvert v1.2.1-0.20260825104346-a90395759b8c h1:4Z25IjDP3akCwnNA8/wetf7xlR+CI78OTpOfM0s+gCs=
 github.com/gen2brain/cbconvert v1.2.1-0.20260825104346-a90395759b8c/go.mod h1:qnfGiVa7nmTZn2PiG3DvyKShqPtc/97Ibm9WUbOq/xg=
-github.com/gen2brain/folio v0.2.10 h1:+NjEsT0r7bo/nCC2BCvPFGO0eHtcY72mCn/+WJpqUgM=
-github.com/gen2brain/folio v0.2.10/go.mod h1:4/PcXfaXIYmW1nwQ4bJeE+aG5ybG58Aw9xrwODXaXII=
+github.com/gen2brain/folio v0.3.0 h1:eroea1qe8xDRxFqaEEA/7ql0LQOfLRJo3ItHbqZu7SE=
+github.com/gen2brain/folio v0.3.0/go.mod h1:4/PcXfaXIYmW1nwQ4bJeE+aG5ybG58Aw9xrwODXaXII=
 github.com/gen2brain/gav1d v0.2.6 h1:7TSkrWTdE22k5Ul7vYZML7Nu80gNW6OovV7FSCITSE0=
 github.com/gen2brain/gav1d v0.2.6/go.mod h1:ReFKjHq7pvRhEk+pgRPAo9gOlcrf51sdzVcAbbX7e0E=
-github.com/gen2brain/jpegn v0.6.2 h1:U69MV6ZkRg6yWn5xTehCgUxQRq+eJNkdvuNuCOgGMik=
-github.com/gen2brain/jpegn v0.6.2/go.mod h1:43hks+w5VNTUDU34uk0tsXYJ97nbYL2idAlZF0D66+A=
+github.com/gen2brain/jpegn v0.7.0 h1:1Le8j6eWHFvt4veqMvuZ13/w2nz+NqAu6879bVV5xz4=
+github.com/gen2brain/jpegn v0.7.0/go.mod h1:43hks+w5VNTUDU34uk0tsXYJ97nbYL2idAlZF0D66+A=
 github.com/gen2brain/jxl v0.2.0 h1:cXSQnfbcC0JGFzaI344VzPMbe7mh6rYc0tjPcBUsE4U=
 github.com/gen2brain/jxl v0.2.0/go.mod h1:VjJHRai/8I8Es01mULqyiOihRBOjJr1Zo+NoN/MyIwo=
 github.com/gen2brain/pngn v0.1.3 h1:5Vj2+GuOiU+r+MZk4imO2z1ZJSSAhk2xHFA2lfOm9uU=

@@ -5,9 +5,9 @@ go 1.26.4
 require (
 	github.com/anthonynsimon/bild v0.17.1
 	github.com/fvbommel/sortorder v1.2.1
-	github.com/gen2brain/folio v0.2.10
+	github.com/gen2brain/folio v0.3.0
 	github.com/gen2brain/gav1d v0.2.6
-	github.com/gen2brain/jpegn v0.6.2
+	github.com/gen2brain/jpegn v0.7.0
 	github.com/gen2brain/jxl v0.2.0
 	github.com/gen2brain/pngn v0.1.3
 	github.com/gen2brain/vpx v0.2.1
