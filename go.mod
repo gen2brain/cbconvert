@@ -5,12 +5,12 @@ go 1.26.4
 require (
 	github.com/anthonynsimon/bild v0.17.1
 	github.com/fvbommel/sortorder v1.2.1
-	github.com/gen2brain/folio v0.3.0
-	github.com/gen2brain/gav1d v0.2.6
-	github.com/gen2brain/jpegn v0.7.0
-	github.com/gen2brain/jxl v0.2.0
+	github.com/gen2brain/folio v0.3.1
+	github.com/gen2brain/gav1d v0.2.8
+	github.com/gen2brain/jpegn v0.7.1
+	github.com/gen2brain/jxl v0.2.2
 	github.com/gen2brain/pngn v0.1.3
-	github.com/gen2brain/vpx v0.2.1
+	github.com/gen2brain/vpx v0.2.3
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25
 	github.com/mholt/archives v0.1.5
 	golang.org/x/image v0.47.0
