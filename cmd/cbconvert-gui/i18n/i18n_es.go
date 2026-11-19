@@ -57,11 +57,11 @@ func init() {
 		TipNoUpscale:   "No ampliar imágenes que ya son más pequeñas que el tamaño solicitado",
 		LblFilter:      "Filtro de redimensionado:",
 		LblQuality:     "Calidad: ",
-		TipQuality:     "La calidad afecta a JPEG, WEBP, AVIF y JXL",
+		TipQuality:     "La calidad afecta a JPEG, WEBP, AVIF, HEIC y JXL",
 		LblEffort:      "Esfuerzo:",
 		TipEffort:      "Velocidad/esfuerzo del codificador (WEBP, AVIF, JXL)",
 		TglLossless:    " Sin pérdidas",
-		TipLossless:    "Compresión sin pérdidas (WEBP, AVIF, JXL), ignora la calidad",
+		TipLossless:    "Compresión sin pérdidas (WEBP, AVIF, HEIC, JXL), ignora la calidad",
 		TglGrayscale:   " Escala de grises",
 		TipGrayscale:   "Convertir imágenes a escala de grises (monocromático)",
 

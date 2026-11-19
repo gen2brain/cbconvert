@@ -217,12 +217,12 @@ func parseFlags() (cbconvert.Options, []string) {
 	convert.BoolVar(&opts.Fit, "fit", base.Fit, "Best fit for required width and height")
 	convert.BoolVar(&opts.NoUpscale, "no-upscale", base.NoUpscale, "Do not upscale images already smaller than the requested width/height")
 	convert.IntVar(&opts.DPI, "dpi", base.DPI, "Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the original resolution")
-	convert.StringVar(&opts.Format, "format", base.Format, "Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl")
+	convert.StringVar(&opts.Format, "format", base.Format, "Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl, heic")
 	convert.StringVar(&opts.Archive, "archive", base.Archive, "Archive format, valid values are zip, tar")
 	convert.IntVar(&opts.ZipLevel, "zip-level", base.ZipLevel, "ZIP compression level, 0 disables compression, 1-9 sets deflate level (1 fastest, 9 smallest), -1 uses the default")
 	convert.IntVar(&opts.Quality, "quality", base.Quality, "Image quality")
 	convert.IntVar(&opts.Effort, "effort", base.Effort, "Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-7), -1 uses the format default")
-	convert.BoolVar(&opts.Lossless, "lossless", base.Lossless, "Lossless compression (webp, avif, jxl), ignores quality")
+	convert.BoolVar(&opts.Lossless, "lossless", base.Lossless, "Lossless compression (webp, avif, jxl, heic), ignores quality")
 	convert.BoolVar(&opts.Combine, "combine", base.Combine, "Combine all inputs into a single archive")
 	convert.StringVar(&opts.OutFile, "outfile", base.OutFile, "Output file name for --combine (default: first input + -combined)")
 	convert.IntVar(&opts.Filter, "filter", base.Filter, "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 5=Gaussian, 6=Lanczos")
@@ -247,10 +247,10 @@ func parseFlags() (cbconvert.Options, []string) {
 	cover.BoolVar(&opts.Fit, "fit", base.Fit, "Best fit for required width and height")
 	cover.BoolVar(&opts.NoUpscale, "no-upscale", base.NoUpscale, "Do not upscale images already smaller than the requested width/height")
 	cover.IntVar(&opts.DPI, "dpi", base.DPI, "Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the original resolution")
-	cover.StringVar(&opts.Format, "format", base.Format, "Image format, valid values are jpeg, png, tiff, bmp, webp, avif")
+	cover.StringVar(&opts.Format, "format", base.Format, "Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl, heic")
 	cover.IntVar(&opts.Quality, "quality", base.Quality, "Image quality")
 	cover.IntVar(&opts.Effort, "effort", base.Effort, "Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-7), -1 uses the format default")
-	cover.BoolVar(&opts.Lossless, "lossless", base.Lossless, "Lossless compression (webp, avif, jxl), ignores quality")
+	cover.BoolVar(&opts.Lossless, "lossless", base.Lossless, "Lossless compression (webp, avif, jxl, heic), ignores quality")
 	cover.IntVar(&opts.Filter, "filter", base.Filter, "0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 5=Gaussian, 6=Lanczos")
 	cover.StringVar(&opts.OutDir, "outdir", base.OutDir, "Output directory")
 	cover.IntVar(&opts.Size, "size", base.Size, "Process only files larger than size (in MB)")
@@ -587,7 +587,7 @@ func dpiFromString(s string) int {
 	return n
 }
 
-var profileFormats = []string{"jpeg", "png", "tiff", "bmp", "webp", "avif", "jxl"}
+var profileFormats = []string{"jpeg", "png", "tiff", "bmp", "webp", "avif", "jxl", "heic"}
 
 func formatFromIndex(s string) string {
 	if i, _ := strconv.Atoi(s); i >= 1 && i <= len(profileFormats) {

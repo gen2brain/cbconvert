@@ -57,11 +57,11 @@ func init() {
 		TipNoUpscale:   "不放大已经小于请求大小的图像",
 		LblFilter:      "缩放滤镜：",
 		LblQuality:     "质量：",
-		TipQuality:     "质量影响 JPEG、WEBP、AVIF 和 JXL",
+		TipQuality:     "质量影响 JPEG、WEBP、AVIF、HEIC 和 JXL",
 		LblEffort:      "强度：",
 		TipEffort:      "编码器速度/强度（WEBP、AVIF、JXL）",
 		TglLossless:    " 无损",
-		TipLossless:    "无损压缩（WEBP、AVIF、JXL），忽略质量",
+		TipLossless:    "无损压缩（WEBP、AVIF、HEIC、JXL），忽略质量",
 		TglGrayscale:   " 灰度",
 		TipGrayscale:   "将图像转换为灰度（单色）",
 

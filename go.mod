@@ -7,6 +7,7 @@ require (
 	github.com/fvbommel/sortorder v1.2.1
 	github.com/gen2brain/folio v0.3.1
 	github.com/gen2brain/gav1d v0.2.10
+	github.com/gen2brain/h265 v0.2.7
 	github.com/gen2brain/jpegn v0.7.1
 	github.com/gen2brain/jxl v0.2.2
 	github.com/gen2brain/pngn v0.1.3

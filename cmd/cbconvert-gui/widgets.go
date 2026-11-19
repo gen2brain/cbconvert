@@ -588,6 +588,7 @@ func tabImage() iup.Ihandle {
 					"5":        "WEBP",
 					"6":        "AVIF",
 					"7":        "JXL",
+					"8":        "HEIC",
 				}).SetHandle("Format").
 					SetAttribute("TIP", i18n.Lng(i18n.TipFormat)).
 					SetCallback("VALUECHANGED_CB", iup.ValueChangedFunc(func(ih iup.Ihandle) int {

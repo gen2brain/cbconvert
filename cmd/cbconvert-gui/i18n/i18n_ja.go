@@ -57,11 +57,11 @@ func init() {
 		TipNoUpscale:   "要求されたサイズより既に小さい画像を拡大しない",
 		LblFilter:      "リサイズフィルター：",
 		LblQuality:     "品質：",
-		TipQuality:     "品質は JPEG、WEBP、AVIF、JXL に影響します",
+		TipQuality:     "品質は JPEG、WEBP、AVIF、HEIC、JXL に影響します",
 		LblEffort:      "労力：",
 		TipEffort:      "エンコーダーの速度/労力（WEBP、AVIF、JXL）",
 		TglLossless:    " ロスレス",
-		TipLossless:    "ロスレス圧縮（WEBP、AVIF、JXL）、品質を無視します",
+		TipLossless:    "ロスレス圧縮（WEBP、AVIF、HEIC、JXL）、品質を無視します",
 		TglGrayscale:   " グレースケール",
 		TipGrayscale:   "画像をグレースケール（モノクロ）に変換する",
 

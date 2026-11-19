@@ -57,11 +57,11 @@ func init() {
 		TipNoUpscale:   "Не увеличивать изображения, которые уже меньше запрошенного размера",
 		LblFilter:      "Фильтр масштабирования:",
 		LblQuality:     "Качество: ",
-		TipQuality:     "Качество влияет на JPEG, WEBP, AVIF и JXL",
+		TipQuality:     "Качество влияет на JPEG, WEBP, AVIF, HEIC и JXL",
 		LblEffort:      "Усилие:",
 		TipEffort:      "Скорость/усилие кодировщика (WEBP, AVIF, JXL)",
 		TglLossless:    " Без потерь",
-		TipLossless:    "Сжатие без потерь (WEBP, AVIF, JXL), игнорирует качество",
+		TipLossless:    "Сжатие без потерь (WEBP, AVIF, HEIC, JXL), игнорирует качество",
 		TglGrayscale:   " Оттенки серого",
 		TipGrayscale:   "Преобразовать изображения в оттенки серого (монохромные)",
 

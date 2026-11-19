@@ -57,11 +57,11 @@ func init() {
 		TipNoUpscale:   "Nezvětšovat obrázky, které jsou již menší než požadovaná velikost",
 		LblFilter:      "Filtr změny velikosti:",
 		LblQuality:     "Kvalita: ",
-		TipQuality:     "Kvalita ovlivňuje JPEG, WEBP, AVIF a JXL",
+		TipQuality:     "Kvalita ovlivňuje JPEG, WEBP, AVIF, HEIC a JXL",
 		LblEffort:      "Úsilí:",
 		TipEffort:      "Rychlost/úsilí kodéru (WEBP, AVIF, JXL)",
 		TglLossless:    " Bezztrátový",
-		TipLossless:    "Bezztrátová komprese (WEBP, AVIF, JXL), ignoruje kvalitu",
+		TipLossless:    "Bezztrátová komprese (WEBP, AVIF, HEIC, JXL), ignoruje kvalitu",
 		TglGrayscale:   " Stupně šedi",
 		TipGrayscale:   "Převést obrázky do stupňů šedi (monochromaticky)",
 

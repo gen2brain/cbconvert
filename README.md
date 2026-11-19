@@ -14,7 +14,7 @@ See more [screenshots](https://github.com/gen2brain/cbconvert/blob/master/cmd/cb
 
 * reads CBR (RAR), CBZ (ZIP), CB7 (7Z), CBT (TAR), PDF, EPUB, MOBI, AZW, AZW3, CHM, FB2, DOCX, PPTX, XLSX and plain directory
 * saves processed files in ZIP archive format or TAR
-* images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL, or 4-Bit BMP (16 colors) image format
+* images can be converted to JPEG, PNG, TIFF, WEBP, AVIF, JXL, HEIC, or 4-Bit BMP (16 colors) image format
 * rotate, adjust brightness/contrast or grayscale images
 * resize filters (NearestNeighbor, Box, Linear, MitchellNetravali, CatmullRom, Gaussian, Lanczos)
 * export covers from comics
@@ -70,7 +70,7 @@ Commands:
     --dpi
     	Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300) (default "0")
     --format
-    	Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl (default "jpeg")
+    	Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl, heic (default "jpeg")
     --archive
     	Archive format, valid values are zip, tar (default "zip")
     --zip-level
@@ -80,7 +80,7 @@ Commands:
     --effort
     	Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-7), -1 uses the format default (default "-1")
     --lossless
-    	Lossless compression (webp, avif, jxl), ignores quality (default "false")
+    	Lossless compression (webp, avif, jxl, heic), ignores quality (default "false")
     --combine
     	Combine all inputs into a single archive (default "false")
     --outfile
@@ -130,13 +130,13 @@ Commands:
     --dpi
     	Document rendering resolution in DPI (PDF, EPUB, etc.), 0 uses the default (300) (default "0")
     --format
-    	Image format, valid values are jpeg, png, tiff, bmp, webp, avif (default "jpeg")
+    	Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl, heic (default "jpeg")
     --quality
     	Image quality (default "75")
     --effort
     	Encoder speed/effort, format-specific (webp method 0-6, avif speed 0-10, jxl effort 1-7), -1 uses the format default (default "-1")
     --lossless
-    	Lossless compression (webp, avif, jxl), ignores quality (default "false")
+    	Lossless compression (webp, avif, jxl, heic), ignores quality (default "false")
     --filter
     	0=NearestNeighbor, 1=Box, 2=Linear, 3=MitchellNetravali, 4=CatmullRom, 5=Gaussian, 6=Lanczos (default "2")
     --outdir

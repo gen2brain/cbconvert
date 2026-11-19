@@ -135,7 +135,7 @@ func isDocument(f string) bool {
 
 // isImage checks if file is image.
 func isImage(f string) bool {
-	var types = []string{".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".webp", ".avif", ".jxl"}
+	var types = []string{".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".webp", ".avif", ".jxl", ".heic", ".heif"}
 	for _, t := range types {
 		if strings.ToLower(filepath.Ext(f)) == t {
 			return true

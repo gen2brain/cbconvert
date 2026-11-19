@@ -42,6 +42,7 @@
       <description>
         <ul>
           <li>All image codecs are now built in, with no external libraries</li>
+          <li>Read and write HEIC images</li>
           <li>Read AZW and AZW3 books</li>
           <li>Much lower memory use when converting large document pages</li>
           <li>Zoom and pan in the preview, which also follows the system dark mode</li>

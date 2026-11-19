@@ -23,7 +23,7 @@ import (
 
 // Options type.
 type Options struct {
-	// Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl
+	// Image format, valid values are jpeg, png, tiff, bmp, webp, avif, jxl, heic
 	Format string
 	// Archive format, valid values are zip, tar
 	Archive string
@@ -35,7 +35,7 @@ type Options struct {
 	Effort int
 	// Combine all inputs into a single archive
 	Combine bool
-	// Lossless enables lossless compression (webp, avif, jxl), ignores quality
+	// Lossless enables lossless compression (webp, avif, jxl, heic), ignores quality
 	Lossless bool
 	// Image width
 	Width int

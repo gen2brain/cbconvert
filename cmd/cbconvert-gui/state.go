@@ -70,7 +70,8 @@ func setActive() {
 		iup.GetHandle("VboxTransform").SetAttribute("ACTIVE", "YES")
 	}
 
-	canLossless := opts.Format == "webp" || opts.Format == "avif" || opts.Format == "jxl"
+	canEffort := opts.Format == "webp" || opts.Format == "avif" || opts.Format == "jxl"
+	canLossless := canEffort || opts.Format == "heic"
 
 	losslessVal := "OFF"
 	if userLossless {
@@ -85,11 +86,15 @@ func setActive() {
 		iup.GetHandle("VboxQuality").SetAttribute("ACTIVE", "NO")
 	}
 
-	if canLossless && !opts.NoConvert {
+	if canEffort && !opts.NoConvert {
 		iup.GetHandle("VboxEffort").SetAttribute("ACTIVE", "YES")
-		iup.GetHandle("Lossless").SetAttribute("ACTIVE", "YES")
 	} else {
 		iup.GetHandle("VboxEffort").SetAttribute("ACTIVE", "NO")
+	}
+
+	if canLossless && !opts.NoConvert {
+		iup.GetHandle("Lossless").SetAttribute("ACTIVE", "YES")
+	} else {
 		iup.GetHandle("Lossless").SetAttribute("ACTIVE", "NO")
 	}
 

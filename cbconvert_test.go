@@ -30,7 +30,7 @@ func TestConvert(t *testing.T) {
 		t.Error(err)
 	}
 
-	for _, format := range []string{"jpeg", "png", "tiff", "bmp", "webp", "avif", "jxl"} {
+	for _, format := range []string{"jpeg", "png", "tiff", "bmp", "webp", "avif", "jxl", "heic"} {
 		conv.Opts.Format = format
 
 		for _, file := range files {

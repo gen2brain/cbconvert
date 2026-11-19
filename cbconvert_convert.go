@@ -16,6 +16,7 @@ import (
 	folio "github.com/gen2brain/folio/doc"
 	"github.com/gen2brain/folio/pdf"
 	"github.com/gen2brain/gav1d/avif"
+	"github.com/gen2brain/h265/heic"
 	"github.com/gen2brain/jpegn"
 	"github.com/gen2brain/jxl"
 	"github.com/gen2brain/pngn"
@@ -496,6 +497,8 @@ func (c *Converter) imageEncode(img image.Image, w io.Writer) error {
 			effort = min(max(c.Opts.Effort, 1), jxl.MaxEffort)
 		}
 		err = jxl.Encode(w, img, jxl.EncodeOptions{Quality: c.Opts.Quality, Effort: effort, Lossless: c.Opts.Lossless})
+	case "heic":
+		err = heic.Encode(w, img, heic.EncodeOptions{Quality: c.Opts.Quality, Lossless: c.Opts.Lossless})
 	case "bmp":
 		opts := &gobmp.EncoderOptions{}
 		opts.SupportTransparency(false)
