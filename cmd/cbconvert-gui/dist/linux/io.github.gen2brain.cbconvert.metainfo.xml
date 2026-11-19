@@ -38,6 +38,20 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.3.0" date="2026-11-20" type="stable">
+      <description>
+        <ul>
+          <li>All image codecs are now built in, with no external libraries</li>
+          <li>Read AZW and AZW3 books</li>
+          <li>Much lower memory use when converting large document pages</li>
+          <li>Zoom and pan in the preview, which also follows the system dark mode</li>
+          <li>Sort the file list, select several files, right-click menu</li>
+          <li>macOS metadata files in archives are skipped</li>
+          <li>Various fixes and smaller improvements</li>
+        </ul>
+      </description>
+      <url type="details">https://github.com/gen2brain/cbconvert/releases/tag/v1.3.0</url>
+    </release>
     <release version="1.2.0" date="2026-06-27" type="stable">
       <description>
         <ul>
