@@ -26,8 +26,8 @@ github.com/gen2brain/folio v0.3.1 h1:R6JEt3+h3F3jX/rUCL4UM+v9mx7/cwIgKkf6n3jOiU8
 github.com/gen2brain/folio v0.3.1/go.mod h1:m8y2W5N5arjEiZ3O7UI27XaJnhELoPsjn1vWKYF3gms=
 github.com/gen2brain/gav1d v0.2.10 h1:27Qhi4hgaaoh4Nkv3ZbG6WG9aT+QQUuiWnh+UiBb2PQ=
 github.com/gen2brain/gav1d v0.2.10/go.mod h1:5tgr8NUHPGhwU8PcIMDnP1iESRIsxYRgm/HAUg8WwlY=
-github.com/gen2brain/iup-go/iup v0.40.0 h1:9IMVEkFYL8gC1mrBZJBufINr7Ld1bjm3WlZudAMc/l8=
-github.com/gen2brain/iup-go/iup v0.40.0/go.mod h1:gzczpN2sDrz64txWVGRIBFoat/fXhKLugB6SSfgyk0w=
+github.com/gen2brain/iup-go/iup v0.41.0 h1:ZKnWJ7xEjncFPMKHoOLqRugE/V1ogLNZpVOxVbSVcjo=
+github.com/gen2brain/iup-go/iup v0.41.0/go.mod h1:gzczpN2sDrz64txWVGRIBFoat/fXhKLugB6SSfgyk0w=
 github.com/gen2brain/jpegn v0.7.1 h1:1YpwscJuMUkVkyULYt3INrl+4VsZW/pD2FYO5TyzTno=
 github.com/gen2brain/jpegn v0.7.1/go.mod h1:eLK7Phns9KIRBI12Ku4z1yHG9tSR8/lE77rsG9oq9LU=
 github.com/gen2brain/jxl v0.2.2 h1:Lq2F88CkWIPmhUIANthY3W2UfYMeq7NjciKnNC9c6qU=
