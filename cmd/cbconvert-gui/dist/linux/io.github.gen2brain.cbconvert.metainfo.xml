@@ -38,7 +38,7 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
-    <release version="1.3.0" date="2026-11-20" type="stable">
+    <release version="1.3.0" date="2026-11-27" type="stable">
       <description>
         <ul>
           <li>All image codecs are now built in, with no external libraries</li>
