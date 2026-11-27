@@ -20,12 +20,14 @@ github.com/ebitengine/purego v0.11.3 h1:OB+JLpdm7ioymhyA+6s5kbb/uOuYycAgL8NNTFc5
 github.com/ebitengine/purego v0.11.3/go.mod h1:DCHPP08djqhNSoTfImcnHYQRZmd0qhakvrozqaEYhGQ=
 github.com/fvbommel/sortorder v1.2.1 h1:ASc85RbthwLEqzuiCk7WQQiopfyGWQiEYZVJ3Qa4A+U=
 github.com/fvbommel/sortorder v1.2.1/go.mod h1:LbhO04ijZIeUuvz9B9BkI/qYrpZZEn1gWhxv4QjUKVs=
-github.com/gen2brain/cbconvert v1.2.1-0.20260825104346-a90395759b8c h1:4Z25IjDP3akCwnNA8/wetf7xlR+CI78OTpOfM0s+gCs=
-github.com/gen2brain/cbconvert v1.2.1-0.20260825104346-a90395759b8c/go.mod h1:qnfGiVa7nmTZn2PiG3DvyKShqPtc/97Ibm9WUbOq/xg=
+github.com/gen2brain/cbconvert v1.3.0 h1:SM5yU/dwEcw+rvmttQ/9Kv7Y8GbYdCm2S+hYhcD/rTQ=
+github.com/gen2brain/cbconvert v1.3.0/go.mod h1:v+cHJfFSz/kPUV4ynCry8SqPNWCyWdS/bOVZvx04juM=
 github.com/gen2brain/folio v0.3.1 h1:R6JEt3+h3F3jX/rUCL4UM+v9mx7/cwIgKkf6n3jOiU8=
 github.com/gen2brain/folio v0.3.1/go.mod h1:m8y2W5N5arjEiZ3O7UI27XaJnhELoPsjn1vWKYF3gms=
 github.com/gen2brain/gav1d v0.2.10 h1:27Qhi4hgaaoh4Nkv3ZbG6WG9aT+QQUuiWnh+UiBb2PQ=
 github.com/gen2brain/gav1d v0.2.10/go.mod h1:5tgr8NUHPGhwU8PcIMDnP1iESRIsxYRgm/HAUg8WwlY=
+github.com/gen2brain/h265 v0.2.7 h1:PGGRPSZ5K0RsKhmk7UBk+j55HtWh/8mJgJk4ns8U3ho=
+github.com/gen2brain/h265 v0.2.7/go.mod h1:xR/WG8zUmzFC4GpeiRwBX/ERtlu3hamQcAgD76/8rcI=
 github.com/gen2brain/iup-go/iup v0.41.0 h1:ZKnWJ7xEjncFPMKHoOLqRugE/V1ogLNZpVOxVbSVcjo=
 github.com/gen2brain/iup-go/iup v0.41.0/go.mod h1:gzczpN2sDrz64txWVGRIBFoat/fXhKLugB6SSfgyk0w=
 github.com/gen2brain/jpegn v0.7.1 h1:1YpwscJuMUkVkyULYt3INrl+4VsZW/pD2FYO5TyzTno=

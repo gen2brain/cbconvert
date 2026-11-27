@@ -4,7 +4,7 @@ go 1.26.4
 
 require (
 	github.com/fvbommel/sortorder v1.2.1
-	github.com/gen2brain/cbconvert v1.2.1-0.20260825104346-a90395759b8c
+	github.com/gen2brain/cbconvert v1.3.0
 	github.com/gen2brain/iup-go/iup v0.41.0
 	github.com/gen2brain/pngn v0.1.3
 )
@@ -20,6 +20,7 @@ require (
 	github.com/ebitengine/purego v0.11.3 // indirect
 	github.com/gen2brain/folio v0.3.1 // indirect
 	github.com/gen2brain/gav1d v0.2.10 // indirect
+	github.com/gen2brain/h265 v0.2.7 // indirect
 	github.com/gen2brain/jpegn v0.7.1 // indirect
 	github.com/gen2brain/jxl v0.2.2 // indirect
 	github.com/gen2brain/vpx v0.2.3 // indirect
